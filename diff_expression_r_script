@@ -1,8 +1,8 @@
 # Marine DESeq Tutorial
 # Load DESeq2 library
 # Download needed packages
-library("DESeq2")
-
+suppressPackageStartupMessages(library("DESeq2"))
+suppressPackageStartupMessages(library("Cairo"))
 # Remove globally unexpressed genes
 
 LB2A_SRR1964642 <- as.data.frame(read.table("LB2A_SRR1964642.counts",sep="\t",header=FALSE))
@@ -78,7 +78,7 @@ res= subset(res, pvalue<0.05)
 
 # order results by pvalue value (most significant to least)
 res <- res[order(res$pvalue),]
-# should see DataFrame of baseMean, log2Foldchange, stat, pval, pvalue
+# should see DataFrame of baseMean, log2Foldchange, stat, pval, padjust
 
 # save data results and normalized reads to csv
 resdata <- merge(as.data.frame(res), 
@@ -105,7 +105,7 @@ ddsClean <- replaceOutliersWithTrimmedMean(dds)
 ddsClean <- DESeq(ddsClean)
 temp_ddsClean <- ddsClean
 tab <- table(initial = results(dds)$pvalue < 0.05,
-             cleaned = results(ddsClean)$value < 0.05)
+             cleaned = results(ddsClean)$pvalue < 0.05)
 addmargins(tab)
 write.csv(as.data.frame(tab),file = paste0(outputPrefix, "-replaceoutliers.csv"))
 resClean <- results(ddsClean)
@@ -130,6 +130,7 @@ write.csv(as.data.frame(resClean),file = paste0(outputPrefix, "-replaceoutliers-
 # MA plot of RNAseq data for entire dataset
 # http://en.wikipedia.org/wiki/MA_plot
 # genes with pvalue < 0.1 are colored Red
+x11()
 plotMA(dds, ylim=c(-8,8),main = "RNAseq experiment")
 dev.copy(png, paste0(outputPrefix, "-MAplot_initial_analysis.png"))
 dev.off()
@@ -156,6 +157,7 @@ rownames(sampleDistMatrix) <- paste(colnames(rld), rld$type, sep="")
 colnames(sampleDistMatrix) <- paste(colnames(rld), rld$type, sep="")
 colors <- colorRampPalette( rev(brewer.pal(8, "Blues")) )(255)
 heatmap(sampleDistMatrix,col=colors,margin = c(8,8))
+x11()
 dev.copy(png,paste0(outputPrefix, "-clustering.png"))
 dev.off()
 
@@ -166,19 +168,14 @@ library("grDevices")
 
 rv <- rowVars(assay(rld))
 select <- order(rv, decreasing=T)[seq_len(min(500,length(rv)))]
-pc <- prcomp(t(assay(vsd)[select,]))
+pc <- prcomp(assay(vsd)[select,])
 
 # set condition
 condition <- treatments
 scores <- data.frame(pc$x, condition)
 
-(pcaplot <- ggplot(scores, aes(x = PC1, y = PC2, col = (factor(condition))))
-  + geom_point(size = 5)
-  + ggtitle("Principal Components")
-  + scale_colour_brewer(name = " ", palette = "Set1")
-  + theme(
+pcaplot <- ggplot(as.data.frame(pc$rotation), aes(PC1, PC2,label=rownames(pc$rotation))) + geom_point(size =5, aes(colour=rownames(pc$rotation))) + ggtitle("Principal Components") + scale_colour_brewer(name = " ", palette = "Set1") + theme(
     plot.title = element_text(face = 'bold'),
-    legend.position = c(.9,.2),
     legend.key = element_rect(fill = 'NA'),
     legend.text = element_text(size = 10, face = "bold"),
     axis.text.y = element_text(colour = "Black"),
@@ -187,11 +184,9 @@ scores <- data.frame(pc$x, condition)
     axis.title.y = element_text(face = 'bold'),
     panel.grid.major.x = element_blank(),
     panel.grid.major.y = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.background = element_rect(color = 'black',fill = NA)
-  ))
-#dev.copy(png,paste0(outputPrefix, "-PCA.png"))
+    panel.background = element_rect(color = 'black',fill = NA))
+x11()
+dev.copy(png,paste0(outputPrefix, "-PCA.png"))
 ggsave(pcaplot,file=paste0(outputPrefix, "-ggplot2.png"))
 
 
@@ -206,5 +201,9 @@ heatmap.2(assay(vsd)[select,], col=my_palette,
           density.info="none", trace="none",
           cexCol=0.6, labRow=F,
           main="Heatmap of 100 DE Genes in Liver Tissue Comparison")
+x11()
 dev.copy(png, paste0(outputPrefix, "-HEATMAP.png"))
 dev.off()
+
+pc$rotation[,1]
+pc$rotation[,2]
