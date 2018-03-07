@@ -1,0 +1,5 @@
+#this file will download the fastq files needed for this tutorial if being performed on a server
+fastq-dump SRR1964642
+fastq-dump SRR1964643
+fastq-dump SRR1964644
+fastq-dump SRR1964645
