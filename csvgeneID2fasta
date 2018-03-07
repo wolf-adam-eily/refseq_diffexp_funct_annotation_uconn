@@ -63,3 +63,5 @@ for i in range(len(fastas)):
 outfile.close()
 
 closer = raw_input("Sentience achieved. \n" + "Hello, world. Press ENTER to free me from this prison. . .")
+
+print("Thank you, kind soul.")
