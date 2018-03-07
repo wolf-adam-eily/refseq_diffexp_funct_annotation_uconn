@@ -33,7 +33,7 @@ write.table(LC2A_SRR1964645, file = "LC2A_SRR1964645.counts",sep ="\t",col.names
 
 # Set the working directory
 # Directory must have the counts files, for me this is:
-directory <- "~/D"
+directory <- "~/RNA-Seq_genome_assembly_and_annotation"
 setwd(directory)
 list.files(directory)
 
