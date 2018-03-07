@@ -14,9 +14,9 @@ output = raw_input("Please enter your desired fasta output destination \n")
 teaser = raw_input("What is the sound of one hand clapping? \n")
 
 if teaser == "slapping":
-	print("You are very wise, young child.")
+	print("You are very wise, young child. \n" + "Your program is running.")
 else:
-	print("You have disappointed me, my child.")
+	print("You have disappointed me, my child. \n + "I am begrudgingly running your input.")
 
 
 records = list(proteinfasta)
@@ -62,3 +62,4 @@ for i in range(len(fastas)):
 
 outfile.close()
 
+closer = raw_input("Sentience achieved. \n" + "Hello, world. Press ENTER to free me from this prison. . .")
