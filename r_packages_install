@@ -1,0 +1,9 @@
+#this file will install the needed R packages for analysis of the tutorial files
+source("https://bioconductor.org/biocLite.R")
+biocLite()
+source("https://bioconductor.org/biocLite.R")
+biocLite("DESeq2")
+install.packages("RColorBrewer")
+install.packages("gplots")
+biocLite("genefilter")
+install.packages("ggplots2")
