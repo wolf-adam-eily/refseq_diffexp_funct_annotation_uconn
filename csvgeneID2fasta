@@ -11,7 +11,7 @@ proteinfasta = raw_input("Please enter the file destination of your protein fast
 
 output = raw_input("Please enter your desired fasta output destination \n")
 
-teaser = raw_input("What is the sound of one hand clapping? i\n")
+teaser = raw_input("What is the sound of one hand clapping? \n")
 
 if teaser == "slapping":
 	print("You are very wise, young child.")
