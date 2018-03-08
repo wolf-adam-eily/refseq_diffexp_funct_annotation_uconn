@@ -1,18 +1,6 @@
 sudo apt-get update
-sudo apt-get install cmake
-sudo apt-get install gfortran
-sudo apt-get install samtools
-sudo apt-get install libbz2-dev
-sudo apt-get install libboost-all-dev
-sudo apt-get install python-pandas
-sudo apt-get install python-biopython
-sudo apt-get install python-pysam
-sudo apt-get install python-htseq
-sudo apt-get install python-setuptools
-sudo apt-get install hisat2
-sudo apt-get install sickle
-sudo apt-get install sra-toolkit
-sudo apt-get install xorg openbox
+sudo apt-get install cmake gfortran samtools libbz2-dev libboost-all-dev liblzma-dev libpcre3 libpcre3-dev python-pandas python-biopython python-pysam
+sudo apt-get install python-htseq python-setuptools hisat2 sickle sra-toolkit xorg openbox
 sudo apt-get install t1-xfree86-nonfree ttf-xfree86-nonfree ttf-xfree86-nonfree-syriac xfonts-75dpi xfonts-100dpi
 sudo apt-get install python-software-properties
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test
