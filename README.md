@@ -37,12 +37,10 @@ is run to install <i><b>all</b></i> of the needed software and tools for this tu
 <h2 id="Second_Point_Header">Accessing the data using sra-toolkit </h2>
 
 The data may be accessed at the following web page: 
-https://www.ncbi.nlm.nih.gov/bioproject/280841
-
-LF1A : SRR1964648, SRR1964649<br>
-LF2A : SRR1964647, SRR1964646<br>
+https://www.ncbi.nlm.nih.gov/bioproject/28084<br>
 LB2A : SRR1964642, SRR1964643<br>
 LC2A : SRR1964644, SRR1964645<br>
+
 and downloaded with: 
 <pre style="color: silver; background: black;">fastq-dump SRR1964642
 fastq-dump SRR1964643</pre>
