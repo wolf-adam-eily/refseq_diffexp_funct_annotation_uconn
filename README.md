@@ -17,8 +17,9 @@ The workflow may be cloned using the terminal command:
 After cloning the repository but before beginning the tutorial, it is recommended the command (in the cloned folder):
   sh -e programs_installation
   sh -e r_3.4.3_install
-  Rscript r_packages_install
-is run to install <i><b>all</b></i> of the needed software and tools for this tutorial,.
+(if an absolute directory error occurs, edit the script to change "~/R-3.4.3" to "/home/(insert_user_name)/R-3.4.3")
+  sudo Rscript r_packages_install
+be run to install <i><b>all</b></i> of the needed software and tools for this tutorial,.
 
 1. Accessing the Data using SRAtools
 https://www.ncbi.nlm.nih.gov/bioproject/280841
@@ -36,34 +37,28 @@ Repeat fastq-dump for SRR1964644 and SRR1964645 samples, or alternatively run ei
 or
   sh -e fastqdump_and_trim_personal_computer
 The first command will simply download the four fastq files to your server. If proceeding through this tutorial on a personal computer or laptop without access to a server, run the second command. This command will combine the fastq-dump with the next step, quality control, downloading a fastq file, trimming that file, and the removing the untrimmed file. This is recommended if disk space is an issue (the four files combined consume about 75GB of disk space).
- Once download is completed, the files were renamed according to the samples for easy identification. You should know see the following files in the folder: 
+ Once download is completed, the files were renamed according to the samples for easy identification. If the first command was run, you should see the following files in your folder: 
 |-- LB2A_SRR1964642.fastq
 |-- LB2A_SRR1964643.fastq
 |-- LC2A_SRR1964644.fastq
 |-- LC2A_SRR1964645.fastq
 
 The above folder is located at /common/RNASeq_Workshop/Marine/raw_data in BBC
-2 Quality Control using Trimmomatic:
+2 Quality Control using Sickle:
 
- Trimmomatic performs quality control on illumina paired-end and single-end short read data. The following command can be applied to each of the four read fastq files:
-
-java -jar /common/opt/bioinformatics/trimmomatic/0.36/trimmomatic-0.36.jar \
-        SE \
-        -threads 4 \
-        /common/RNASeq_Workshop/Marine/raw_data/ \
-        SLIDINGWINDOW:4:30 \
-        MINLEN:50
+ Sickle performs quality control on illumina paired-end and single-end short read data. The following command can be applied to each of the four read fastq files:
+ 
+ sickle se -f LB2A_SRR1964642.fastq -t sanger -o trimmed_LB2A_SRR1964642.fastq -q 30 -l 50
 
  The options we use;
 
 
 Options: 
-SE                  Single end reads
--threads            number of processors 
-<input>             input file name
-<output>            output file name
-SLIDINGWINDOW:4:30  Scan the read with a 4-base wide sliding window, cutting when the average quality per base drops below 30 
-MINLEN:50           Removes any reads shorter than 50bp
+se    Single end reads
+-f    input file name
+-o    output file name
+-q    scan the read with the sliding window, cutting when the average quality per base drops below 30 
+-l    Removes any reads shorter than 50bp
 
 This can be repeated for all four files.  The entire set should be run in a single shell script.
 This script can be found on BBC: /common/RNASeq_Workshop/Marine/quality_control/quality_control.sh
