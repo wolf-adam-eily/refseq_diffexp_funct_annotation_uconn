@@ -2,7 +2,7 @@ sudo apt-get update
 sudo apt-get install cmake
 sudo apt-get install libboost-all-dev
 sudo apt-get install python-pandas
-sudo apt-get install python-bio
+sudo apt-get install python-biopython
 sudo apt-get install python-pysam
 sudo apt-get install python-htseq
 sudo apt-get install python-setuptools
