@@ -1,7 +1,8 @@
+cd ~
 wget https://cran.r-project.org/src/base/R-3/R-3.4.3.tar.gz
-./configure --prefix=~/R-3.4.3 --with-x=yes --enable-R-shlib=yes --with-cairo=yes
 tar -xzvf R-3.4.3.tar.gz
 cd R-3.4.3
-./configure --with-readline=no --with-x=yes
-make
+./configure --prefix=~/R-3.4.3 --with-x=no --enable-R-shlib=yes --with-cairo=yes --with-readline=no
+makee
 sudo make install
+
