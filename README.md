@@ -60,74 +60,34 @@ se    Single end reads
 -q    scan the read with the sliding window, cutting when the average quality per base drops below 30 
 -l    Removes any reads shorter than 50bp
 
-This can be repeated for all four files.  The entire set should be run in a single shell script.
-This script can be found on BBC: /common/RNASeq_Workshop/Marine/quality_control/quality_control.sh
-Following the trimmomatic run, the resulting file structure will look as follows:
+This can be repeated for all four files (if the fastq_dump_server option was exercised, if the fastq_dump_personal_computer option was used then this step has already been completed) by running the shell script:
+  sh -e fastq_trimming_server
+ 
+Following the sickle run, the resulting file structure will look as follows:
 
-quality_control/
-|-- quality_control.sh
-|-- trim_LB2A_SRR1964642.fastq
-|-- trim_LB2A_SRR1964643.fastq
-|-- trim_LC2A_SRR1964644.fastq
-`-- trim_LC2A_SRR1964645.fastq
+|-- trimmed_LB2A_SRR1964642.fastq
+|-- trimmed_LB2A_SRR1964643.fastq
+|-- trimmed_LC2A_SRR1964644.fastq
+|-- trimmed_LC2A_SRR1964645.fastq
 
 Examine the .out file generated during the run.  It will provide a summary of the quality control process.
 
 Input Reads: 26424138 Surviving: 21799606 (82.50%) Dropped: 4624532 (17.50%)
 
-3. FASTQC before and after QC
-FASTQC can be used to look at the quality of of reads more closely. It will provide you with a html file that can be transferred to your local machine via sFTP to examine the overall quality of the read sets.
-
-Create two directories: “before” and “after”.
-
-module load fastqc/0.11.5
-#looking at quality of the raw reads before doing trimming
-fastqc --outdir ./before/ ../raw_data/LB2A_SRR1964642.fastq
-
-This can be repeated for all you reads before trimming, which is your raw fastq files. The above script is located:/common/RNASeq_Workshop/Marine/fastqc/fastqc_before.sh
-
-The same command can be used to look at the files after trimming.
-
-module load fastqc/0.11.5
-#looking at quality of the raw reads after doing trimming
-fastqc --outdir ./after/ ../quality_control/trim_LB2A_SRR1964642.fastq.fastq
-
-The above script can be located in BBC:/common/RNASeq_Workshop/Marine/fastqc/fastqc_after.sh
-Once the analysis is done, it will produce a html file for each fastq file and a zip file which contains the images which have been used to illustrate in the html file. The final file structure will look as:
-
-fastqc/
-|-- after/
-|   |-- trim_LB2A_SRR1964642_fastqc.html
-|   |-- trim_LB2A_SRR1964642_fastqc.zip
-|   |-- trim_LB2A_SRR1964643_fastqc.html
-|   |-- trim_LB2A_SRR1964643_fastqc.zip
-|   |-- trim_LC2A_SRR1964644_fastqc.html
-|   |-- trim_LC2A_SRR1964644_fastqc.zip
-|   |-- trim_LC2A_SRR1964645_fastqc.html
-|   `-- trim_LC2A_SRR1964645_fastqc.zip
-|-- before/
-|   |-- LB2A_SRR1964642_fastqc.html
-|   |-- LB2A_SRR1964642_fastqc.zip
-|   |-- LB2A_SRR1964643_fastqc.html
-|   |-- LB2A_SRR1964643_fastqc.zip
-|   |-- LC2A_SRR1964644_fastqc.html
-|   |-- LC2A_SRR1964644_fastqc.zip
-|   |-- LC2A_SRR1964645_fastqc.html
-|   `-- LC2A_SRR1964645_fastqc.zip
-|-- fastqc_after.sh
-`-- fastqc_before.sh
-
-4. HISAT2: Aligning Single-End Short Reads to the Reference Genome
-Building a Index
+3. HISAT2: Aligning Single-End Short Reads to the Reference Genome
+Building an Index
 HISAT2 is a fast and sensitive aligner for mapping next generation sequencing reads against a reference genome.
 
 In order to map the reads to a reference genome, first you need to download the reference genome, and make a index file. We will be downloading the reference genome (https://www.ncbi.nlm.nih.gov/genome/12197) from the ncbi database, using the wget command.
 
 wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/972/845/GCF_000972845.1_L_crocea_1.0/GCF_000972845.1_L_crocea_1.0_genomic.fna.gz
 
-Then we will use hisat2-build package in the software to make a HISAT index file for the genome. It will create a set of files with the suffix .ht2, these files together build the index, this is all you need to align the reads to the reference genome.
+IF you feel to be prudent, you can install the genomic, transcriptomic, and proteomic fastas (yes, all will be used in this tutorial, it is advised you download them now) with the command:
+ 
+ sh -e genomic_and_protein_downloads
 
-module load hisat2/2.0.5
+We will use hisat2-build package in the software to make a HISAT index file for the genome. It will create a set of files with the suffix .ht2, these files together build the index, this is all you need to align the reads to the reference genome (this command is included in the genome_indexing_and_alignment* files, so it is not necessary to run now).
+
 hisat2-build -p 4 GCF_000972845.1_L_crocea_1.0_genomic.fna L_crocea
 
 Usage: hisat2-build [options] <reference_in> <bt2_index_base>
@@ -137,10 +97,8 @@ hisat2_index_base           write ht2 data to files with this dir/basename
 Options:
     -p                      number of threads
 
-The script can be found at: /common/RNASeq_Workshop/Marine/index/hisat2_index.sh
 After running the script, the following files will be generated as part of the index.  To refer to the index for  mapping the reads in the next step, you will use the file prefix, which in this case is: L_crocea
 
-index/
 |-- GCF_000972845.1_L_crocea_1.0_genomic.fna
 |-- hisat2_index.sh
 |-- L_crocea.1.ht2
@@ -150,32 +108,37 @@ index/
 |-- L_crocea.5.ht2
 |-- L_crocea.6.ht2
 |-- L_crocea.7.ht2
-`-- L_crocea.8.ht2
+|-- L_crocea.8.ht2
 
 Aligning the reads using HISAT2
 Once we have created the index, the next step is to align the reads using the index we created. To do this we will be using hisat2 program. The program will give the output in SAM format, which can be used my various programs.
 
-module load hisat2/2.0.5
 hisat2 -p 4 --dta -x ../index/L_crocea -q ../quality_control/trim_LB2A_SRR1964642.fastq -S trim_LB2A_SRR1964642.sam
-
-The above need to be repeated for all the files.
 
 Usage: hisat2 [options]* -x <ht2-idx>  [-S <sam>]
 -x <ht2-idx>        path to the Index-filename-prefix (minus trailing .X.ht2) 
 
+[]
 Options:
 -q                  query input files are FASTQ .fq/.fastq (default)
 -p                  number threads
 --dta               reports alignments tailored for transcript assemblers
 
-The script is located at /common/RNASeq_Workshop/Marine/mapping/mapping.sh Once the mapping have been completed, the file structure is as follows:
+The above must be repeated for all the files. You may run:
 
-mapping/
+  sh -e genome_indexing_and_alignment_server
+or
+  sh -e genome_indexing_and_alignment_personal_computer
+
+to process all four files appropriate for your setup.
+
+Once the mapping have been completed, the file structure is as follows:
+
 |-- mapping.sh
 |-- trim_LB2A_SRR1964642.sam
 |-- trim_LB2A_SRR1964643.sam
 |-- trim_LC2A_SRR1964644.sam
-`-- trim_LC2A_SRR1964645.sam
+|-- trim_LC2A_SRR1964645.sam
 
 When HISAT2 completes its run, it will summarize each of it’s alignments, and it is written to the standard error file, which can be find in the same folder once the run is completed.
 
@@ -190,9 +153,7 @@ The sam file then need to be converted in to bam format;
 
 samtools view -@ 4 -uhS trim_LB2A_SRR1964642.sam | samtools sort -@ 4 - sort_trim_LB2A_SRR1964642
 
- 
-
-Usage: samtools [command] [options] in.sam
+ Usage: samtools [command] [options] in.sam
 Command:
 view     prints all alignments in the specified input alignment file (in SAM, BAM, or CRAM format) to standard output in SAM format 
 
@@ -208,10 +169,16 @@ sort    Sort alignments by leftmost coordinates
 
 -o      Write the final sorted output to FILE, rather than to standard output.
 
-The script for running all the samples is located at: /common/RNASeq_Workshop/Marine/mapping/sam2bam.sh Once the conversion is done you will have the following files in the directory.
+All samples may be run by executing the following command:
 
-mapping/
-|-- sam2bam.sh
+  sh -e sam_to_bam_server
+or
+  sh -e sam_to_bam_personal_computer
+
+appropriate for your set-up.
+
+Once the conversion is done you will have the following files in the directory.
+
 |-- sort_trim_LB2A_SRR1964642.bam
 |-- sort_trim_LB2A_SRR1964643.bam
 |-- sort_trim_LC2A_SRR1964644.bam
@@ -221,10 +188,8 @@ mapping/
 Now we will be using the htseq-count program to count the reads which is mapping to the genome.
 
 htseq-count -s no -r pos -t gene -i Dbxref -f bam ../mapping/sort_trim_LB2A_SRR1964642.bam GCF_000972845.1_L_crocea_1.0_genomic.gff > LB2A_SRR1964642.counts
-
- 
-
 Usage: htseq-count [options] alignment_file gff_file
+
 This script takes an alignment file in SAM/BAM format and a feature file in
 GFF format and calculates for each feature the number of reads mapping to it.
 See http://www-huber.embl.de/users/anders/HTSeq/doc/count.html for details.
@@ -253,37 +218,70 @@ Options:
                         suitable for Ensembl GTF files: gene_id)
 
  
- The above command should be repeated for all other BAM files as well. The script can be found at:/common/RNASeq_Workshop/Marine/counts/htseq.sh
-Once all the bam files have been counted, we will be having the following files in the count directory.
+The above command should be repeated for all other BAM files as well. You can process all the BAM files with the command:
 
-counts/
-|-- htseq.sh
+  sh -e htseq_count_server
+or
+  sh -e htseq_count_personal_computer
+
+appropriate for your set-up.
+
+Once all the bam files have been counted, we will be having the following files in the directory.
+
 |-- sort_trim_LB2A_SRR1964642.counts
 |-- sort_trim_LB2A_SRR1964643.counts
 |-- sort_trim_LC2A_SRR1964644.counts
-`-- sort_trim_LC2A_SRR1964645.counts
+|-- sort_trim_LC2A_SRR1964645.counts
 
 6 DESeq2 – Pairwise Differential Expression with Counts in R
-To identify differentially expressed genes, we will transfer the count files generated by HTSeq onto our local machine.  We will the DESeq package within Bioconductor in R to process to provide normalization and statistical analysis of differences among our two sample groups.
+To identify differentially expressed genes, we will transfer the count files generated by HTSeq onto our local machine.  We will the DESeq package within Bioconductor in R to process to provide normalization and statistical analysis of differences among our two sample groups. This R code can be run with the following command:
 
+  Rscript diff_expression_r_script
 
 # Marine DESeq Tutorial
-# Download the DESeq2 try http:// if https:// URLs are not supported
-source("https://bioconductor.org/biocLite.R")
-biocLite("DESeq2")
 # Load DESeq2 library
-library("DESeq2")
+# Download needed packages
+suppressPackageStartupMessages(library("DESeq2"))
+suppressPackageStartupMessages(library("Cairo"))
+# Remove globally unexpressed genes
+
+LB2A_SRR1964642 <- as.data.frame(read.table("LB2A_SRR1964642.counts",sep="\t",header=FALSE))
+LB2A_SRR1964643 <- as.data.frame(read.table("LB2A_SRR1964643.counts",sep="\t",header=FALSE))
+LC2A_SRR1964644 <- as.data.frame(read.table("LC2A_SRR1964644.counts",sep="\t",header=FALSE))
+LC2A_SRR1964645 <- as.data.frame(read.table("LC2A_SRR1964645.counts",sep="\t",header=FALSE))
+
+dim(LB2A_SRR1964642)
+dim(LB2A_SRR1964643)
+dim(LC2A_SRR1964644)
+dim(LC2A_SRR1964644)
+
+for (x in 1:27244) {if (LB2A_SRR1964642[x,2] == 0 & LB2A_SRR1964643[x,2] == 0 & LC2A_SRR1964644[x,2] == 0 & LC2A_SRR1964645[x,2] == 0){
+LB2A_SRR1964642[x,2] = NA
+LB2A_SRR1964643[x,2] = NA
+LC2A_SRR1964644[x,2] = NA
+LC2A_SRR1964645[x,2] = NA}}
+
+LB2A_SRR1964642 = as.list(LB2A_SRR1964642[complete.cases(LB2A_SRR1964642),])
+LB2A_SRR1964643 = as.list(LB2A_SRR1964643[complete.cases(LB2A_SRR1964643),])
+LC2A_SRR1964644 = as.list(LC2A_SRR1964644[complete.cases(LC2A_SRR1964644),])
+LC2A_SRR1964645 = as.list(LC2A_SRR1964645[complete.cases(LC2A_SRR1964645),])
+
+write.table(LB2A_SRR1964642, file = "LB2A_SRR1964642.counts",sep="\t",col.names=FALSE,row.names=FALSE)
+write.table(LB2A_SRR1964643, file = "LB2A_SRR1964643.counts",sep="\t",col.names=FALSE,row.names=FALSE)
+write.table(LC2A_SRR1964644, file = "LC2A_SRR1964644.counts",sep="\t",col.names=FALSE,row.names=FALSE)
+write.table(LC2A_SRR1964645, file = "LC2A_SRR1964645.counts",sep ="\t",col.names=FALSE,row.names=FALSE)
 
 # Set the working directory
-directory <- "~/Documents/CBC/Tutorials/Marine/DESeq/two_sample_Control_Thermal_gene"
+# Directory must have the counts files, for me this is:
+directory <- "~/RNA-Seq_genome_assembly_and_annotation"
 setwd(directory)
 list.files(directory)
 
 # Set the prefix for each output file name
 outputPrefix <- "Croaker_DESeq2"
 
-sampleFiles<- c("sort_trim_LB2A_SRR1964642.counts","sort_trim_LB2A_SRR1964643.counts",
-                "sort_trim_LC2A_SRR1964644.counts", "sort_trim_LC2A_SRR1964645.counts")
+sampleFiles<- c("LB2A_SRR1964642.counts","LB2A_SRR1964643.counts",
+                "LC2A_SRR1964644.counts", "LC2A_SRR1964645.counts")
 
 # Liver mRNA profiles of 
 # control group (LB2A), * 
@@ -295,8 +293,7 @@ sampleTable <- data.frame(sampleName = sampleNames,
                           fileName = sampleFiles,
                           condition = sampleCondition)
 
-ddsHTSeq <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable,
-                                       directory = directory,
+ddsHTSeq <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable, directory = directory,
                                        design = ~ condition)
 
 #By default, R will choose a reference level for factors based on alphabetical order. 
@@ -311,17 +308,17 @@ ddsHTSeq$condition
 # Differential expression analysis
 #differential expression analysis steps are wrapped into a single function, DESeq()
 dds <- DESeq(ddsHTSeq)
-# restuls talbe will be generated using results() which will include:
+# results table will be generated using results() which will include:
 #  log2 fold changes, p values and adjusted p values
 res <- results(dds)
 res
 summary(res)
 # filter results by p value
-res= subset(res, padj<0.05)
+res= subset(res, pvalue<0.05)
 
-# order results by padj value (most significant to least)
-res <- res[order(res$padj),]
-# should see DataFrame of baseMean, log2Foldchange, stat, pval, padj
+# order results by pvalue value (most significant to least)
+res <- res[order(res$pvalue),]
+# should see DataFrame of baseMean, log2Foldchange, stat, pval, padjust
 
 # save data results and normalized reads to csv
 resdata <- merge(as.data.frame(res), 
@@ -347,13 +344,13 @@ write.csv(as.data.frame(mcols(res, use.name = T)),
 ddsClean <- replaceOutliersWithTrimmedMean(dds)
 ddsClean <- DESeq(ddsClean)
 temp_ddsClean <- ddsClean
-tab <- table(initial = results(dds)$padj < 0.05,
-             cleaned = results(ddsClean)$padj < 0.05)
+tab <- table(initial = results(dds)$pvalue < 0.05,
+             cleaned = results(ddsClean)$pvalue < 0.05)
 addmargins(tab)
 write.csv(as.data.frame(tab),file = paste0(outputPrefix, "-replaceoutliers.csv"))
 resClean <- results(ddsClean)
-resClean = subset(res, padj<0.05)
-resClean <- resClean[order(resClean$padj),]
+resClean = subset(res, pvalue<0.05)
+resClean <- resClean[order(resClean$pvalue),]
 write.csv(as.data.frame(resClean),file = paste0(outputPrefix, "-replaceoutliers-results.csv"))
 
 ####################################################################################
@@ -372,7 +369,8 @@ write.csv(as.data.frame(resClean),file = paste0(outputPrefix, "-replaceoutliers-
 
 # MA plot of RNAseq data for entire dataset
 # http://en.wikipedia.org/wiki/MA_plot
-# genes with padj < 0.1 are colored Red
+# genes with pvalue < 0.1 are colored Red
+x11()
 plotMA(dds, ylim=c(-8,8),main = "RNAseq experiment")
 dev.copy(png, paste0(outputPrefix, "-MAplot_initial_analysis.png"))
 dev.off()
@@ -399,6 +397,7 @@ rownames(sampleDistMatrix) <- paste(colnames(rld), rld$type, sep="")
 colnames(sampleDistMatrix) <- paste(colnames(rld), rld$type, sep="")
 colors <- colorRampPalette( rev(brewer.pal(8, "Blues")) )(255)
 heatmap(sampleDistMatrix,col=colors,margin = c(8,8))
+x11()
 dev.copy(png,paste0(outputPrefix, "-clustering.png"))
 dev.off()
 
@@ -409,19 +408,14 @@ library("grDevices")
 
 rv <- rowVars(assay(rld))
 select <- order(rv, decreasing=T)[seq_len(min(500,length(rv)))]
-pc <- prcomp(t(assay(vsd)[select,]))
+pc <- prcomp(assay(vsd)[select,])
 
 # set condition
 condition <- treatments
 scores <- data.frame(pc$x, condition)
 
-(pcaplot <- ggplot(scores, aes(x = PC1, y = PC2, col = (factor(condition))))
-  + geom_point(size = 5)
-  + ggtitle("Principal Components")
-  + scale_colour_brewer(name = " ", palette = "Set1")
-  + theme(
+pcaplot <- ggplot(as.data.frame(pc$rotation), aes(PC1, PC2,label=rownames(pc$rotation))) + geom_point(size =5, aes(colour=rownames(pc$rotation))) + ggtitle("Principal Components") + scale_colour_brewer(name = " ", palette = "Set1") + theme(
     plot.title = element_text(face = 'bold'),
-    legend.position = c(.9,.2),
     legend.key = element_rect(fill = 'NA'),
     legend.text = element_text(size = 10, face = "bold"),
     axis.text.y = element_text(colour = "Black"),
@@ -430,11 +424,9 @@ scores <- data.frame(pc$x, condition)
     axis.title.y = element_text(face = 'bold'),
     panel.grid.major.x = element_blank(),
     panel.grid.major.y = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.background = element_rect(color = 'black',fill = NA)
-  ))
-#dev.copy(png,paste0(outputPrefix, "-PCA.png"))
+    panel.background = element_rect(color = 'black',fill = NA))
+x11()
+dev.copy(png,paste0(outputPrefix, "-PCA.png"))
 ggsave(pcaplot,file=paste0(outputPrefix, "-ggplot2.png"))
 
 
@@ -449,9 +441,12 @@ heatmap.2(assay(vsd)[select,], col=my_palette,
           density.info="none", trace="none",
           cexCol=0.6, labRow=F,
           main="Heatmap of 100 DE Genes in Liver Tissue Comparison")
+x11()
 dev.copy(png, paste0(outputPrefix, "-HEATMAP.png"))
 dev.off()
 
+pc$rotation[,1]
+pc$rotation[,2]
 
 resulting files are located at: /common/RNASeq_Workshop/Marine/DESeq
 7. EnTAP – Functional Annotation for DE Genes
@@ -478,7 +473,7 @@ entap/
 |-- GCF_000972845.1_L_crocea_1.0_protein.faa
 |-- ProteinTable12197_229515.txt
 |-- GeneID_proteinID.txt
-`-- fasta_out.fasta
+|-- fasta_out.fasta
 
 Once we have the fasta file with the protein sequences we can run the enTAP program to grab the functional annotations using the following command:
 
