@@ -39,10 +39,10 @@ is run to install <i><b>all</b></i> of the needed software and tools for this tu
 The data may be accessed at the following web page: 
 https://www.ncbi.nlm.nih.gov/bioproject/280841
 
-LF1A : SRR1964648, SRR1964649
-LF2A : SRR1964647, SRR1964646
-LB2A : SRR1964642, SRR1964643
-LC2A : SRR1964644, SRR1964645
+LF1A : SRR1964648, SRR1964649<br>
+LF2A : SRR1964647, SRR1964646<br>
+LB2A : SRR1964642, SRR1964643<br>
+LC2A : SRR1964644, SRR1964645<br>
 and downloaded with: 
 <pre style="color: silver; background: black;">fastq-dump SRR1964642
 fastq-dump SRR1964643</pre>
