@@ -11,7 +11,7 @@ This tutorial assumes the user is using a Linux system (or Ubuntu 17.0.1 or high
 <li><a href="#Fourth_Point_Header">4 Aligning reads to a genome using hisat2</a></li>
 <li><a href="#Fifth_Point_Header">5 Generating total read counts from alignment using htseq-count</a></li>
 <li><a href="#Sixth_Point_Header">6 Pairwise differential expression with counts in R with DESeq2</a></li>
-<li><a href="#Citation">7 Citations</a></li>
+<li><a href="#Citation">Citations</a></li>
 </ul>
 </div>
 
