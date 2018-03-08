@@ -1,0 +1,29 @@
+sudo apt-get update
+sudo apt-get install cmake
+sudo apt-get install libboost-all-dev
+sudo apt-get install python-pandas
+sudo apt-get install python-bio
+sudo apt-get install python-pysam
+sudo apt-get install python-htseq
+sudo apt-get install python-setuptools
+sudo apt-get install hisat2
+sudo apt-get install sickle
+sudo apt-get install sratools
+sudo apt-get install xorg openbox
+sudo apt-get install t1-xfree86-nonfree ttf-xfree86-nonfree ttf-xfree86-nonfree-syriac xfonts-75dpi xfonts-100dpi
+sudo apt-get install python-software-properties
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt-get update
+sudo apt-get install gcc-4.8
+git clone https://github.com/deweylab/RSEM.git
+cd RSEM
+sudo make install
+cd ~
+git clone https://github.com/jhcepas/eggnog-mapper.git
+sudo mv -v eggnog-mapper/bin/* /usr/bin/
+sudo mv -v eggnog-mapper/eggnogmapper/* /usr/bin/
+wget http://topaz.gatech.edu/GeneMark/tmp/GMtool_iwSUy/gmst_linux_64.tar.gz
+sudo mv -v /gth/1.7.0-Linux_x86_64-64bit/bin/* /usr/bin
+wget http://github.com/bbuchfink/diamond/releases/download/v0.9.18/diamond-linux64.tar.gz
+tar xzf diamond-linux64.tar.gz
+sudo mv diamond /usr/bin/
