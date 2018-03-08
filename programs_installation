@@ -32,3 +32,4 @@ sudo mv -v /gth/1.7.0-Linux_x86_64-64bit/bin/* /usr/bin
 wget http://github.com/bbuchfink/diamond/releases/download/v0.9.18/diamond-linux64.tar.gz
 tar xzf diamond-linux64.tar.gz
 sudo mv diamond /usr/bin/
+
