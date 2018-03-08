@@ -4,7 +4,7 @@ sudo apt-get install python-htseq python-setuptools hisat2 sickle sra-toolkit xo
 sudo apt-get install t1-xfree86-nonfree ttf-xfree86-nonfree ttf-xfree86-nonfree-syriac xfonts-75dpi xfonts-100dpi
 sudo apt-get install python-software-properties
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-sudo apt-get update
+sudo apt install r-base-core
 sudo apt-get install gcc-4.8
 git clone https://github.com/deweylab/RSEM.git
 cd RSEM
