@@ -8,7 +8,7 @@ sudo apt-get install python-htseq
 sudo apt-get install python-setuptools
 sudo apt-get install hisat2
 sudo apt-get install sickle
-sudo apt-get install sratools
+sudo apt-get install sra-toolkit
 sudo apt-get install xorg openbox
 sudo apt-get install t1-xfree86-nonfree ttf-xfree86-nonfree ttf-xfree86-nonfree-syriac xfonts-75dpi xfonts-100dpi
 sudo apt-get install python-software-properties
