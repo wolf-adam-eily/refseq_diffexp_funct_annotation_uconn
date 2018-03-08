@@ -1,5 +1,6 @@
 sudo apt-get update
 sudo apt-get install cmake
+sudo apt-get install gfortran
 sudo apt-get install samtools
 sudo apt-get install libboost-all-dev
 sudo apt-get install python-pandas
