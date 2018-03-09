@@ -84,7 +84,7 @@ Examine the .out file generated during the run.  It will provide a summary of th
 <pre style="color: silver; background: black;">Input Reads: 26424138 Surviving: 21799606 (82.50%) Dropped: 4624532 (17.50%)</pre>
 
 <h2 id="Fourth_Point_Header">Aligning reads to a genome using hisat2</h2>
-Building an Index
+Building an Index:<br>
 HISAT2 is a fast and sensitive aligner for mapping next generation sequencing reads against a reference genome.
 
 In order to map the reads to a reference genome, first you need to download the reference genome, and make a index file. We will be downloading the reference genome (https://www.ncbi.nlm.nih.gov/genome/12197) from the ncbi database, using the wget command.
