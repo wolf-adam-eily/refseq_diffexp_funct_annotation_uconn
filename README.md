@@ -88,7 +88,8 @@ Building an Index
 HISAT2 is a fast and sensitive aligner for mapping next generation sequencing reads against a reference genome.
 
 In order to map the reads to a reference genome, first you need to download the reference genome, and make a index file. We will be downloading the reference genome (https://www.ncbi.nlm.nih.gov/genome/12197) from the ncbi database, using the wget command.
-<pre style="color: silver; background: black;">wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/972/845/GCF_000972845.1_L_crocea_1.0/GCF_000972845.1_L_crocea_1.0_genomic.fna.gz</pre>
+<pre style="color: silver; background: black;">wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/972/845/GCF_000972845.1_L_crocea_1.0/GCF_000972845.1_L_crocea_1.0_genomic.fna.gz
+gunzip GCF_000972845.1_L_crocea_1.0_genomic.fna.gz</pre>
 If you feel to be prudent, you can install the genomic, transcriptomic, and proteomic fastas (yes, all will be used in this tutorial, it is advised you download them now) with the command:
 <pre style="color: silver; background: black;">sh -e genomic_and_protein_downloads</pre>
 We will use hisat2-build package in the software to make a HISAT index file for the genome. It will create a set of files with the suffix .ht2, these files together build the index, this is all you need to align the reads to the reference genome (this command is included in the genome_indexing_and_alignment* files, so it is not necessary to run now).
