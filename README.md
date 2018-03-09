@@ -67,6 +67,7 @@ Sickle performs quality control on illumina paired-end and single-end short read
 <pre style="color: silver; background: black;">Options: 
 se    Single end reads
 -f    input file name
+-t    scoring platform (sanger, illumina, etc.)
 -o    output file name
 -q    scan the read with the sliding window, cutting when the average quality per base drops below 30 
 -l    Removes any reads shorter than 50</pre>
