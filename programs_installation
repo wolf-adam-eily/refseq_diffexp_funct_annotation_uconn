@@ -18,7 +18,7 @@ sudo mv gmst_linux_64.tar.gz /usr/bin/
 tar -xzvf /usr/bin/gmst_linux_64.tar.gz
 wget http://genomethreader.org/distributions/gth-1.7.0-Linux_x86_64-64bit.tar.gz
 tar -zxf gth-1.7.0-Linux_x86_64-64bit.tar.gz
-sudo mv -v /gth/1.7.0-Linux_x86_64-64bit/bin/* /usr/bin
+sudo mv -v gth-1.7.0-Linux_x86_64-64bit/bin/* /usr/bin
 wget http://github.com/bbuchfink/diamond/releases/download/v0.9.18/diamond-linux64.tar.gz
 tar xzf diamond-linux64.tar.gz
 sudo mv diamond /usr/bin/
