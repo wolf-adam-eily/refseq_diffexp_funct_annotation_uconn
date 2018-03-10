@@ -173,7 +173,7 @@ sort    Sort alignments by leftmost coordinates
 -o      Write the final sorted output to FILE, rather than to standard output.</pre>
 
 All samples may be run by executing the following command:
-<pre style="color: silver; background: black;"> style="color: silver; background: black;">sh -e sam_to_bam_server</pre>
+<pre style="color: silver; background: black;">sh -e sam_to_bam_server</pre>
 or
 <pre style="color: silver; background: black;">sh -e sam_to_bam_personal_computer</pre>
 appropriate for your set-up.
