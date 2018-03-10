@@ -115,7 +115,7 @@ After running the script, the following files will be generated as part of the i
 |-- L_crocea.8.ht2</pre>
 
 Aligning the reads using HISAT2:<br>
-Once we have created the index, the next step is to align the reads using the index we created. To do this we will be using hisat2 program. The program will give the output in SAM format, which can be used my various programs.
+Once we have created the index, the next step is to align the reads using the index we created. To do this we will be using hisat2 program. The program will give the output in SAM format, which can be used by various programs.
 <pre style="color: silver; background: black;">hisat2 -p 4 --dta -x ../index/L_crocea -q ../quality_control/trim_LB2A_SRR1964642.fastq -S trim_LB2A_SRR1964642.sam
 Usage: hisat2 [options]* -x <ht2-idx>  [-S <sam>]
 -x <ht2-idx>        path to the Index-filename-prefix (minus trailing .X.ht2) 
@@ -124,7 +124,7 @@ Options:
 -p                  number threads
 --dta               reports alignments tailored for transcript assemblers</pre>
 
-[]The above must be repeated for all the files. You may run:
+The above must be repeated for all the files. You may run:
 <pre style="color: silver; background: black;">sh -e genome_indexing_and_alignment_server</pre>
 or
 <pre style="color: silver; background: black;">sh -e genome_indexing_and_alignment_personal_computer</pre>
