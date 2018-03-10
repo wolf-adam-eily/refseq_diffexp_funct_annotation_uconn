@@ -164,6 +164,7 @@ Options:
 -@      Number of processors</pre>
 
 Usage: samtools [command] [-o out.bam]
+
 Command:
 sort    Sort alignments by leftmost coordinates
 
