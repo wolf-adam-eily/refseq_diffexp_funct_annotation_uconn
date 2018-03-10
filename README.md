@@ -151,7 +151,9 @@ When HISAT2 completes its run, it will summarize each of it’s alignments, and 
 
 The sam file then need to be converted in to bam format:
 <pre style="color: silver; background: black;">samtools view -@ 4 -uhS trim_LB2A_SRR1964642.sam | samtools sort -@ 4 - sort_trim_LB2A_SRR1964642
- Usage: samtools [command] [options] in.sam
+
+Usage: samtools [command] [options] in.sam
+
 Command:
 view     prints all alignments in the specified input alignment file (in SAM, BAM, or CRAM format) to standard output in SAM format 
 
@@ -161,7 +163,7 @@ Options:
 -u      Output uncompressed BAM. This option saves time spent on compression/decompression and is thus preferred when the output is piped to another samtools command
 -@      Number of processors</pre>
 
-<Usage: samtools [command] [-o out.bam]
+Usage: samtools [command] [-o out.bam]
 Command:
 sort    Sort alignments by leftmost coordinates
 
