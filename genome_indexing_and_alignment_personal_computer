@@ -9,5 +9,5 @@ rm trimmed_LB2A_SRR1964643.fastq
 hisat2 -p 4 --dta -x L_crocea -U trimmed_LC2A_SRR1964644.fastq -S trimmed_LC2A_SRR1964644.sam
 rm trimmed_LC2A_SRR1964644.fastq
 hisat2 -p 4 --dta -x L_crocea -U trimmed_LC2A_SRR1964645.fastq -S trimmed_LC2A_SRR1964645.sam
-rm Trimmed_LC2A_SRR1964645.fastq
+rm trimmed_LC2A_SRR1964645.fastq
 
