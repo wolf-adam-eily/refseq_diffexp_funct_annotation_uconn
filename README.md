@@ -409,7 +409,7 @@ heatmap.2(assay(vsd)[select,], col=my_palette,
 dev.copy(png, paste0(outputPrefix, "-HEATMAP.png"))
 dev.off()</pre>
 
-diff_expression_r_script contains explanations for all code. It is recommended the user study and attempt the code on one's own before moving onward. The resulting files are located in the directory.
+It is recommended the user study and attempt the code on one's own before moving onward. The resulting files are located in the directory.
 
 <h2 id="Citation">Citations</h2>
 
