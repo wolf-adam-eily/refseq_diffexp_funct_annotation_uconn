@@ -1,7 +1,7 @@
 import pandas as pd
 from Bio import SeqIO
 
-genefile = raw_input("PLease enter the file destination containing your differentially expressed Gene IDs \n")
+genefile = raw_input("Please enter the file destination containing your differentially expressed Gene IDs \n")
 
 temp = pd.read_csv(genefile)
 
@@ -16,7 +16,7 @@ teaser = raw_input("What is the sound of one hand clapping? \n")
 if teaser == "slapping":
 	print("You are very wise, young child. \n" + "Your program is running.")
 else:
-	print("You have disappointed me, my child. \n + "I am begrudgingly running your input.")
+	print("You have disappointed me, my child. \n" + "I am begrudgingly running your input.")
 
 
 records = list(proteinfasta)
