@@ -411,6 +411,64 @@ dev.off()</pre>
 
 It is recommended the user study and attempt the code on one's own before moving onward. The resulting files are located in the directory.
 
+<h2 id = "EnTAP: Functional Annotation for Genomes">Entap:Functional Annotation for Genomes</h2>
+
+Unfortunately for those proceeding through this tutorial locally, an HPC is required to complete the annotation. We will be using the program EnTAP, which serves as a functional annotation for genomes. The installation for EnTAP has not been included in this tutorial as the software must be installed on the server through which one wishes to run her or his commands. The installation file <i>does</i>, however, contain all of the dependcies, with the exception of the InterProScan and EGGNOG-MAPPER databases due to their size, required to run EnTAP. For full download instructions of EnTAP visit http://entap.readthedocs.io/en/latest/index.html.
+
+Before running EnTAP we must complete a series of needed 'warm-up' tasks first, starting with retrieving the protein IDs of our differentially expressed genes. Let's begin this objective by moving our first 9 differentially expressed genes from our Croaker_DESeq2-results-with-normalized.csv file to a temporary file, temp.csv, then use those 9 gene ids to retrieve the 9 corresponding protein ids and AA-sequences from the protein table found at https://www.ncbi.nlm.nih.gov/genome/proteins/12197?genome_assembly_id=229515 (this must be downloaded now). To do this, we will use csvgeneID2fasta.py with the following code:
+
+<pre style="color: silver; background: black;">head -n 10 Croaker_DESeq2-results-with-normalized.csv > temp.csv 
+python csvgeneID2fasta.py
+</pre>
+
+Which will prompt us with a series of questions we must answer:
+
+<pre style="color: silver; background: black;">Please enter the file destination containing your differentially expressed Gene IDs 
+temp.csv
+Please enter the file destination containing the appropriate NIH protein table 
+ProteinTable12197_229515.txt
+Please enter the file destination of your protein fasta 
+GCF_000972845.1_L_crocea_1.0_protein.faa
+Please enter your desired fasta output destination 
+fasta_out.fasta</pre>
+
+After generating our new fasta file, we must now create the databases against which we will be searching for our annotations. We will be using the 'vertebrate_other' databases found here ftp://ftp.ncbi.nlm.nih.gov/refseq/release/vertebrate_other/. If you look at the link you will see that there are four types of files for each index. Because our "fasta_out" file has protein sequences, we are only interested in the amino acid fastas, the 'faa.gz' files. We may use the '-A' argument of wget (along with other arguments I encourage you to look up) to select only the amino acid fastas. To do this, we use the following code:
+
+<pre style="color: silver; background: black;">wget -A faa.gz -m -p -E -k -K -np ftp://ftp.ncbi.nlm.nih.gov/refseq/release/vertebrate_other/</pre>
+
+Now we must compile all of the fastas into a single fasta:
+
+<pre style="color: silver; background: black;">cd ftp.ncbi.nlm.nih.gov/refseq/release/vertebrate_other
+gunzip &#42;.faa.gz
+cat &#42;.faa > vertebrate_other_fasta.txt</pre>
+
+We will also be scanning against the Uniprot-Swiss-Prot databases, which may be downloaded with the following code:
+
+<pre style="color: silver; background: black;">wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
+gunzip uniprot_sprot.fasta.gz</pre>
+
+It is absolutely critical that all of the databases and software are loaded *onto the server* where you intend to run EnTAP. More ideally, the databases should be in the same directory as the executable EnTAP file. This is why there are no longer directories included in the example coding, so be responsible and assure all your ducks are in a row! The quickest way to install EnTAP on the server is to run the "programs_installation" script then download the interproscan and eggnog-mapper databases, followed lastly by installing, making EnTAP, and configuring EnTAP (EnTAP must be configured by editing its configuration text file and resaving that file, bear that in mind!).
+
+EnTAP operates through DIAMOND, therefore, we will be using DIAMOND to create our scannable databases. To do this, we run the following code:
+
+<pre style="color: silver; background: black;">diamond makedb --in vertebrate_other.fasta -d vertebrate-other
+diamond makedb --in uniprot_sprot.fasta -d uniprot_sprot</pre>
+
+Now we may run EnTAP with the following code:
+
+<pre style="color: silver; background: black;">cd EnTAP/
+./EnTAP  --runP -i fasta_out.fasta -d vertebrate_other.protein.faa.dmnd -d uniprot_sprot.dmnd --ontology 0  --threads 8
+
+Required Flags:
+--runP      with a protein input, frame selection will not be ran and annotation will be executed with protein sequences (blastp)
+-i          Path to the transcriptome file (either nucleotide or protein)
+-d          Specify up to 5 DIAMOND indexed (.dmnd) databases to run similarity search against
+
+Optional:
+-threads    Number of threads
+--ontology  0 - EggNOG (default)</pre>
+
+
 <h2 id="Citation">Citations</h2>
 
 Anders, Simon, Paul Theodor Pyl, and Wolfgang Huber. “HTSeq—a Python Framework to Work with High-Throughput Sequencing Data.” Bioinformatics 31.2 (2015): 166–169. PMC. Web. 8 Mar. 2018.
