@@ -25,4 +25,9 @@ sudo mv diamond /usr/bin/
 sudo mv gmhmmp /usr/bin/
 sudo mv probuild /usr/bin/
 sudo mv Gibbs3 /usr/bin/
-
+cd ~
+git clone https://github.com/harta55/EnTAP.git
+cd EnTAP
+cmake CmakeLists.txt
+make
+cd ~
