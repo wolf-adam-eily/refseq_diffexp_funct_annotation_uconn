@@ -468,10 +468,71 @@ Optional:
 -threads    Number of threads
 --ontology  0 - EggNOG (default)</pre>
 
+Once the job is done it will create a folder called “outfiles” which will contain the output of the program:
+
+<pre style="color: silver; background: black;">entap/
+|-- outfiles/
+|   |-- debug_2018.2.25-2h49m29s.txt
+|   |-- entap_out/
+|   |-- final_annotated.faa
+|   |-- final_annotations_lvl0_contam.tsv
+|   |-- final_annotations_lvl0_no_contam.tsv
+|   |-- final_annotations_lvl0.tsv
+|   |-- final_annotations_lvl3_contam.tsv
+|   |-- final_annotations_lvl3_no_contam.tsv
+|   |-- final_annotations_lvl3.tsv
+|   |-- final_annotations_lvl4_contam.tsv
+|   |-- final_annotations_lvl4_no_contam.tsv
+|   |-- final_annotations_lvl4.tsv
+|   |-- final_unannotated.faa
+|   |-- final_unannotated.fnn
+|   |-- log_file_2018.2.25-2h49m29s.txt
+|   |-- ontology/
+|   |-- similarity_search/</pre>
+
+Lastly, we integrate the annotations with the DE genes using the following R code:
+
+<pre style="color: silver; background: black;">library("readr")
+&num;read the csv file with DE genes
+csv <- read.csv("Croaker_DESeq2-results-with-normalized.csv")
+&num;read the file with geneID to proteinID relationship
+gene_protein_list <- read.table("GeneID_proteinID.txt")
+names(gene_protein_list) <- c('GeneID','table', 'tableID','protein', 'protienID')
+gene_protein_list <- gene_protein_list[,c("GeneID","protienID")]
+
+&num;merging the two dataframes
+DEgene_proteinID <- merge(csv, gene_protein_list, by.x="gene", by.y="GeneID")
+
+&num;read_tsv
+annotation_file <- read_tsv('final_annotations_lvl0.tsv', col_names = TRUE)
+names(annotation_file)[1] <- 'query_seqID'
+
+&num;merging the DEgene_proteinID with annotation_file dataframes
+annotated_DEgenes <- merge(DEgene_proteinID, annotation_file, by.x="protienID", by.y="query_seqID")
+View(annotated_DEgenes)
+write.csv(annotated_DEgenes, file = paste0("annotated_DEgenes_final.csv"))</pre>
+
+Congratulations on completing your differential expression and functional annotation tutorial!
+
+<h2 id = "Integration">Integrating the DE Results with the Annotation Results</h2>
+
+For this step you need to copy the following two files from the entap run to your computer, which is “GeneID_proteinID.txt” and “final_annotations_lvl0_contam.tsv” file from the previous run. The two files may be found in:
+
+<pre style="color: silver; background: black;">
+entap/
+|-- GeneID_proteinID.txt
+|-- outfiles/
+|   |-- final_annotations_lvl0_contam.tsv</pre>
+
+
 
 <h2 id="Citation">Citations</h2>
 
+Alex Hart, Jill Wegrzyn http://entap.readthedocs.io/en/latest/index.html
+
 Anders, Simon, Paul Theodor Pyl, and Wolfgang Huber. “HTSeq—a Python Framework to Work with High-Throughput Sequencing Data.” Bioinformatics 31.2 (2015): 166–169. PMC. Web. 8 Mar. 2018.
+
+B. Buchfink, Xie C., D. Huson, "Fast and sensitive protein alignment using DIAMOND", Nature Methods 12, 59-60 (2015).
 
 E. Neuwirth, RColorBrewer https://cran.r-project.org/web/packages/RColorBrewer/index.html
 
