@@ -11,7 +11,7 @@ This tutorial assumes the user is using a Linux system (or Ubuntu 17.0.1 or high
 <li><a href="#Fourth_Point_Header">4 Aligning reads to a genome using hisat2</a></li>
 <li><a href="#Fifth_Point_Header">5 Generating total read counts from alignment using htseq-count</a></li>
 <li><a href="#Sixth_Point_Header">6 Pairwise differential expression with counts in R with DESeq2</a></li>
-<li><a href="#EnTAP: Functional Annotation for Genomes">7 EnTAP: Functional Annotation for Genomes</a></li>
+<li><a href="#EnTAP">7 EnTAP: Functional Annotation for Genomes</a></li>
  <li><a href="#Integration">8 Integrating the DE Results with the Annotation Results</a></li>
 <li><a href="#Citation">Citations</a></li>
 </ul>
@@ -413,7 +413,7 @@ dev.off()</pre>
 
 It is recommended the user study and attempt the code on one's own before moving onward. The resulting files are located in the directory.
 
-<h2 id = "EnTAP: Functional Annotation for Genomes">Entap:Functional Annotation for Genomes</h2>
+<h2 id = "EnTAP">Entap:Functional Annotation for Genomes</h2>
 
 Unfortunately for those proceeding through this tutorial locally, an HPC is required to complete the annotation. We will be using the program EnTAP, which serves as a functional annotation for genomes. The installation for EnTAP has not been included in this tutorial as the software must be installed on the server through which one wishes to run her or his commands. The installation file <i>does</i>, however, contain all of the dependcies, with the exception of the InterProScan and EGGNOG-MAPPER databases due to their size, required to run EnTAP. For full download instructions of EnTAP visit http://entap.readthedocs.io/en/latest/index.html.
 
@@ -492,6 +492,18 @@ Once the job is done it will create a folder called “outfiles” which will co
 |   |-- ontology/
 |   |-- similarity_search/</pre>
 
+<h2 id = "Integration">Integrating the DE Results with the Annotation Results</h2>
+
+You must copy the following two files from the entap run to your computer, which is “GeneID_proteinID.txt” and “final_annotations_lvl0_contam.tsv” file from the previous run. The two files may be found in:
+
+<pre style="color: silver; background: black;">
+entap/
+|-- GeneID_proteinID.txt
+|-- outfiles/
+|   |-- final_annotations_lvl0_contam.tsv</pre>
+
+
+
 Lastly, we integrate the annotations with the DE genes using the following R code:
 
 <pre style="color: silver; background: black;">library("readr")
@@ -515,18 +527,6 @@ View(annotated_DEgenes)
 write.csv(annotated_DEgenes, file = paste0("annotated_DEgenes_final.csv"))</pre>
 
 Congratulations on completing your differential expression and functional annotation tutorial!
-
-<h2 id = "Integration">Integrating the DE Results with the Annotation Results</h2>
-
-For this step you need to copy the following two files from the entap run to your computer, which is “GeneID_proteinID.txt” and “final_annotations_lvl0_contam.tsv” file from the previous run. The two files may be found in:
-
-<pre style="color: silver; background: black;">
-entap/
-|-- GeneID_proteinID.txt
-|-- outfiles/
-|   |-- final_annotations_lvl0_contam.tsv</pre>
-
-
 
 <h2 id="Citation">Citations</h2>
 
