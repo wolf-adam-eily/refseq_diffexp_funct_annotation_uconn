@@ -26,7 +26,15 @@ Liver mRNA profiles large yellow croaker (Larimichthys crocea) species are sampl
 
 We will use the control group (LB2A) and the thermal stress group (LC2A)j
 
-The workflow may be cloned using the terminal command:
+If performing headers 1-6 on a personal computer, continue onward. 
+
+If performing headers 1-6 on the Xanadu cluster, it is important that after connecting via SSH the directory is set to
+
+<pre style="color: silver; background: black;">cd /home/CAM/$your.user.name</pre> 
+
+before proceeding. Your home directory contains 10TB of storage and will not pollute the capacities of other users on the cluster. 
+
+The workflow may be cloned into the appropriate directory using the terminal command:
 <pre style="color: silver; background: black;">$git clone https://github.com/wolf-adam-eily/RNA-Seq_genome_assembly_and_annotation.git
 $cd RNA-Seq_genome_assembly_and_annotation
 $ls  </pre>
@@ -38,23 +46,38 @@ sudo Rscript r_packages_install </pre>
 is run to install <i><b>all</b></i> of the needed software for headers 1-6. If apt-get is not installed on your system, please install that first.
 <h2 id="Second_Point_Header">Accessing the data using sra-toolkit </h2>
 
+We will be downloading our data from the sequence-read-archives (SRA), a comprehensive collection of sequenced genetic data submitted to the NCBI by experimenters. The beauty of the SRA is the ease with which genetic data becomes accessible to any scientist with an internet connection, available for download in a variety of formats. Each run in the SRA has a unique identifier. The run may be downloaded using a module of software called the "sratoolkit" and its unique identifier. There are a variety of commands in the sratoolkit, which I invite you to investigate for yourself at https://www.ncbi.nlm.nih.gov/books/NBK158900/.
+
 The data may be accessed at the following web page: 
 https://www.ncbi.nlm.nih.gov/bioproject/28084<br>
 LB2A : SRR1964642, SRR1964643<br>
 LC2A : SRR1964644, SRR1964645<br>
 
-and downloaded with: 
+and downloaded with:
+
+<b>Xanadu</b>
+<pre style="color: silver; background: black;">
+module load sratoolkit
+fastq-dump SRR1964642
+fastq-dump SRR1964643</pre>
+
+<b>local computer</b>
 <pre style="color: silver; background: black;">fastq-dump SRR1964642
 fastq-dump SRR1964643</pre>
 
-Repeat fastq-dump for SRR1964644 and SRR1964645 samples, or alternatively run either of the following commands (change directory to the RNA-Seq_genome_assembly_and_annotation folder first): 
+Unless authorized, you cannot add any packages or software to Xanadu. However, you can see all of the software pre-loaded with the following command:
+<pre style="color: silver; background: black;">module avail</pre>
 
-<pre style="color: silver; background: black;">sh -e fastqdump_server</pre>
+Because of this, it is important to manually load modules to be used in the Xanadu bash. For those on a local computer, the "programs_installation" file installs the software globally and in the executable path, removing any need for loading the module in the terminal.
+
+Now we must repeat the fastq-dump command for SRR1964644 and SRR1964645 samples, or alternatively run either of the following commands (change directory to the RNA-Seq_genome_assembly_and_annotation folder first): 
+
+<pre style="color: silver; background: black;">./fastqdump_server</pre>
 or
 <pre style="color: silver; background: black;">sh -e fastqdump_and_trim_personal_computer</pre>
 
-The first command will simply download the four fastq files to your server. If proceeding through this tutorial on a personal computer or laptop without access to a server, run the second command. This command will combine the fastq-dump with the next step, quality control, downloading a fastq file, trimming that file, and the removing the untrimmed file. This is recommended if disk space is an issue (the four files combined consume about 75GB of disk space).
-Once download is completed, the files were renamed according to the samples for easy identification. If the first command was run, you should see the following files in your folder: 
+The first command will simply download the four fastq files to your Xanadu home directory. If proceeding through this headers 1-6 on a personal computer or laptop without access to Xanadu, run the second command. This command will combine the fastq-dump with the next step, quality control: downloading a fastq file, trimming that file, and the removing the untrimmed file. This is recommended if disk space is an issue (the four files combined consume about 75GB of disk space).
+Once download is completed, the files were renamed according to the samples for easy identification using the "mv" command. If the first command was run, you should see the following files in your folder: 
 <pre style="color: silver; background: black;">|-- LB2A_SRR1964642.fastq
 |-- LB2A_SRR1964643.fastq
 |-- LC2A_SRR1964644.fastq
