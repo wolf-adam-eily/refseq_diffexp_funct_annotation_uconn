@@ -55,13 +55,13 @@ LC2A : SRR1964644, SRR1964645<br>
 
 and downloaded with:
 
-<b>Xanadu</b>
+<b>xanadu</b>
 <pre style="color: silver; background: black;">
 module load sratoolkit
 fastq-dump SRR1964642
 fastq-dump SRR1964643</pre>
 
-<b>locally</b>
+<b>local</b>
 <pre style="color: silver; background: black;">fastq-dump SRR1964642
 fastq-dump SRR1964643</pre>
 
@@ -89,11 +89,11 @@ Sickle performs quality control on illumina paired-end and single-end short read
 
 The following command can be applied to each of the four read fastq files:
 
-<b>Xanadu</b>
+<bxanadu</b>
 <pre style="color: silver; background: black;">module load sickle
 sickle se -f LB2A_SRR1964642.fastq -t sanger -o trimmed_LB2A_SRR1964642.fastq -q 30 -l 50</pre>
 
-<b>locally</b>
+<b>local</b>
 <pre style="color: silver; background: black;">sickle se -f LB2A_SRR1964642.fastq -t sanger -o trimmed_LB2A_SRR1964642.fastq -q 30 -l 50</pre></pre>
 
 After this point the tutorial will not specify Xanadu or local in its coding excerpts, but assume that the module has been loaded. However, still use the shell scripts for your setups, as they remain differentiated.
