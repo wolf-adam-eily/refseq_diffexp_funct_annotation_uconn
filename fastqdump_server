@@ -1,4 +1,3 @@
-#this file will download the fastq files needed for this tutorial if being performed on a server
 module load sratoolkit
 fastq-dump SRR1964642
 mv SRR1964642.fastq LB2A_SRR1964642.fastq
