@@ -1,6 +1,6 @@
 # RNA-Seq_genome_assembly_and_annotation
 This repository is a usable, publicly available genome annotation and assembly tutorial.
-This tutorial assumes the user is using a Linux system (or Ubuntu 17.0.1 or higher).
+This tutorial assumes the user is using a Linux system (or Ubuntu 17.0.1 or higher). Headers 1-6 may be performed on a local computer or server with the appropriate scripts. However, header 7 must be performed on the Xanadu cluster.
 
 <div id="toc_container">
 <p class="toc_title">Contents</p>
@@ -31,11 +31,11 @@ The workflow may be cloned using the terminal command:
 $cd RNA-Seq_genome_assembly_and_annotation
 $ls  </pre>
 
-After cloning the repository but before beginning the tutorial, it is recommended the command (in the cloned folder): 
+If performing headers 1-6 on a local computer, it is recommended the command (in the cloned folder): 
 <pre style="color: silver; background: black;">sh -e programs_installation
 sh -e r_3.4.3_install
 sudo Rscript r_packages_install </pre> 
-is run to install <i><b>all</b></i> of the needed software and tools for this tutorial (if an absolute directory error occurs, edit the script to change "~/R-3.4.3" to "/home/(insert_user_name)/R-3.4.3").
+is run to install <i><b>all</b></i> of the needed software for headers 1-6. If apt-get is not installed on your system, please install that first.
 <h2 id="Second_Point_Header">Accessing the data using sra-toolkit </h2>
 
 The data may be accessed at the following web page: 
