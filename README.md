@@ -89,7 +89,7 @@ Sickle performs quality control on illumina paired-end and single-end short read
 
 The following command can be applied to each of the four read fastq files:
 
-<bxanadu</b>
+<b>xanadu</b>
 <pre style="color: silver; background: black;">module load sickle
 sickle se -f LB2A_SRR1964642.fastq -t sanger -o trimmed_LB2A_SRR1964642.fastq -q 30 -l 50</pre>
 
