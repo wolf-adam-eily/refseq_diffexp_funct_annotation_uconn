@@ -221,7 +221,7 @@ Once the conversion is done you will have the following files in the directory.
 |-- sort_trim_LC2A_SRR1964645.bam</pre>
 
 <h2 id="Fifth_Point_Header">Generating total read counts from alignent using htseq-count</h2>
-Now we will be using the htseq-count program to count the reads which is mapping to the genome. The thought behind htseq-count is quite intuitive, enumerating matching alignments into a "counts" file. However, this belies the complexity of alignment counting. For those still interested in the inner workings of htseq-count, you can visit http://htseq.readthedocs.io/en/master/count.html. htseq-count is used in the following manner:
+Now we will be using the htseq-count program to count the reads which have mapped to the genome. The thought behind htseq-count is quite intuitive, enumerating matching alignments into a "counts" file. However, this belies the complexity of alignment counting. For those still interested in the inner workings of htseq-count, you can visit http://htseq.readthedocs.io/en/master/count.html. htseq-count is used in the following manner:
 
 <pre style="color: silver; background: black;">htseq-count -s no -r pos -t gene -i Dbxref -f bam ../mapping/sort_trim_LB2A_SRR1964642.bam GCF_000972845.1_L_crocea_1.0_genomic.gff > LB2A_SRR1964642.counts
 Usage: htseq-count [options] alignment_file gff_file</pre>
