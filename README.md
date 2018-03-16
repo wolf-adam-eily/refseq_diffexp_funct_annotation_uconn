@@ -61,7 +61,7 @@ module load sratoolkit
 fastq-dump SRR1964642
 fastq-dump SRR1964643</pre>
 
-<b>local computer</b>
+<b>locally</b>
 <pre style="color: silver; background: black;">fastq-dump SRR1964642
 fastq-dump SRR1964643</pre>
 
@@ -72,9 +72,9 @@ Because of this, it is important to manually load modules to be used in the Xana
 
 Now we must repeat the fastq-dump command for SRR1964644 and SRR1964645 samples, or alternatively run either of the following commands (change directory to the RNA-Seq_genome_assembly_and_annotation folder first): 
 
-<pre style="color: silver; background: black;">./fastqdump_server</pre>
+<pre style="color: silver; background: black;">sh -e fastqdump_xanadu</pre>
 or
-<pre style="color: silver; background: black;">sh -e fastqdump_and_trim_personal_computer</pre>
+<pre style="color: silver; background: black;">sh -e fastqdump_and_trim_local</pre>
 
 The first command will simply download the four fastq files to your Xanadu home directory. If proceeding through this headers 1-6 on a personal computer or laptop without access to Xanadu, run the second command. This command will combine the fastq-dump with the next step, quality control: downloading a fastq file, trimming that file, and the removing the untrimmed file. This is recommended if disk space is an issue (the four files combined consume about 75GB of disk space).
 Once download is completed, the files were renamed according to the samples for easy identification using the "mv" command. If the first command was run, you should see the following files in your folder: 
@@ -85,10 +85,20 @@ Once download is completed, the files were renamed according to the samples for 
 
 <h2 id="Third_Point_Header">Quality control using sickle</h2>
 
-Sickle performs quality control on illumina paired-end and single-end short read data. The following command can be applied to each of the four read fastq files:
-<pre style="color: silver; background: black;">sickle se -f LB2A_SRR1964642.fastq -t sanger -o trimmed_LB2A_SRR1964642.fastq -q 30 -l 50</pre>
+Sickle performs quality control on illumina paired-end and single-end short read data using a sliding window. As the window slides along the fastq file, the average score of all the reads contained in the window is calculated. Should the average window score fall beneath a set threshold, sickle determines the reads responsible and removes them from the run. For more information you can check out https://github.com/najoshi/sickle/blob/master/README.md. 
 
- The options we use;
+The following command can be applied to each of the four read fastq files:
+
+<b>Xanadu</b>
+<pre style="color: silver; background: black;">module load sickle
+sickle se -f LB2A_SRR1964642.fastq -t sanger -o trimmed_LB2A_SRR1964642.fastq -q 30 -l 50</pre>
+
+<b>locally</b>
+<pre style="color: silver; background: black;">sickle se -f LB2A_SRR1964642.fastq -t sanger -o trimmed_LB2A_SRR1964642.fastq -q 30 -l 50</pre></pre>
+
+After this point the tutorial will not specify Xanadu or local in its coding excerpts, but assume that the module has been loaded. However, still use the shell scripts for your setups, as they remain differentiated.
+
+The options we use;
 <pre style="color: silver; background: black;">Options: 
 se    Single end reads
 -f    input file name
@@ -96,8 +106,9 @@ se    Single end reads
 -o    output file name
 -q    scan the read with the sliding window, cutting when the average quality per base drops below 30 
 -l    Removes any reads shorter than 50</pre>
-This can be repeated for all four files (if the fastq_dump_server option was exercised, if the fastq_dump_personal_computer option was used then this step has already been completed) by running the shell script:
-<pre style="color: silver; background: black;">sh -e fastq_trimming_server</pre>
+
+This must be repeated for all four files. If the previous header was run locally, this step has already been performed. Those on Xanadu can run the following shell script to perform the steps:
+<pre style="color: silver; background: black;">sh -e fastq_trimming_xanadu</pre>
  
 Following the sickle run, the resulting file structure will look as follows:
 <pre style="color: silver; background: black;">
@@ -110,14 +121,14 @@ Examine the .out file generated during the run.  It will provide a summary of th
 
 <h2 id="Fourth_Point_Header">Aligning reads to a genome using hisat2</h2>
 Building an Index:<br>
-HISAT2 is a fast and sensitive aligner for mapping next generation sequencing reads against a reference genome.
+HISAT2 is a fast and sensitive aligner for mapping next generation sequencing reads against a reference genome. You can find out more about HISAT2 at https://ccb.jhu.edu/software/hisat2/manual.shtml.
 
-In order to map the reads to a reference genome, first you need to download the reference genome, and make a index file. We will be downloading the reference genome (https://www.ncbi.nlm.nih.gov/genome/12197) from the ncbi database, using the wget command.
+In order to map the reads to a reference genome, first we must download the reference genome! Then we must make an index file. We will be downloading the reference genome (https://www.ncbi.nlm.nih.gov/genome/12197) from the ncbi database, using the wget command.
 <pre style="color: silver; background: black;">wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/972/845/GCF_000972845.1_L_crocea_1.0/GCF_000972845.1_L_crocea_1.0_genomic.fna.gz
 gunzip GCF_000972845.1_L_crocea_1.0_genomic.fna.gz</pre>
 If you feel to be prudent, you can install the genomic, transcriptomic, and proteomic fastas (yes, all will be used in this tutorial, it is advised you download them now) with the command:
 <pre style="color: silver; background: black;">sh -e genomic_and_protein_downloads</pre>
-We will use hisat2-build package in the software to make a HISAT index file for the genome. It will create a set of files with the suffix .ht2, these files together build the index, this is all you need to align the reads to the reference genome (this command is included in the genome_indexing_and_alignment* files, so it is not necessary to run now).
+We will use the hisat2-build option to make a HISAT index file for the genome. It will create a set of files with the suffix .ht2, these files together build the index. What is an index and why is it helpful? Genome indexing is the same as indexing a tome, like an encyclopedia. It is much easier to locate information in the vastness of an encyclopedia when you consult the index, which is ordered in an easily navigatable way with pointers to the location of the information you seek within the encylopedia. Genome indexing is thus the structuring of a genome such that it is ordered in an easily navigatable way with pointers to where we can find whichever gene is being aligned. The genome index along with the trimmed fasta files are all you need to align the reads to the reference genome (the build command is included in the genome_indexing_and_alignment* files, so it is not necessary to run now).
 <pre style="color: silver; background: black;">hisat2-build -p 4 GCF_000972845.1_L_crocea_1.0_genomic.fna L_crocea
 
 Usage: hisat2-build [options] <reference_in> <bt2_index_base>
@@ -127,7 +138,7 @@ hisat2_index_base           write ht2 data to files with this dir/basename
 Options:
     -p                      number of threads</pre>
 
-After running the script, the following files will be generated as part of the index.  To refer to the index for  mapping the reads in the next step, you will use the file prefix, which in this case is: L_crocea
+After running the command, the following files will be generated as part of the index.  To refer to the index for  mapping the reads in the next step, you will use the file prefix, which in this case is: L_crocea
 <pre style="color: silver; background: black;">|-- GCF_000972845.1_L_crocea_1.0_genomic.fna
 |-- hisat2_index.sh
 |-- L_crocea.1.ht2
@@ -140,7 +151,7 @@ After running the script, the following files will be generated as part of the i
 |-- L_crocea.8.ht2</pre>
 
 Aligning the reads using HISAT2:<br>
-Once we have created the index, the next step is to align the reads using the index we created. To do this we will be using hisat2 program. The program will give the output in SAM format, which can be used by various programs.
+Once we have created the index, the next step is to align the reads with HISAT2 using the index we created. The program will give the output in SAM format. We will not delve into the intricacies of the SAM format here, but it is recommended to peruse https://en.wikipedia.org/wiki/SAM_(file_format) to garner a greater understanding. We align our reads with the following code:
 <pre style="color: silver; background: black;">hisat2 -p 4 --dta -x ../index/L_crocea -q ../quality_control/trim_LB2A_SRR1964642.fastq -S trim_LB2A_SRR1964642.sam
 
 Usage: hisat2 [options]* -x <ht2-idx>  [-S <sam>]
@@ -152,9 +163,9 @@ Options:
 --dta               reports alignments tailored for transcript assemblers</pre>
 
 The above must be repeated for all the files. You may run:
-<pre style="color: silver; background: black;">sh -e genome_indexing_and_alignment_server</pre>
+<pre style="color: silver; background: black;">sh -e genome_indexing_and_alignment_xanadu</pre>
 or
-<pre style="color: silver; background: black;">sh -e genome_indexing_and_alignment_personal_computer</pre>
+<pre style="color: silver; background: black;">sh -e genome_indexing_and_alignment_local</pre>
 
 to process all four files appropriate for your setup.
 
@@ -166,7 +177,7 @@ Once the mapping have been completed, the file structure is as follows:
 |-- trim_LC2A_SRR1964644.sam
 |-- trim_LC2A_SRR1964645.sam</pre>
 
-When HISAT2 completes its run, it will summarize each of it’s alignments, and it is written to the standard error file, which can be find in the same folder once the run is completed.
+When HISAT2 completes its run, it will summarize each of it’s alignments, and it is written to the standard error file, which can be found in the same folder once the run is completed.
 
 <pre style="color: silver; background: black;">
 21799606 reads; of these:
@@ -176,7 +187,7 @@ When HISAT2 completes its run, it will summarize each of it’s alignments, and 
     4292460 (19.69%) aligned >1 times
 92.30% overall alignment rate</pre>
 
-The sam file then need to be converted in to bam format:
+The sam file is quite dense and must be stored in a more easily tractable format for future programs. Therefore, we convert the sam file to bam, the binary of the sam file, with the following command:
 <pre style="color: silver; background: black;">samtools view -@ 4 -uhS trim_LB2A_SRR1964642.sam | samtools sort -@ 4 - sort_trim_LB2A_SRR1964642
 
 Usage: samtools [command] [options] in.sam
@@ -198,9 +209,9 @@ sort    Sort alignments by leftmost coordinates
 -o      Write the final sorted output to FILE, rather than to standard output.</pre>
 
 All samples may be run by executing the following command:
-<pre style="color: silver; background: black;">sh -e sam_to_bam_server</pre>
+<pre style="color: silver; background: black;">sh -e sam_to_bam_xanadu</pre>
 or
-<pre style="color: silver; background: black;">sh -e sam_to_bam_personal_computer</pre>
+<pre style="color: silver; background: black;">sh -e sam_to_bam_local</pre>
 appropriate for your set-up.
 
 Once the conversion is done you will have the following files in the directory.
@@ -210,13 +221,13 @@ Once the conversion is done you will have the following files in the directory.
 |-- sort_trim_LC2A_SRR1964645.bam</pre>
 
 <h2 id="Fifth_Point_Header">Generating total read counts from alignent using htseq-count</h2>
-Now we will be using the htseq-count program to count the reads which is mapping to the genome.
+Now we will be using the htseq-count program to count the reads which is mapping to the genome. The thought behind htseq-count is quite intuitive, enumerating matching alignments into a "counts" file. However, this belies the complexity of alignment counting. For those still interested in the inner workings of htseq-count, you can visit http://htseq.readthedocs.io/en/master/count.html. htseq-count is used in the following manner:
+
 <pre style="color: silver; background: black;">htseq-count -s no -r pos -t gene -i Dbxref -f bam ../mapping/sort_trim_LB2A_SRR1964642.bam GCF_000972845.1_L_crocea_1.0_genomic.gff > LB2A_SRR1964642.counts
 Usage: htseq-count [options] alignment_file gff_file</pre>
 
 This script takes an alignment file in SAM/BAM format and a feature file in
 GFF format and calculates for each feature the number of reads mapping to it.
-See http://www-huber.embl.de/users/anders/HTSeq/doc/count.html for details.
 <pre style="color: silver; background: black;">Options:
   -f SAMTYPE, --format=SAMTYPE
                         type of  data, either 'sam' or 'bam'
@@ -242,9 +253,9 @@ See http://www-huber.embl.de/users/anders/HTSeq/doc/count.html for details.
 
  
 The above command should be repeated for all other BAM files as well. You can process all the BAM files with the command:
-<pre style="color: silver; background: black;">sh -e htseq_count_server</pre>
+<pre style="color: silver; background: black;">sh -e htseq_count_xanadu</pre>
 or
-<pre style="color: silver; background: black;">sh -e htseq_count_personal_computer</pre>
+<pre style="color: silver; background: black;">sh -e htseq_count_local</pre>
 appropriate for your set-up.
 Once all the bam files have been counted, we will be having the following files in the directory.<br
 <pre style="color: silver; background: black;">|-- sort_trim_LB2A_SRR1964642.counts
