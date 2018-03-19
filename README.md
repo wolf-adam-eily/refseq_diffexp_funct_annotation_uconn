@@ -35,7 +35,7 @@ If performing headers 1-6 on the Xanadu cluster, it is important that after conn
 before proceeding. Your home directory contains 10TB of storage and will not pollute the capacities of other users on the cluster. 
 
 The workflow may be cloned into the appropriate directory using the terminal command:
-<pre style="color: silver; background: black;">$git clone https://github.com/wolf-adam-eily/RNA-Seq_genome_assembly_and_annotation.git
+<pre style="color: silver; background: black;">$git clone https://github.com/wolf-adam-eily/refseq_diffexp_funct_annotation_uconn.git
 $cd RNA-Seq_genome_assembly_and_annotation
 $ls  </pre>
 
