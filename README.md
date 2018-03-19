@@ -1,4 +1,4 @@
-# RNA-Seq_genome_assembly_and_annotation
+# RNA-Seq: Reference Genome, Differential Expression, and Functional Annotation
 This repository is a usable, publicly available genome annotation and assembly tutorial.
 This tutorial assumes the user is using a Linux system (or Ubuntu 17.0.1 or higher). Headers 1-6 may be performed on a local computer or server with the appropriate scripts. However, header 7 must be performed on the Xanadu cluster.
 
