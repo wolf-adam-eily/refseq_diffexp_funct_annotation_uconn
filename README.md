@@ -279,11 +279,21 @@ The Bland-Altman plot is a binary analysis, gathering information on the relatio
 	font-weight: 400;
 	line-height: 18.57px;
 }><strong><i>M</i> = log<sub>2</sub>(D<sub>1</sub>/D<sub>2</sub>) = log<sub>2</sub>(D<sub>1</sub>)-log<sub>2</sub>(D<sub>2</sub>)
-<i>A</i> = &frac12;log<sub>2</sub>(D<sub>1</sub>D<sub>2</sub>) = &frac12;(log<sub>2</sub>(D<sub>1</sub>)+log<sub>2</sub>(D<sub>1</sub>))</strong></pre>
+<i>A</i> = &frac12;log<sub>2</sub>(D<sub>1</sub>D<sub>2</sub>) = &frac12;(log<sub>2</sub>(D<sub>1</sub>)+log<sub>2</sub>(D<sub>2</sub>))</strong></pre>
+with D<sub>1</sub> and D<sub>2</sub> being datasets 1 and 2, respectively. We plot M on the vertical axis and A on the horizontal axis. We see here that should two datapoints from datasets 1 and 2 be equal, they will plot at (A, 0). Therefore, should our entire plot run along y=0, it is safe to say, that for us, none of our genes were differentially expressed. However, should there be large deviations from y=0, we are provided with insight that we may have differentially expressed genes.
+
+<b>Heatmap</b>
+Heatmaps are the most readily readable visualizations for determining differential expression, unless, like me, you are colorblind! Heatmaps are discrete plots. That is, the values along the x and y axis move in integer increments, with no places in-between. Typically, the x-and-y axes contain different types of information about each dataset, and combine to capture the whole image of the dataset. For us, we may find it useful to make one axis our groups (our four datasets) and the other axis the genes sampled from those datasets. Now each cell in our grid will correspond to the expression of a gene from a sample. We then assign a color-palette to each possible range of gene expression. For instance, an expression between 300-500 may be blue while an expression of 501-1000 may be violet. After coloring all of our cells responsibly, we now have simple, discrete snapshots of each datasets expression distribution. Should we notice that two groups have very similar looking snapshots, we may cluster those groups safely with the assumption that they do not share differentially expressed genes, and therefore belong to the same space. 
+
+
 <pre style="color: silver; background: black;">library("DESeq2")
 
 &num; Set the working directory
-directory <- "~/RNA-Seq_genome_assembly_and_annotation"
+directory <- "~/RNA-Seq_geno, that different types of information about each dataset, and combine to capture the whole image of the dataset. For us, we may find it useful to make one axis our groups (our four datasets) and the other axis the genes sampled from those datasets. Now each cell in our grid will correspond to the expression of a gene from a sample. We then assign a color-palette to each possible range of gene expression. For instance, an expression between 300-500 may be blue while an expression of 501-1000 may be violet. After coloring all of our cells responsibly, we now have simple, discrete snapshots of each datasets expression distribution. Should we notice that two groups have very similar looking snapshots, we may cluster those groups safely with the assumption that they do not share differentially expressed genes, and therefore belong to the same space. nes were differentially expressed. However, should there be large deviations from y=0, we are provided with insight that we may have differentially expressed genes.
+
+<b>Heatmap</b>
+Heatmaps are the most readily readable visualizations for determining differential expression, unless, like me, you are colorblind! Heatmaps 
+e_assembly_and_annotation"
 setwd(directory)
 list.files(directory)
 
