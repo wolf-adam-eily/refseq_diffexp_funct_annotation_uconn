@@ -271,9 +271,15 @@ To identify differentially expressed genes, we will transfer the count files gen
 <b>Bland-Altman(MA) Plot</b>
 The Bland-Altman plot is a binary analysis, gathering information on the relationships between two-sets of data. Because we have four sets of data, we will be breaking our data into two separate groups (LB2A and LC2A), then generating two superimposed plots comparing each member of the two groups to each member of the other group. Before we go further, what <i>is</i> a Bland-Altman plot? An MA plot is the comparison of the log-differences for two datasets to the log-averages. That is:
 
-<strong><i>M</i> = log<sub>2</sub>(D<sub>1</sub>/D<sub>2</sub>) = log<sub>2</sub>(D<sub>1</sub>)-log<sub>2</sub>(D<sub>2</sub>)
- <i>A</i> = frac12 log<sub>2</sub>(D<sub>1</sub>D<sub>2</sub>) = frac12 (log<sub>2</sub>(D<sub>1</sub>)+log<sub>2</sub>(D<sub>1</sub>))</strong>
-
+<pre {
+	font-family: Cambria,Georgia,serif;
+	font-size: 13px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 400;
+	line-height: 18.57px;
+}><i>M</i> = log<sub>2</sub>(D<sub>1</sub>/D<sub>2</sub>) = log<sub>2</sub>(D<sub>1</sub>)-log<sub>2</sub>(D<sub>2</sub>)
+ <i>A</i> = &frac12; log<sub>2</sub>(D<sub>1</sub>D<sub>2</sub>) = &frac12; (log<sub>2</sub>(D<sub>1</sub>)+log<sub>2</sub>(D<sub>1</sub>))</pre>
 <pre style="color: silver; background: black;">library("DESeq2")
 
 &num; Set the working directory
