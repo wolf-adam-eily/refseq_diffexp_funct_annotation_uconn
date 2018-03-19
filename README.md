@@ -369,6 +369,7 @@ write.csv(as.data.frame(resClean),file = paste0(outputPrefix, "-replaceoutliers-
 &num; http://en.wikipedia.org/wiki/MA_plot
 &num; genes with padj < 0.1 are colored Red
 plotMA(dds, ylim=c(-8,8),main = "RNAseq experiment")
+<img src= "Croaker_DESeq2-MAplot_initial_analysis.png" alt="MA Plot">
 dev.copy(png, paste0(outputPrefix, "-MAplot_initial_analysis.png"))
 dev.off()
 
