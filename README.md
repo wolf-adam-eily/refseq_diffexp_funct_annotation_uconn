@@ -278,8 +278,8 @@ The Bland-Altman plot is a binary analysis, gathering information on the relatio
 	font-variant: normal;
 	font-weight: 400;
 	line-height: 18.57px;
-}><i>M</i> = log<sub>2</sub>(D<sub>1</sub>/D<sub>2</sub>) = log<sub>2</sub>(D<sub>1</sub>)-log<sub>2</sub>(D<sub>2</sub>)
- <i>A</i> = &frac12; log<sub>2</sub>(D<sub>1</sub>D<sub>2</sub>) = &frac12; (log<sub>2</sub>(D<sub>1</sub>)+log<sub>2</sub>(D<sub>1</sub>))</pre>
+}><strong><i>M</i> = log<sub>2</sub>(D<sub>1</sub>/D<sub>2</sub>) = log<sub>2</sub>(D<sub>1</sub>)-log<sub>2</sub>(D<sub>2</sub>)
+<i>A</i> = &frac12;log<sub>2</sub>(D<sub>1</sub>D<sub>2</sub>) = &frac12;(log<sub>2</sub>(D<sub>1</sub>)+log<sub>2</sub>(D<sub>1</sub>))</strong></pre>
 <pre style="color: silver; background: black;">library("DESeq2")
 
 &num; Set the working directory
@@ -319,6 +319,9 @@ ddsHTSeq$condition
 &num; Differential expression analysis
 &num;differential expression analysis steps are wrapped into a single function, DESeq()
 dds <- DESeq(ddsHTSeq)
+
+ 
+ 
 &num; restuls talbe will be generated using results() which will include:
 &num;  log2 fold changes, p values and adjusted p values
 res <- results(dds)
