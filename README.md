@@ -395,6 +395,7 @@ rownames(sampleDistMatrix) <- paste(colnames(rld), rld$type, sep="")
 colnames(sampleDistMatrix) <- paste(colnames(rld), rld$type, sep="")
 colors <- colorRampPalette( rev(brewer.pal(8, "Blues")) )(255)
 heatmap(sampleDistMatrix,col=colors,margin = c(8,8))
+<img src= "Croaker_DESeq2-clustering.png" alt = "Cluster Heatmap">
 dev.copy(png,paste0(outputPrefix, "-clustering.png"))
 dev.off()
 
@@ -430,6 +431,7 @@ scores <- data.frame(pc$x, condition)
     panel.grid.minor.y = element_blank(),
     panel.background = element_rect(color = 'black',fill = NA)
   ))
+<img src="Croaker_DESeq2-ggplot2.png" alt= "PCA Plot">
 &num;dev.copy(png,paste0(outputPrefix, "-PCA.png"))
 ggsave(pcaplot,file=paste0(outputPrefix, "-ggplot2.png"))
 
@@ -444,7 +446,8 @@ heatmap.2(assay(vsd)[select,], col=my_palette,
           scale="row", key=T, keysize=1, symkey=T,
           density.info="none", trace="none",
           cexCol=0.6, labRow=F,
-          main="Heatmap of 100 DE Genes in Liver Tissue Comparison")
+          main="Heatmap of 100 DE Genes in Liver Tissue Comparison")
+<img src= "Croaker_DESeq2-HEATMAP.png" alt="Heatmap">
 dev.copy(png, paste0(outputPrefix, "-HEATMAP.png"))
 dev.off()</pre>
 
