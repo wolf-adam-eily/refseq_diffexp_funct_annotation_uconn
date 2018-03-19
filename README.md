@@ -36,7 +36,7 @@ before proceeding. Your home directory contains 10TB of storage and will not pol
 
 The workflow may be cloned into the appropriate directory using the terminal command:
 <pre style="color: silver; background: black;">$git clone https://github.com/wolf-adam-eily/refseq_diffexp_funct_annotation_uconn.git
-$cd RNA-Seq_genome_assembly_and_annotation
+$cd refseq_diffexp_funct_annotation_uconn
 $ls  </pre>
 
 If performing headers 1-6 on a local computer, it is recommended the command (in the cloned folder): 
