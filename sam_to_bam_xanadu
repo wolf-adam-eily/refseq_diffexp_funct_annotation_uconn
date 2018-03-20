@@ -1,4 +1,3 @@
-#this file converts the same files from this tutorial to bam files
 #!/bin/bash
 #SBATCH --job-name=sam_to_bam_xanadu
 #SBATCH -N 1
