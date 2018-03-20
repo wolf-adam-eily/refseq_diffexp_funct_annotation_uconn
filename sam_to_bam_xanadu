@@ -5,7 +5,7 @@
 #SBATCH -c 8
 #SBATCH --partition=general
 #SBATCH --mail-type=END
-#SBATCH --mail-user=wolf.adam.eily@gmail.com
+#SBATCH --mail-user=
 #SBATCH --mem=50G
 #SBATCH -o sam_to_bam_xanadu_%j.out
 #SBATCH -e sam_to_bam_xanadu_%j.err
