@@ -1,4 +1,5 @@
-#!/bin/bash#SBATCH --job-name=fastq_dump_xanadu
+#!/bin/bash
+#SBATCH --job-name=fastq_dump_xanadu
 #SBATCH -N 1
 #SBATCH -n 1
 #SBATCH -c 8
