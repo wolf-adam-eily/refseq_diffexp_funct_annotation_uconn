@@ -124,9 +124,26 @@ Once download is completed, the files were renamed according to the samples for 
 |-- LC2A_SRR1964644.fastq
 |-- LC2A_SRR1964645.fastq</pre>
 
+Let's have a look at the content of one of the fastq-files:
+
+<pre style="color: silver; background: black;">head -n 12 LB2A_SRR1964642.fastq
+@SRR1964642.1 FCC355RACXX:2:1101:1476:2162 length=90
+CAACATCTCAGTAGAAGGCGGCGCCTTCACCTTCGACGTGGGGAATCGCTTCAACCTCACGGGGGCTTTCCTCTACACGTCCTGTCCGGA
++SRR1964642.1 FCC355RACXX:2:1101:1476:2162 length=90
+?@@D?DDBFHHFFGIFBBAFG:DGHDFHGHIIIIC=D<:?BBCCCCCBB@BBCCCB?CCBB<@BCCCAACCCCC>>@?@88?BCACCBB>
+@SRR1964642.2 FCC355RACXX:2:1101:1641:2127 length=90
+NGCCTGTAAAATCAAGGCATCCCCTCTCTTCATGCACCTCCTGAAATAAAAGGGCCTGAATAATGTCGTACAGAAGACTGCGGCACAGAC
++SRR1964642.2 FCC355RACXX:2:1101:1641:2127 length=90
+#1=DDFFFHHHHGJJJJJIIIJIJGIIJJJIJIJJGIJIJJJJIJJJJJJIJJJIJJJJJJJGIIHIGGHHHHHFFFFFDEDBDBDDDDD
+@SRR1964642.3 FCC355RACXX:2:1101:1505:2188 length=90
+GGACAACGCCTGGACTCTGGTTGGTATTGTCTCCTGGGGAAGCAGCCGTTGCTCCACCTCCACTCCTGGTGTCTATGCCCGTGTCACCGA
++SRR1964642.3 FCC355RACXX:2:1101:1505:2188 length=90CCCFFFFFHHFFHJJJIIIJHHJJHHJJIJIIIJEHJIJDIJJIIJJIGIIIIJGHHHHFFFFFEEEEECDDDDEDEDDDDDDDADDDDD</pre>
+
+We see that for our first three runs we have information about the sampled read including its length followed by the nucleotide read and then a "+" sign. The "+" sign marks the beginning of the corresponding scores for each nucleotide read for the nucleotide sequence preceding the "+" sign. 
+
 <h2 id="Third_Point_Header">Quality control using sickle</h2>
 
-Sickle performs quality control on illumina paired-end and single-end short read data using a sliding window. As the window slides along the fastq file, the average score of all the reads contained in the window is calculated. Should the average window score fall beneath a set threshold, sickle determines the reads responsible and removes them from the run. For more information you can check out https://github.com/najoshi/sickle/blob/master/README.md. 
+Sickle performs quality control on illumina paired-end and single-end short read data using a sliding window. As the window slides along the fastq file, the average score of all the reads contained in the window is calculated. Should the average window score fall beneath a set threshold, <a href="https://github.com/najoshi/sickle/blob/master/README.md">sickle</a> determines the reads responsible and removes them from the run.
 
 The following command can be applied to each of the four read fastq files:
 
@@ -162,7 +179,7 @@ Examine the .out file generated during the run.  It will provide a summary of th
 
 <h2 id="Fourth_Point_Header">Aligning reads to a genome using hisat2</h2>
 Building an Index:<br>
-HISAT2 is a fast and sensitive aligner for mapping next generation sequencing reads against a reference genome. You can find out more about HISAT2 at https://ccb.jhu.edu/software/hisat2/manual.shtml.
+<a href="https://ccb.jhu.edu/software/hisat2/manual.shtml">HISAT2</a> is a fast and sensitive aligner for mapping next generation sequencing reads against a reference genome.
 
 In order to map the reads to a reference genome, first we must download the reference genome! Then we must make an index file. We will be downloading the reference genome (https://www.ncbi.nlm.nih.gov/genome/12197) from the ncbi database, using the wget command.
 <pre style="color: silver; background: black;">wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/972/845/GCF_000972845.1_L_crocea_1.0/GCF_000972845.1_L_crocea_1.0_genomic.fna.gz
@@ -228,7 +245,21 @@ When HISAT2 completes its run, it will summarize each of it’s alignments, and 
     4292460 (19.69%) aligned >1 times
 92.30% overall alignment rate</pre>
 
-The sam file is quite dense and must be stored in a more easily tractable format for future programs. Therefore, we convert the sam file to bam, the binary of the sam file, with the following command:
+Let's have a look at the SAM file:
+
+<pre style="color: silver; background: black;">head trimmed_LB2A_SRR1964642.sam
+@HD VN:1.0 SO:unsorted
+@SQ SN:NW_017607850.1 LN:6737
+@SQ SN:NW_017607851.1 LN:5396
+@SQ SN:NW_017607852.1 LN:5050
+@SQ SN:NW_017607853.1 LN:5873
+@SQ SN:NW_017607854.1 LN:5692
+@SQ SN:NW_017607855.1 LN:11509
+@SQ SN:NW_017607856.1 LN:12722
+@SQ SN:NW_017607857.1 LN:42555
+@SQ SN:NW_017607858.1 LN:11917</pre>
+
+After reading up on the SAM file format, you know that the "@" signals that we are in the headings section, not the alignment section! The same file is quite large so there is little purpose in scrolling to find the alignments section (the file is also much too large for using the "grep" command to locate the alignment section). Because the sam file is so dense, it is compressed to binary to create a more easily tractable file for manipulation by future programs. We convert the sam file to b<sub>inary</sub>am with the following command:
 <pre style="color: silver; background: black;">samtools view -@ 4 -uhS trim_LB2A_SRR1964642.sam | samtools sort -@ 4 - sort_trim_LB2A_SRR1964642
 
 Usage: samtools [command] [options] in.sam
