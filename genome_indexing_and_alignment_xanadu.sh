@@ -1,4 +1,14 @@
-#this file contains the code to index the yellow croaker genome and align the fastq reads if being performed on a server
+#!/bin/bash
+#SBATCH --job-name=genome_indexing_and_alignment_xanadu
+#SBATCH -N 1
+#SBATCH -n 1
+#SBATCH -c 8
+#SBATCH --partition=general
+#SBATCH --mail-type=END
+#SBATCH --mail-user=
+#SBATCH --mem=50G
+#SBATCH -o genome_indexing_and_alignment_xanadu_%j.out
+#SBATCH -e genome_indexing_and_alignment_xanadu_%j.err
 module load hisat-build
 module load hisat2
 hisat2-build GCF_000972845.1_L_crocea_1.0_genomic.fna L_crocea -p 4
