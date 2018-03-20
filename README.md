@@ -100,7 +100,7 @@ We now press CTRL+X which will ask us if we wish to save, simply type "y" to con
 
 <pre style="color: silver; background: black;">sbatch fastq_dumps.sh</pre>
 
-It is advised that you familiarize yourself with the arguments for the Slurm scheduler. While it may seem as though running your commands locally will be more efficient due to the hassle of not initializing and writing scripts, do not fall for that trap! The capacity of the Slurm scheduler far exceeds the quickness of entering the commands locally.
+It is advised that you familiarize yourself with the arguments for the Slurm scheduler. While it may seem as though running your commands locally will be more efficient due to the hassle of not initializing and writing scripts, do not fall for that trap! The capacity of the Slurm scheduler far exceeds the quickness of entering the commands locally. While the rest of this tutorial will not include the process of initializing and writing the Slurm arguments in a script in its coding, know that the Xanadu scripts in the cloned directory <i>do</i> contain the Slurm arguments. However, before running any cloned Xanadu script, you must "nano" and enter your appropriate email address!
 
 <b>local</b>
 <pre style="color: silver; background: black;">fastq-dump SRR1964642
@@ -130,7 +130,7 @@ Sickle performs quality control on illumina paired-end and single-end short read
 
 The following command can be applied to each of the four read fastq files:
 
-<b>xanadu</b>
+<b>xanadu (contained within the Slurm script, do not run this alone in the terminal!)</b>
 <pre style="color: silver; background: black;">module load sickle
 sickle se -f LB2A_SRR1964642.fastq -t sanger -o trimmed_LB2A_SRR1964642.fastq -q 30 -l 50</pre>
 
@@ -149,7 +149,7 @@ se    Single end reads
 -l    Removes any reads shorter than 50</pre>
 
 This must be repeated for all four files. If the previous header was run locally, this step has already been performed. Those on Xanadu can run the following shell script to perform the steps:
-<pre style="color: silver; background: black;">sh -e fastq_trimming_xanadu</pre>
+<pre style="color: silver; background: black;">sbatch fastq_trimming_xanadu.sh</pre>
  
 Following the sickle run, the resulting file structure will look as follows:
 <pre style="color: silver; background: black;">
@@ -192,7 +192,7 @@ After running the command, the following files will be generated as part of the 
 |-- L_crocea.8.ht2</pre>
 
 Aligning the reads using HISAT2:<br>
-Once we have created the index, the next step is to align the reads with HISAT2 using the index we created. The program will give the output in SAM format. We will not delve into the intricacies of the SAM format here, but it is recommended to peruse https://en.wikipedia.org/wiki/SAM_(file_format) to garner a greater understanding. We align our reads with the following code:
+Once we have created the index, the next step is to align the reads with HISAT2 using the index we created. The program will give the output in SAM format. We will not delve into the intricacies of the SAM format here, but it is recommended to peruse https://en.wikipedia.org/wiki/SAM_(file_format) again to garner a greater understanding. We align our reads with the following code:
 <pre style="color: silver; background: black;">hisat2 -p 4 --dta -x ../index/L_crocea -q ../quality_control/trim_LB2A_SRR1964642.fastq -S trim_LB2A_SRR1964642.sam
 
 Usage: hisat2 [options]* -x <ht2-idx>  [-S <sam>]
@@ -204,7 +204,7 @@ Options:
 --dta               reports alignments tailored for transcript assemblers</pre>
 
 The above must be repeated for all the files. You may run:
-<pre style="color: silver; background: black;">sh -e genome_indexing_and_alignment_xanadu</pre>
+<pre style="color: silver; background: black;">sbatch genome_indexing_and_alignment_xanadu.sh</pre>
 or
 <pre style="color: silver; background: black;">sh -e genome_indexing_and_alignment_local</pre>
 
@@ -250,7 +250,7 @@ sort    Sort alignments by leftmost coordinates
 -o      Write the final sorted output to FILE, rather than to standard output.</pre>
 
 All samples may be run by executing the following command:
-<pre style="color: silver; background: black;">sh -e sam_to_bam_xanadu</pre>
+<pre style="color: silver; background: black;">sbatch sam_to_bam_xanadu.sh</pre>
 or
 <pre style="color: silver; background: black;">sh -e sam_to_bam_local</pre>
 appropriate for your set-up.
@@ -294,7 +294,7 @@ GFF format and calculates for each feature the number of reads mapping to it.
 
  
 The above command should be repeated for all other BAM files as well. You can process all the BAM files with the command:
-<pre style="color: silver; background: black;">sh -e htseq_count_xanadu</pre>
+<pre style="color: silver; background: black;">sbatch htseq_count_xanadu.sh</pre>
 or
 <pre style="color: silver; background: black;">sh -e htseq_count_local</pre>
 appropriate for your set-up.
@@ -563,12 +563,12 @@ gunzip uniprot_sprot.fasta.gz</pre>
 
 Now we will be moving our database files alongside our fasta_out.fasta file back to our Xanadu directory. This process is the same as our transfer before from Xanadu to our local cluster, but with the endpoints reversed. For those of you not using the Xanadu server and (somehow) have sudoer privileges on your server, the quickest way to install EnTAP on is to run the "programs_installation" script, then download the interproscan and eggnog-mapper databases, followed lastly by installing, making EnTAP, and configuring EnTAP (EnTAP must be configured by editing its configuration text file and resaving that file, bear that in mind!).
 
-EnTAP operates through DIAMOND, therefore, we will be using DIAMOND to create our scannable databases. To do this, we run the following code:
+EnTAP operates through DIAMOND, therefore, we will be using DIAMOND to create our scannable databases. To do this, we initialize a script with our "nano" command and Slurm arguments with the coding portion reading:
 
 <pre style="color: silver; background: black;">diamond makedb --in vertebrate_other.fasta -d vertebrate-other
 diamond makedb --in uniprot_sprot.fasta -d uniprot_sprot</pre>
 
-Now we may run EnTAP with the following code:
+Now we may write our EnTAP script with the following code (after also initializing our script with the "nano" command and Slurm arguments):
 
 <pre style="color: silver; background: black;">module load EnTAP
 EnTAP  --runP -i fasta_out.fasta -d vertebrate_other.protein.faa.dmnd -d uniprot_sprot.dmnd --ontology 0  --threads 8
@@ -582,7 +582,7 @@ Optional:
 -threads    Number of threads
 --ontology  0 - EggNOG (default)</pre>
 
-Once the job is done it will create a folder called “outfiles” which will contain the output of the program:
+We now submit our EnTAP script to the Slurm scheduler and wait for the process to finish. Once the job is done it will create a folder called “outfiles” which will contain the output of the program:
 
 <pre style="color: silver; background: black;">entap/
 |-- outfiles/
@@ -606,7 +606,7 @@ Once the job is done it will create a folder called “outfiles” which will co
 
 <h2 id = "Integration">Integrating the DE Results with the Annotation Results</h2>
 
-You must copy the following two files from the entap run to your computer, which is “GeneID_proteinID.txt” and “final_annotations_lvl0_contam.tsv” file from the previous run. The two files may be found in:
+You must copy the following two files from the EnTAP run to your computer using Globus Peronsal Connect: “GeneID_proteinID.txt” and “final_annotations_lvl0_contam.tsv” file from the previous run. The two files may be found in:
 
 <pre style="color: silver; background: black;">
 entap/
@@ -616,7 +616,7 @@ entap/
 
 
 
-Lastly, we integrate the annotations with the DE genes using the following R code:
+Now, lastly, we integrate the annotations with the DE genes using the following R code:
 
 <pre style="color: silver; background: black;">library("readr")
 &num;read the csv file with DE genes
