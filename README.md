@@ -111,7 +111,7 @@ Unless authorized, you cannot add any packages or software to Xanadu. However, y
 
 Because of this, it is important to manually load modules to be used in the Xanadu bash. For those on a local computer, the "programs_installation" file installs the software globally and in the executable path, removing any need for loading the module in the terminal.
 
-Now we must repeat the fastq-dump command for SRR1964644 and SRR1964645 samples, or alternatively run either of the following commands in the cloned directory (it is important to use the "nano" command to enter your appropriate email dress before running this code on Xanadu): 
+Now we must repeat the fastq-dump command for SRR1964644 and SRR1964645 samples, or alternatively run either of the following commands in the cloned directory (it is important to use the "nano" command to enter your appropriate email address before running this code on Xanadu): 
 
 <pre style="color: silver; background: black;">sbatch fastq_dump_xanadu.sh</pre>
 or
