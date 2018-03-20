@@ -293,7 +293,7 @@ Once the conversion is done you will have the following files in the directory.
 |-- sort_trim_LC2A_SRR1964645.bam</pre>
 
 <h2 id="Fifth_Point_Header">Generating total read counts from alignent using htseq-count</h2>
-Now we will be using the htseq-count program to count the reads which have mapped to the genome. The thought behind htseq-count is quite intuitive, enumerating matching alignments into a "counts" file. However, this belies the complexity of alignment counting. For those still interested in the inner workings of htseq-count, you can visit http://htseq.readthedocs.io/en/master/count.html. htseq-count is used in the following manner:
+Now we will be using the <a href="http://htseq.readthedocs.io/en/master/count.htmhtseq-count">htseq-count</a> program to count the reads which have mapped to the genome. The thought behind htseq-count is quite intuitive, enumerating matching alignments into a "counts" file. However, this belies the complexity of alignment counting. htseq-count is not loaded onto Xanadu, meaning you will have to move the BAM and GFF files to your local computer to perform this header. You may find instructions for transferring files from your local computer to Xanadu and vice versa in the next header. htseq-count is used in the following manner:
 
 <pre style="color: silver; background: black;">htseq-count -s no -r pos -t gene -i Dbxref -f bam ../mapping/sort_trim_LB2A_SRR1964642.bam GCF_000972845.1_L_crocea_1.0_genomic.gff > LB2A_SRR1964642.counts
 Usage: htseq-count [options] alignment_file gff_file</pre>
@@ -324,10 +324,8 @@ GFF format and calculates for each feature the number of reads mapping to it.
                         suitable for Ensembl GTF files: gene_id)</pre>
 
  
-The above command should be repeated for all other BAM files as well. You can process all the BAM files with the command:
-<pre style="color: silver; background: black;">sbatch htseq_count_xanadu.sh</pre>
-or
-<pre style="color: silver; background: black;">sh -e htseq_count_local</pre>
+The above command should be repeated for all other BAM files as well. htseq-count is not loaded onto the Xanadu server, so you must download the bam files and GFF files to your local computer. You can process all the BAM files with the command:
+<pre style="color: silver; background: black;">sh -e htseq_count</pre>
 appropriate for your set-up.
 Once all the bam files have been counted, we will be having the following files in the directory.<br
 <pre style="color: silver; background: black;">|-- sort_trim_LB2A_SRR1964642.counts
@@ -339,7 +337,7 @@ Once all the bam files have been counted, we will be having the following files 
 This part of the tutorial <i>must</i> be run locally. To download the appropriate files to your local computer, you must first install Globus Connect Personal. You can find installation instructions for this here: https://www.globus.org/globus-connect-personal
 
 After installation, you will now need to move your counts files to the GlobusXfer folder with the following commands:
-<pre style="color: silver; background: black;">mv *.counts /UCHC/GlobusXfer/</pre>
+<pre style="color: silver; background: black;">mv &#42;.counts /UCHC/GlobusXfer/</pre>
 Lastly, load the wepage www.globus.org/app/ and locate UConn Health HPC on the left-hand side "Endpoint" and your local endpoint on the right-hand side. Navigate the UConn Health HPC to /UCHC/GlobusXfer/your_file, and then transfer. You are now ready to perform the differential expression analysis (but not until <i>after</i> you remove your files from the /UCHC/GlobusXfer directory!).
 
 To identify differentially expressed genes, We will use the DESeq2 package within Bioconductor in R to process to provide normalization and statistical analysis of differences among our two sample groups. This R-code is executed in RStudio for R version 3.4.3 (if the r_installation file did not properly install R 3.4.3 you may visit https://linode.com/docs/development/r/how-to-install-r-on-ubuntu-and-debian/ to troubleshoot). Note that Bioconductor will not run on any previous version of R in Linux, so it is imperative that you successfully install R 3.4.3). For our differential expression analysis, we will be using three types of graphs to visualize the data: Bland-Altman (MA), heatmap, and PCA plots. Let's review each plot before diving in:
