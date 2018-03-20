@@ -56,10 +56,51 @@ LC2A : SRR1964644, SRR1964645<br>
 and downloaded with:
 
 <b>xanadu</b>
+Unlike a local terminal, commands in Xanadu must be concatenated into a single script with the required arguments for the Slurm scheduler and with the script subsequently submitted to the Slurm scheduler. To initialize a script in Unix we use the nano command, which will produce the following window:
 <pre style="color: silver; background: black;">
+nano fastq_dumps.sh
+ GNU nano 2.3.1            File: fastq_dumps.sh                                
+
+
+
+
+
+
+
+
+				[ New File ] 
+^G Get Help  ^O WriteOut  ^R Read File ^Y Prev Page ^K Cut Text  ^C Cur Pos
+^X Exit      ^J Justify   ^W Where Is  ^V Next Page ^U UnCut Text^T To Spell</pre>
+
+We now write our script with the appropriate <a href="https://bioinformatics.uconn.edu/resources-and-events/tutorials/xanadu/#Xanadu_6">Slurm arguments</a> followed by our commands:
+
+<pre style="color: silver; background: black;">  GNU nano 2.3.1          File: fastq_dumps.sh                  Modified  
+#!/bin/bash
+#SBATCH --job-name=fastq_dumps.sh
+#SBATCH -N 1
+#SBATCH -n 1
+#SBATCH -c 8
+#SBATCH --partition=general
+#SBATCH --mail-type=END
+#SBATCH --mail-user=your_email@uconn.edu
+#SBATCH --mem=50G
+#SBATCH -o fastq_dumps_%j.out
+#SBATCH -e fastq_dumps_%j.err
 module load sratoolkit
 fastq-dump SRR1964642
-fastq-dump SRR1964643</pre>
+mv SRR1964642.fastq LB2A_SRR1964642.fastq
+fastq-dump SRR1964643
+mv SRR1964643.fastq LB2A_SRR1964643.fastq
+				
+				[ New File ] 
+^G Get Help  ^O WriteOut  ^R Read File ^Y Prev Page ^K Cut Text  ^C Cur Pos
+^X Exit      ^J Justify   ^W Where Is  ^V Next Page ^U UnCut Text ^T To Spell</pre>
+
+We now press CTRL+X which will ask us if we wish to save, simply type "y" to confirm that we do want to save. Next we will be prompted with the file name, we simply hit enter here to save our file (or, if you like, you may change the file name). Now that we have our script, we may run it with the command:
+
+<pre style="color: silver; background: black;">sbatch fastq_dumps.sh</pre>
+
+It is advised that you familiarize yourself with the arguments for the Slurm scheduler. While it may seem as though running your commands locally will be more efficient due to the hassle of not initializing and writing scripts, do not fall for that trap! The capacity of the Slurm scheduler far exceeds the quickness of entering the commands locally.
 
 <b>local</b>
 <pre style="color: silver; background: black;">fastq-dump SRR1964642
@@ -70,13 +111,13 @@ Unless authorized, you cannot add any packages or software to Xanadu. However, y
 
 Because of this, it is important to manually load modules to be used in the Xanadu bash. For those on a local computer, the "programs_installation" file installs the software globally and in the executable path, removing any need for loading the module in the terminal.
 
-Now we must repeat the fastq-dump command for SRR1964644 and SRR1964645 samples, or alternatively run either of the following commands (change directory to the RNA-Seq_genome_assembly_and_annotation folder first): 
+Now we must repeat the fastq-dump command for SRR1964644 and SRR1964645 samples, or alternatively run either of the following commands in the cloned directory (it is important to use the "nano" command to enter your appropriate email dress before running this code on Xanadu): 
 
-<pre style="color: silver; background: black;">sh -e fastqdump_xanadu</pre>
+<pre style="color: silver; background: black;">sbatch fastq_dump_xanadu.sh</pre>
 or
 <pre style="color: silver; background: black;">sh -e fastqdump_and_trim_local</pre>
 
-The first command will simply download the four fastq files to your Xanadu home directory. If proceeding through this headers 1-6 on a personal computer or laptop without access to Xanadu, run the second command. This command will combine the fastq-dump with the next step, quality control: downloading a fastq file, trimming that file, and the removing the untrimmed file. This is recommended if disk space is an issue (the four files combined consume about 75GB of disk space).
+The first command will simply download the four fastq files to /home/CAM/your_user_name/refseq_diffexp_funct_annotation_uconn. If proceeding through this headers 1-6 on a personal computer or laptop without access to Xanadu, run the second command. This command will combine the fastq-dump with the next step, quality control: downloading a fastq file, trimming that file, and the removing the untrimmed file. This is recommended if disk space is an issue (the four files combined consume about 75GB of disk space).
 Once download is completed, the files were renamed according to the samples for easy identification using the "mv" command. If the first command was run, you should see the following files in your folder: 
 <pre style="color: silver; background: black;">|-- LB2A_SRR1964642.fastq
 |-- LB2A_SRR1964643.fastq
