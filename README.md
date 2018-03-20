@@ -1,7 +1,8 @@
 # RNA-Seq: Reference Genome, Differential Expression, and Functional Annotation
-This repository is a usable, publicly available genome annotation and assembly tutorial.
-This tutorial assumes the user is using a Linux system (or Ubuntu 17.0.1 or higher). Headers 1-6 may be performed on a local computer or server with the appropriate scripts. However, header 7 must be performed on the Xanadu cluster.
-
+This repository is a usable, publicly available differential expression and functional annotation tutorial.
+All steps have been provided for the UConn CBC Xanadu cluster here with appropriate headers for the Slurm scheduler that can be modified simply to run.  Commands should never be executed on the submit nodes of any HPC machine.  If working on the Xanadu cluster, you should use sbatch scriptname after modifying the script for each stage.  Basic editing of all scripts can be performed on the server with tools, such as nano, vim, or emacs.  If you are new to Linux, please use this handy guide for the operating system commands.  In this guide, you will be working with common bioinformatic file formats, such as <a href="https://en.wikipedia.org/wiki/FASTA_format">FASTA</a>, <a href="https://en.wikipedia.org/wiki/FASTQ_format
+>FASTQ</a>, <a href="https://en.wikipedia.org/wiki/SAM_(file_format)">SAM/BAM</a>, and <a href="https://en.wikipedia.org/wiki/General_feature_format>GFF3/GTF</a>. If you do not have a Xanadu account and are an affiliate of UConn/UCHC, please apply for one <a href="https://bioinformatics.uconn.edu/contact-us/">here</a>.
+	
 <div id="toc_container">
 <p class="toc_title">Contents</p>
 <ul class="toc_list">
