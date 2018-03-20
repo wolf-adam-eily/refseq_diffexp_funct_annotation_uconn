@@ -590,9 +590,11 @@ gunzip uniprot_sprot.fasta.gz</pre>
 
 Now we will be moving our database files alongside our fasta_out.fasta file back to our Xanadu directory. This process is the same as our transfer before from Xanadu to our local cluster, but with the endpoints reversed. For those of you not using the Xanadu server and (somehow) have sudoer privileges on your server, the quickest way to install EnTAP on is to run the "programs_installation" script, then download the interproscan and eggnog-mapper databases, followed lastly by installing, making EnTAP, and configuring EnTAP (EnTAP must be configured by editing its configuration text file and resaving that file, bear that in mind!).
 
-EnTAP operates through DIAMOND, therefore, we will be using DIAMOND to create our scannable databases. To do this, we initialize a script with our "nano" command and Slurm arguments with the coding portion reading:
+Now we must create our scannable databases. While diamond can create databases from Uniprot, it will not process the fasta files from the NCBI. Therefore, we will be using "makeblastdb" to create our vertebrate_other database. We initialize a script with our "nano" command and Slurm arguments with the coding portion reading:
 
-<pre style="color: silver; background: black;">diamond makedb --in vertebrate_other.fasta -d vertebrate_other
+<pre style="color: silver; background: black;">module load diamond
+module load blast
+makeblastdb -in vertebrate_other.fasta -parse_seqids -dbtype prot
 diamond makedb --in uniprot_sprot.fasta -d uniprot_sprot</pre>
 
 Now we may write our EnTAP script with the following code (after also initializing our script with the "nano" command and Slurm arguments):
