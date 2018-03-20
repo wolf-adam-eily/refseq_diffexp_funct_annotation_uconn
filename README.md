@@ -259,7 +259,7 @@ Let's have a look at the SAM file:
 @SQ SN:NW_017607857.1 LN:42555
 @SQ SN:NW_017607858.1 LN:11917</pre>
 
-After reading up on the SAM file format, you know that the "@" signals that we are in the headings section, not the alignment section! The same file is quite large so there is little purpose in scrolling to find the alignments section (the file is also much too large for using the "grep" command to locate the alignment section). Because the sam file is so dense, it is compressed to binary to create a more easily tractable file for manipulation by future programs. We convert the sam file to b<sub>inary</sub>am with the following command:
+After reading up on the SAM file format, you know that the "@" sign means that we are in the headings section, not the alignment section! The sam file is quite large so there is little purpose in scrolling to find the alignments section (the file is also much too large for using the "grep" command to locate the alignment section). Because of the density of the sam file, it is compressed to binary to create a more easily tractable file for manipulation by future programs. We convert the sam file to b<sub>inary</sub>am with the following command:
 <pre style="color: silver; background: black;">samtools view -@ 4 -uhS trim_LB2A_SRR1964642.sam | samtools sort -@ 4 - sort_trim_LB2A_SRR1964642
 
 Usage: samtools [command] [options] in.sam
