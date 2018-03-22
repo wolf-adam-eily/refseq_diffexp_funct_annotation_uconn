@@ -572,7 +572,7 @@ GCF_000972845.1_L_crocea_1.0_protein.faa
 Please enter your desired fasta output destination 
 fasta_out.fasta</pre>
 
-After generating our new fasta file, we must now create the databases against which we will be searching for our annotations. We will be using the 'vertebrate_other' databases found here ftp://ftp.ncbi.nlm.nih.gov/refseq/release/vertebrate_other/. If you look at the link you will see that there are four types of files for each index. Because our "fasta_out" file has protein sequences, we are only interested in the amino acid fastas, the 'faa.gz' files. We may use the '-A' argument of wget (along with other arguments I encourage you to look up) to select only the amino acid fastas. To do this, we use the following code:
+After generating our new fasta file, we must now create the databases against which we will be searching for our annotations. These databases are already loaded onto the Xanadu server, so it is not necessary to perform the following section. However, for those interested in learning and understanding the process and mechanics of functional annotation please study the following.<br>We will be using the 'vertebrate_other' databases found here ftp://ftp.ncbi.nlm.nih.gov/refseq/release/vertebrate_other/. If you look at the link you will see that there are four types of files for each index. Because our "fasta_out" file has protein sequences, we are only interested in the amino acid fastas, the 'faa.gz' files. We may use the '-A' argument of wget (along with other arguments I encourage you to look up) to select only the amino acid fastas. To do this, we use the following code:
 
 <pre style="color: silver; background: black;">wget -A faa.gz -m -p -E -k -K -np ftp://ftp.ncbi.nlm.nih.gov/refseq/release/vertebrate_other/</pre>
 
@@ -587,19 +587,20 @@ We will also be scanning against the Uniprot-Swiss-Prot databases, which may be 
 <pre style="color: silver; background: black;">wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
 gunzip uniprot_sprot.fasta.gz</pre>
 
-Now we will be moving our database files alongside our fasta_out.fasta file back to our Xanadu directory. This process is the same as our transfer before from Xanadu to our local cluster, but with the endpoints reversed. For those of you not using the Xanadu server and (somehow) have sudoer privileges on your server, the quickest way to install EnTAP on is to run the "programs_installation" script, then download the interproscan and eggnog-mapper databases, followed lastly by installing, making EnTAP, and configuring EnTAP (EnTAP must be configured by editing its configuration text file and resaving that file, bear that in mind!).
-
-Now we must create our scannable databases. While diamond can create databases from Uniprot, it will not process the fasta files from the NCBI. Therefore, we will be using "makeblastdb" to create our vertebrate_other database. We initialize a script with our "nano" command and Slurm arguments with the coding portion reading:
+Now we must create our scannable databases using the software <a href="https://github.com/bbuchfink/diamond">DIAMOND</a>. DIAMOND is renowned for the efficiency and speed with which it not only creates scannable databases, but also for alignment matching against those databases. DIAMOND's efficiency is such that it is runnable on most laptops and personal computers, which is truly quite marvelous software engineering considering its resource intensive alternative BLAST. We initialize a script with our "nano" command and Slurm arguments with the coding portion reading:
 
 <pre style="color: silver; background: black;">module load diamond
-module load blast
-makeblastdb -in vertebrate_other.fasta -parse_seqids -dbtype prot
-diamond makedb --in uniprot_sprot.fasta -d uniprot_sprot</pre>
+wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accesion2taxid/prot.accession2taxid.gz
+wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip
+diamond makedb --in vertebrate_other.fasta -d vertebrate_other --taxonmap prot.accession2taxid.gz --taxonnodes taxdmp.zip
+diamond makedb --in uniprot_sprot.fasta -d uniprot_sprot</pre> --taxonmap prot.accession2taxid.gz --taxonnodes taxdmp.zip</pre>
 
-Now we may write our EnTAP script with the following code (after also initializing our script with the "nano" command and Slurm arguments):
+makedb is run with the options --taxonmap and --taxonnodes to structure the databases such that should we prefer alignments made to a specific clade, such as chordates, the database contains the appropriate information to do as we ask.
 
-<pre style="color: silver; background: black;">module load EnTAP
-EnTAP  --runP -i fasta_out.fasta -d vertebrate_other.protein.faa.dmnd -d uniprot_sprot.dmnd --ontology 0  --threads 8
+Now we have all of the ingredients to write our EnTAP script. Because <a href="https://bioinformatics.uconn.edu/databases/">Xanadu contains the databases</a>, it is necessary only to secure copy the fasta_out.fasta file to our appropriate Xanadu directory. However, Xanadu does not have specifically the vertebrate_only.dmnd database, but rather the complete_protein.dmnd database. This is no problem, as we will signal to EnTAP we are only interested in chordate alignments:
+
+<pre style="color: silver; background: black;">nano entap.sh
+
 
 Required Flags:
 --runP      with a protein input, frame selection will not be ran and annotation will be executed with protein sequences (blastp)
