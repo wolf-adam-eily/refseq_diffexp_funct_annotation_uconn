@@ -326,7 +326,7 @@ GFF format and calculates for each feature the number of reads mapping to it.
 The above command should be repeated for all other BAM files as well. You can process all the BAM files locally with the command:
 <pre style="color: silver; background: black;">sh -e htseq_count</pre>
 or on Xanadu with (do not forget to nano the script to insert your email):
-<pre style="color: silver; background: black;">sbatch htseq_count.sh
+<pre style="color: silver; background: black;">sbatch htseq_count.sh</pre>
 Once all the bam files have been counted, we will be having the following files in the directory.<br>
 <pre style="color: silver; background: black;">|-- sort_trim_LB2A_SRR1964642.counts
 |-- sort_trim_LB2A_SRR1964643.counts
