@@ -422,7 +422,7 @@ dds <- DESeq(ddsHTSeq)
 
  
  
-&num; restuls talbe will be generated using results() which will include:
+&num; results table will be generated using results() which will include:
 &num;  log2 fold changes, p values and adjusted p values
 res <- results(dds)
 res
@@ -441,7 +441,7 @@ resdata <- merge(as.data.frame(res),
 names(resdata)[1] <- 'gene'
 
 write.csv(resdata, file = paste0(outputPrefix, "-results-with-normalized.csv"))</pre>
-Terminal:
+Let's have a look at our output in the terminal:
 Our -results-with-normalized file contains all of the information of our -replaceoutliers-results and additionally the normalized counts of each sample.
 
 <pre style="color: silver; background: black;">head Croaker_DESeq2-results-with-normalized.csv
@@ -464,7 +464,7 @@ write.table(as.data.frame(counts(dds),normalized=T),
 mcols(res, use.names = T)
 write.csv(as.data.frame(mcols(res, use.name = T)),
           file = paste0(outputPrefix, "-test-conditions.csv"))</pre>
-Terminal:
+Let's have a look at our output in the terminal:
 <pre style="color: silver; background: black;">head Croaker_DESeq2-test-conditions.csv
 "","type","description"
 "baseMean","intermediate","mean of normalized counts for all samples"
@@ -486,7 +486,7 @@ tab <- table(initial = results(dds)$padj < 0.05,
 addmargins(tab)
 write.csv(as.data.frame(tab),file = paste0(outputPrefix, "-replaceoutliers.csv"))
 </pre>
-Terminal:
+Let's have a look at our output in the terminal:
 <pre style="color: silver; background: black;">less Croaker_DESeq2-replaceoutliers.csv
 "","initial","cleaned","Freq"
 "1","FALSE","FALSE",12049
@@ -499,7 +499,7 @@ R
 resClean = subset(res, padj<0.05)
 resClean <- resClean[order(resClean$padj),]
 write.csv(as.data.frame(resClean),file = paste0(outputPrefix, "-replaceoutliers-results.csv"))</pre>
-Terminal:
+Let's have a look at our output in the terminal:
 <pre style="color: silver; background: black;"> head Croaker_DESeq2-replaceoutliers-results.csv
 "","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj"
 "GeneID:104917796",4769.95035549771,3.26790212928836,0.0653853095785126,49.9791489916304,0,0
@@ -599,9 +599,11 @@ scores <- data.frame(pc$x, condition)
 ggsave(pcaplot,file=paste0(outputPrefix, "-ggplot2.png"))
 
 
+
 &num; heatmap of data
 library("RColorBrewer")
 library("gplots")
+par(mar=c(7,4,4,2)+0.1) 
 &num; 1000 top expressed genes with heatmap.2
 select <- order(rowMeans(counts(ddsClean,normalized=T)),decreasing=T)[1:100]
 my_palette <- colorRampPalette(c("blue",'white','red'))(n=100)
@@ -609,8 +611,7 @@ heatmap.2(assay(vsd)[select,], col=my_palette,
           scale="row", key=T, keysize=1, symkey=T,
           density.info="none", trace="none",
           cexCol=0.6, labRow=F,
-          main="Heatmap of 100 DE Genes in Liver Tissue Comparison")
-<img src= "Croaker_DESeq2-HEATMAP.png" alt="Heatmap">
+          main="Heatmap of 100 DE Genes \nin Liver Tissue Comparison")
 dev.copy(png, paste0(outputPrefix, "-HEATMAP.png"))
 dev.off()</pre>
 
