@@ -616,9 +616,9 @@ Our -results-with-normalized file contains all of the information of our -replac
 
 It is recommended the user study and attempt the code on one's own before moving onward. The resulting files are located in the directory.
 
-<h2 id = "EnTAP">Entap: Functional Annotation for Transcriptomes</h2>"Croaker_DESeq2_replaceoutliers.csv"
+<h2 id = "EnTAP">Entap: Functional Annotation for Transcriptomes</h2>
 
-Unfortunately for those proceeding through this tutorial locally, an HPC is required to complete the annotation. We will be using the program EnTAP, which serves as a functional annotation for transcriptomes. The installation for EnTAP has not been included in this tutorial as the software must be installed on the server through which one wishes to run her or his commands. The installation file <i>does</i>, however, contain all of the dependcies, with the exception of the InterProScan and EGGNOG-MAPPER databases due to their size, required to run EnTAP. For full download instructions of EnTAP visit http://entap.readthedocs.io/en/latest/index.html.
+Unfortunately for those proceeding through this tutorial locally, an HPC is required to complete the annotation. We will be using the program EnTAP, which serves as a functional annotation for transcriptomes. The installation for EnTAP has not been included in this tutorial as the software must be installed on the server through which one wishes to run her or his commands. The installation file <i>does</i>, however, contain all of the dependcies, with the exception of the InterProScan and EGGNOG-MAPPER databases due to their sizes.
 
 For robust transcriptomic data, functional annotation is a good avenue through which to begin annotating genomes. The core step of functional annotation is creating alignments to a genomic-data-base, retrieving the function and ontology of the alignments to be used to annotate the genome of interest. To do this, a genomic-data-base must be curated, indexed, followed by a series of filtering (contaminant detection, assembly artifact removal) and our alignment steps. While we will not be covering the ins-and-outs of EnTAP specifically here, you may visit http://entap.readthedocs.io/en/latest/introduction.html for insight on the methodology of the software.
 
