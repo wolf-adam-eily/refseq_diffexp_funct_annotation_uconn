@@ -611,6 +611,7 @@ heatmap.2(assay(vsd)[select,], col=my_palette,
           density.info="none", trace="none",
           cexCol=0.6, labRow=F,
           main="Heatmap of 100 DE Genes \nin Liver Tissue Comparison")
+<img src="Croaker_DESeq2-HEATMAP.png" alt= "HEATMAP">
 dev.copy(png, paste0(outputPrefix, "-HEATMAP.png"))
 dev.off()</pre>
 
