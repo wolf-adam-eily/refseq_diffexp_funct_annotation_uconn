@@ -440,9 +440,8 @@ resdata <- merge(as.data.frame(res),
                  by = 'row.names', sort = FALSE)
 names(resdata)[1] <- 'gene'
 
-write.csv(resdata, file = paste0(outputPrefix, "-results-with-normalized.csv"))</pre>
-Let's have a look at our output in the terminal:
-Our -results-with-normalized file contains all of the information of our -replaceoutliers-results and additionally the normalized counts of each sample.
+write.csv(resdata, file = paste0(outputPrefix, "-results-with-normalized.csv"))</pre><br>
+Our -results-with-normalized file contains all of the information of our -replaceoutliers-results and additionally the normalized counts of each sample. Let's have a look at it in the terminal:
 
 <pre style="color: silver; background: black;">head Croaker_DESeq2-results-with-normalized.csv
 "","gene","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj","LB2A_1","LB2A_2","LC2A_1","LC2A_2"
@@ -463,8 +462,8 @@ write.table(as.data.frame(counts(dds),normalized=T),
 &num; produce DataFrame of results of statistical tests
 mcols(res, use.names = T)
 write.csv(as.data.frame(mcols(res, use.name = T)),
-          file = paste0(outputPrefix, "-test-conditions.csv"))</pre>
-Let's have a look at our output in the terminal:
+          file = paste0(outputPrefix, "-test-conditions.csv"))</pre><br>
+Our test-conditions file gives us insight into what statistics were calculated and how those statistics were calculated. Let's look at it in the terminal:
 <pre style="color: silver; background: black;">head Croaker_DESeq2-test-conditions.csv
 "","type","description"
 "baseMean","intermediate","mean of normalized counts for all samples"
@@ -485,8 +484,8 @@ tab <- table(initial = results(dds)$padj < 0.05,
              cleaned = results(ddsClean)$padj < 0.05)
 addmargins(tab)
 write.csv(as.data.frame(tab),file = paste0(outputPrefix, "-replaceoutliers.csv"))
-</pre>
-Let's have a look at our output in the terminal:
+</pre><br>
+Let's have a look at this file in the terminal:
 <pre style="color: silver; background: black;">less Croaker_DESeq2-replaceoutliers.csv
 "","initial","cleaned","Freq"
 "1","FALSE","FALSE",12049
@@ -498,8 +497,9 @@ R
 <pre style="color: silver; background: black;">resClean <- results(ddsClean)
 resClean = subset(res, padj<0.05)
 resClean <- resClean[order(resClean$padj),]
-write.csv(as.data.frame(resClean),file = paste0(outputPrefix, "-replaceoutliers-results.csv"))</pre>
-Let's have a look at our output in the terminal:
+write.csv(as.data.frame(resClean),file = paste0(outputPrefix, "-replaceoutliers-results.csv"))</pre><br>
+For this file, there are no separate tabs for the different samples, but only for the aggregrate gene behavior of all samples. Our first column is of course the genes. The second column represents each gene's baseMean. The baseMean is the average of the normalized counts. In normalization, the length of each read does not contribute, only the raw number of total counts. The "log2FoldChange" is simply the scale by which the log2 mean changes after normalization. A "log2FoldChange" value of 2 means that after normalization, the log2 mean value has doubled. A "log2FoldChange" value of -2 means that after normalization, the log2 mean value has halved. Our next tab is the "lfcSE", or "log-fold-change-standard-error". This is simply the <a href="https://en.wikipedia.org/wiki/Standard_error">standard error</a> of the log2 mean. The "stat" tab is the <a href="https://en.wikipedia.org/wiki/Wald_test#Mathematical_details">Wald-test</a> statistic of the log 2 mean. You may think of this statistic as an estimation of the significance of the variable, with smaller values representing greater significance. Lastly, we have our <a href="https://en.wikipedia.org/wiki/P-value">p-values</a> and <a href="https://support.minitab.com/en-us/minitab/18/help-and-how-to/modeling-statistics/anova/supporting-topics/multiple-comparisons/what-is-the-adjusted-p-value/">adjusted-p-values</a>, which are additional measures of significance. We can tell that our Wald-stat, p-values, and adjusted-p-values are quite high, reflecting how the small sample size hurts our assumptions. Let's look at this file in the terminal:
+
 <pre style="color: silver; background: black;"> head Croaker_DESeq2-replaceoutliers-results.csv
 "","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj"
 "GeneID:104917796",4769.95035549771,3.26790212928836,0.0653853095785126,49.9791489916304,0,0
@@ -512,7 +512,6 @@ Let's have a look at our output in the terminal:
 "GeneID:104925605",11058.8260524593,5.56728188277741,0.0676448603229138,82.3016243392489,0,0
 "GeneID:104927028",2535.71264215129,-3.30668469336064,0.0834467995056178,-39.6262614378401,0,0</pre>
 
-For this file, there are no separate tabs for the different samples, but only for the aggregrate gene behavior of all samples. Our first column is of course the genes. The second column represents each gene's baseMean. The baseMean is the average of the normalized counts. In normalization, the length of each read does not contribute, only the raw number of total counts. The "log2FoldChange" is simply the scale by which the log2 mean changes after normalization. A "log2FoldChange" value of 2 means that after normalization, the log2 mean value has doubled. A "log2FoldChange" value of -2 means that after normalization, the log2 mean value has halved. Our next tab is the "lfcSE", or "log-fold-change-standard-error". This is simply the <a href="https://en.wikipedia.org/wiki/Standard_error">standard error</a> of the log2 mean. The "stat" tab is the <a href="https://en.wikipedia.org/wiki/Wald_test#Mathematical_details">Wald-test</a> statistic of the log 2 mean. You may think of this statistic as an estimation of the significance of the variable, with smaller values representing greater significance. Lastly, we have our <a href="https://en.wikipedia.org/wiki/P-value">p-values</a> and <a href="https://support.minitab.com/en-us/minitab/18/help-and-how-to/modeling-statistics/anova/supporting-topics/multiple-comparisons/what-is-the-adjusted-p-value/">adjusted-p-values</a>, which are additional measures of significance. We can tell that our Wald-stat, p-values, and adjusted-p-values are quite high, reflecting how the small sample size hurts our assumptions.
 R
 <pre style="color: silver; background: black;">&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;
 &num; Exploratory data analysis of RNAseq data with DESeq2
