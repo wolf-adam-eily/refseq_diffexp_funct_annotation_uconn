@@ -292,7 +292,7 @@ Once the conversion is done you will have the following files in the directory.
 |-- sort_trim_LC2A_SRR1964645.bam</pre>
 
 <h2 id="Fifth_Point_Header">Generating total read counts from alignent using htseq-count</h2>
-Now we will be using the <a href="http://htseq.readthedocs.io/en/master/count.htmhtseq-count">htseq-count</a> program to count the reads which have mapped to the genome. The thought behind htseq-count is quite intuitive, enumerating matching alignments into a "counts" file. However, this belies the complexity of alignment counting. htseq-count is used in the following manner:
+Now we will be using the <a href="http://htseq.readthedocs.io/en/master/count.htmhtseq-count">htseq-count</a> function of the module htseq to count the reads which have mapped to the genome. The thought behind htseq-count is quite intuitive, enumerating matching alignments into a "counts" file. However, this belies the complexity of alignment counting. htseq-count is used in the following manner:
 
 <pre style="color: silver; background: black;">htseq-count -s no -r pos -t gene -i Dbxref -f bam ../mapping/sort_trim_LB2A_SRR1964642.bam GCF_000972845.1_L_crocea_1.0_genomic.gff > LB2A_SRR1964642.counts
 Usage: htseq-count [options] alignment_file gff_file</pre>
@@ -333,9 +333,29 @@ Once all the bam files have been counted, we will be having the following files 
 |-- sort_trim_LC2A_SRR1964644.counts
 |-- sort_trim_LC2A_SRR1964645.counts</pre>
 
+Let's have a look at the contents of a counts file:
+<pre style="color: silver; background: black;">head sort_trim_LB2A_SRR1964642.counts
+GeneID:104917625	18
+GeneID:104917626	7
+GeneID:104917627	0
+GeneID:104917628	199
+GeneID:104917629	71
+GeneID:104917630	23
+GeneID:104917631	111
+GeneID:104917632	25
+GeneID:104917634	276
+GeneID:104917635	254</pre>
+
+We see the layout is quite straightforward, with two columns separated by a tab. The first column identifies the gene from the eponymous sample and the second column is the number of mRNA strands from the row's gene found in the sample. This setup is perfect for our next task, identifying differentially expressed genes.
+
+
+
 <h2 id="Sixth_Point_Header">Pairwise differential expression with counts in R using DESeq2</h2>
 This part of the tutorial <i>must</i> be run locally. To download the appropriate files to your local computer, we will use the secure copy client, "scp". Close your Xanadu connection and run the following code:
-<pre style="color: silver; background: black;">scp your.user.name@xanadu-submit-ext.cam.uchc.edu:/path/to/counts/&#42;.counts /path/to/local/destination</pre>
+<pre style="color: silver; background: black;">exit
+logout
+Connection to xanadu-submit-ext.cam.uchc.edu closed.
+scp your.user.name@xanadu-submit-ext.cam.uchc.edu:/path/to/counts/&#42;.counts /path/to/local/destination</pre>
 Voila! Piece of cake.
 To identify differentially expressed genes, We will use the DESeq2 package within Bioconductor in R to perform normalization and statistical analysis of differences among our two sample groups. This R-code is executed in RStudio for R version 3.4.3 (if the r_installation file did not properly install R 3.4.3 you may visit https://linode.com/docs/development/r/how-to-install-r-on-ubuntu-and-debian/ to troubleshoot). Note that Bioconductor will not run on any previous version of R in Linux, so it is imperative that you successfully install R 3.4.3). For our differential expression analysis, we will be using three types of graphs to visualize the data: Bland-Altman (MA), heatmap, and PCA plots. Let's review each plot before diving in:
 
@@ -572,7 +592,7 @@ GCF_000972845.1_L_crocea_1.0_protein.faa
 Please enter your desired fasta output destination 
 fasta_out.fasta</pre>
 
-After generating our new fasta file, we must now create the databases against which we will be searching for our annotations. These databases are already loaded onto the Xanadu server, so it is not necessary to perform the following section. However, for those interested in learning and understanding the process and mechanics of functional annotation please study the following.<br>We will be using the 'vertebrate_other' databases found here ftp://ftp.ncbi.nlm.nih.gov/refseq/release/vertebrate_other/. If you look at the link you will see that there are four types of files for each index. Because our "fasta_out" file has protein sequences, we are only interested in the amino acid fastas, the 'faa.gz' files. We may use the '-A' argument of wget (along with other arguments I encourage you to look up) to select only the amino acid fastas. To do this, we use the following code:
+After generating our new fasta file, we must now create the databases against which we will be searching for our annotations. We will be using two sources for our databases: the Uniprot-Swissprot fasta, and the <a href="ftp://ftp.ncbi.nlm.nih.gov/refseq/release/vertebrate_other/">vertebrate_other</a> amino-acd fastas provided through NCBI's RefSeq release. The Uniprot-Swissprot database is already loaded onto the Xanadu server. However, the "vertebrate_other" fastas are not, so we will be retrieving and compiling the RefSeq database ourselves. Looking at the link we see that there are four types of files for each index. Because our "fasta_out" file has protein sequences, we are only interested in the amino acid fastas, the 'faa.gz' files. We may use the '-A' argument of wget (along with other arguments I encourage you to look up) to select only the amino acid fastas. To do this we run:
 
 <pre style="color: silver; background: black;">wget -A faa.gz -m -p -E -k -K -np ftp://ftp.ncbi.nlm.nih.gov/refseq/release/vertebrate_other/</pre>
 
@@ -580,20 +600,16 @@ Now we must compile all of the fastas into a single fasta:
 
 <pre style="color: silver; background: black;">cd ftp.ncbi.nlm.nih.gov/refseq/release/vertebrate_other
 gunzip &#42;.faa.gz
-cat &#42;.faa > vertebrate_other_fasta.txt</pre>
+cat &#42;.faa > vertebrate_other_fasta.txt | tr '\n' ''</pre>
 
-We will also be scanning against the Uniprot-Swiss-Prot databases, which may be downloaded with the following code:
+We use the UNIX 'tr' function to remove new lines. The reason for this will become evident with experience, but the RefSeq fastas are compiled in such a way that when concatenating, blank lines are appended between the ends and beginning of each file. These blank lines cause errors when creating our database, so it is necessary to remove them.
 
-<pre style="color: silver; background: black;">wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
-gunzip uniprot_sprot.fasta.gz</pre>
-
-Now we must create our scannable databases using the software <a href="https://github.com/bbuchfink/diamond">DIAMOND</a>. DIAMOND is renowned for the efficiency and speed with which it not only creates scannable databases, but also for alignment matching against those databases. DIAMOND's efficiency is such that it is runnable on most laptops and personal computers, which is truly quite marvelous software engineering considering its resource intensive alternative BLAST. We initialize a script with our "nano" command and Slurm arguments with the coding portion reading:
+Now we must create scannable databases using the software <a href="https://github.com/bbuchfink/diamond">DIAMOND</a>. DIAMOND is renowned for the efficiency and speed with which it not only creates scannable databases, but also its alignment matching against those databases. DIAMOND's efficiency is such that it is runnable on most laptops and personal computers, which is truly quite marvelous considering its resource intensive alternative, BLAST. We initialize a script with our "nano" command and Slurm arguments with the coding portion reading:
 
 <pre style="color: silver; background: black;">module load diamond
 wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accesion2taxid/prot.accession2taxid.gz
 wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip
-diamond makedb --in vertebrate_other.fasta -d vertebrate_other --taxonmap prot.accession2taxid.gz --taxonnodes taxdmp.zip
-diamond makedb --in uniprot_sprot.fasta -d uniprot_sprot</pre> --taxonmap prot.accession2taxid.gz --taxonnodes taxdmp.zip</pre>
+diamond makedb --in vertebrate_other.fasta -d vertebrate_other --taxonmap prot.accession2taxid.gz --taxonnodes taxdmp.zip</pre>
 
 makedb is run with the options --taxonmap and --taxonnodes to structure the databases such that should we prefer alignments made to a specific clade, such as chordates, the database contains the appropriate information to do as we ask.
 
