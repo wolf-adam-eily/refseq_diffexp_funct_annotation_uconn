@@ -440,18 +440,41 @@ resdata <- merge(as.data.frame(res),
                  by = 'row.names', sort = FALSE)
 names(resdata)[1] <- 'gene'
 
-write.csv(resdata, file = paste0(outputPrefix, "-results-with-normalized.csv"))
+write.csv(resdata, file = paste0(outputPrefix, "-results-with-normalized.csv"))</pre>
+Terminal:
+Our -results-with-normalized file contains all of the information of our -replaceoutliers-results and additionally the normalized counts of each sample.
 
-&num; send normalized counts to tab delimited file for GSEA, etc.
+<pre style="color: silver; background: black;">head Croaker_DESeq2-results-with-normalized.csv
+"","gene","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj","LB2A_1","LB2A_2","LC2A_1","LC2A_2"
+"1","GeneID:104917796",4769.95035549771,3.26790212928836,0.0653853095785126,49.9791489916304,0,0,901.106965996412,893.344158166973,8574.41533538478,8710.93496244265
+"2","GeneID:104918527",15829.3714065108,1.9381028852635,0.0442492786239224,43.7996492945244,0,0,6560.70781492939,6543.00968591525,25098.6197234442,25115.1484017544
+"3","GeneID:104920815",10289.5933862363,1.9899626227926,0.0490973726004825,40.5309391805019,0,0,4107.48228250271,4170.24833394868,16337.3327233147,16543.310205179
+"4","GeneID:104921101",3409.31956503535,-4.91775690540935,0.0946450825092183,-51.9599832873553,0,0,6572.16256449714,6628.41731422352,215.779988572597,220.918392848141
+"5","GeneID:104921941",4734.72693038149,2.76662808733791,0.0624881461008418,44.27444659461,0,0,1221.83995389344,1204.54206820975,8288.42941751584,8224.09628190694
+"6","GeneID:104924020",12853.7020528709,-1.88815134014643,0.047291546513469,-39.9257685431935,0,0,20030.5387441406,20448.7459501297,5466.7705238847,5468.75299332874
+"7","GeneID:104924701",2370.03445131097,-3.76035093454651,0.0920739957113332,-40.8405316343152,0,0,4482.62533084656,4345.97207495076,331.413283884228,320.127115562352
+"8","GeneID:104925605",11058.8260524593,5.56728188277741,0.0676448603229138,82.3016243392489,0,0,463.917357493916,449.617169714806,21652.3345471029,21669.4351355257
+"9","GeneID:104927028",2535.71264215129,-3.30668469336064,0.0834467995056178,-39.6262614378401,0,0,4570.44507753265,4641.46283495983,460.468300973102,470.474355139559</pre>
+R
+<pre style="color: silver; background: black;">&num; send normalized counts to tab delimited file for GSEA, etc.
 write.table(as.data.frame(counts(dds),normalized=T), 
             file = paste0(outputPrefix, "_normalized_counts.txt"), sep = '\t')
 
 &num; produce DataFrame of results of statistical tests
 mcols(res, use.names = T)
 write.csv(as.data.frame(mcols(res, use.name = T)),
-          file = paste0(outputPrefix, "-test-conditions.csv"))
-
-&num; replacing outlier value with estimated value as predicted by distrubution using
+          file = paste0(outputPrefix, "-test-conditions.csv"))</pre>
+Terminal:
+<pre style="color: silver; background: black;">head Croaker_DESeq2-test-conditions.csv
+"","type","description"
+"baseMean","intermediate","mean of normalized counts for all samples"
+"log2FoldChange","results","log2 fold change (MLE): condition treated vs control"
+"lfcSE","results","standard error: condition treated vs control"
+"stat","results","Wald statistic: condition treated vs control"
+"pvalue","results","Wald test p-value: condition treated vs control"
+"padj","results","BH adjusted p-values</pre>
+R
+<pre style="color: silver; background: black;">&num; replacing outlier value with estimated value as predicted by distrubution using
 &num; "trimmed mean" approach. recommended if you have several replicates per treatment
 &num; DESeq2 will automatically do this if you have 7 or more replicates
 
@@ -462,12 +485,36 @@ tab <- table(initial = results(dds)$padj < 0.05,
              cleaned = results(ddsClean)$padj < 0.05)
 addmargins(tab)
 write.csv(as.data.frame(tab),file = paste0(outputPrefix, "-replaceoutliers.csv"))
-resClean <- results(ddsClean)
+</pre>
+Terminal:
+<pre style="color: silver; background: black;">less Croaker_DESeq2-replaceoutliers.csv
+"","initial","cleaned","Freq"
+"1","FALSE","FALSE",12049
+"2","TRUE","FALSE",0
+"3","FALSE","TRUE",0
+"4","TRUE","TRUE",4710</pre>
+For this file, we have replaced all outliers with the trimmed-mean of that gene's counts from the other samples in within the same grouping (LB2A, LC2A). Now, we have only four samples, split into our two groups. Therefore, we will be replacing our outliers with the average of the gene count of the group. This approach is best used with a large number of samples belonging to each group, such as eight or above. By changing a value, we are also changing the distribution of data, and thus, the p-values. Our file has three columns, "initial", "cleaned", and "Frequency". The initial column represents if there are any adjusted p-values beneath 0.05 before replacing outliers, the cleaned column representing the same but for after replacing outliers, and the frequency is the amount of outliers in the sample changed. The rows represent our two LB2A samples followed by our two LC2A samples. You can see that changing the outliers in one sample changes the adjusted p-values in <i>both</i> samples. It cannot be stressed enough that this best works with large pools of samples, which we do not have!
+R
+<pre style="color: silver; background: black;">resClean <- results(ddsClean)
 resClean = subset(res, padj<0.05)
 resClean <- resClean[order(resClean$padj),]
-write.csv(as.data.frame(resClean),file = paste0(outputPrefix, "-replaceoutliers-results.csv"))
+write.csv(as.data.frame(resClean),file = paste0(outputPrefix, "-replaceoutliers-results.csv"))</pre>
+Terminal:
+<pre style="color: silver; background: black;"> head Croaker_DESeq2-replaceoutliers-results.csv
+"","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj"
+"GeneID:104917796",4769.95035549771,3.26790212928836,0.0653853095785126,49.9791489916304,0,0
+"GeneID:104918527",15829.3714065108,1.9381028852635,0.0442492786239224,43.7996492945244,0,0
+"GeneID:104920815",10289.5933862363,1.9899626227926,0.0490973726004825,40.5309391805019,0,0
+"GeneID:104921101",3409.31956503535,-4.91775690540935,0.0946450825092183,-51.9599832873553,0,0
+"GeneID:104921941",4734.72693038149,2.76662808733791,0.0624881461008418,44.27444659461,0,0
+"GeneID:104924020",12853.7020528709,-1.88815134014643,0.047291546513469,-39.9257685431935,0,0
+"GeneID:104924701",2370.03445131097,-3.76035093454651,0.0920739957113332,-40.8405316343152,0,0
+"GeneID:104925605",11058.8260524593,5.56728188277741,0.0676448603229138,82.3016243392489,0,0
+"GeneID:104927028",2535.71264215129,-3.30668469336064,0.0834467995056178,-39.6262614378401,0,0</pre>
 
-&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;
+For this file, there are no separate tabs for the different samples, but only for the aggregrate gene behavior of all samples. Our first column is of course the genes. The second column represents each gene's baseMean. The baseMean is the average of the normalized counts. In normalization, the length of each read does not contribute, only the raw number of total counts. The "log2FoldChange" is simply the scale by which the log2 mean changes after normalization. A "log2FoldChange" value of 2 means that after normalization, the log2 mean value has doubled. A "log2FoldChange" value of -2 means that after normalization, the log2 mean value has halved. Our next tab is the "lfcSE", or "log-fold-change-standard-error". This is simply the <a href="https://en.wikipedia.org/wiki/Standard_error">standard error</a> of the log2 mean. The "stat" tab is the <a href="https://en.wikipedia.org/wiki/Wald_test#Mathematical_details">Wald-test</a> statistic of the log 2 mean. You may think of this statistic as an estimation of the significance of the variable, with smaller values representing greater significance. Lastly, we have our <a href="https://en.wikipedia.org/wiki/P-value">p-values</a> and <a href="https://support.minitab.com/en-us/minitab/18/help-and-how-to/modeling-statistics/anova/supporting-topics/multiple-comparisons/what-is-the-adjusted-p-value/">adjusted-p-values</a>, which are additional measures of significance. We can tell that our Wald-stat, p-values, and adjusted-p-values are quite high, reflecting how the small sample size hurts our assumptions.
+R
+<pre style="color: silver; background: black;">&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;
 &num; Exploratory data analysis of RNAseq data with DESeq2
 &num;
 &num; these next R scripts are for a variety of visualization, QC and other plots to
@@ -566,53 +613,6 @@ heatmap.2(assay(vsd)[select,], col=my_palette,
 <img src= "Croaker_DESeq2-HEATMAP.png" alt="Heatmap">
 dev.copy(png, paste0(outputPrefix, "-HEATMAP.png"))
 dev.off()</pre>
-
-Let's have a look at our files, beginning with Croaker_DESeq2-replaceoutliers.csv:
-<pre style="color: silver; background: black;">less Croaker_DESeq2-replaceoutliers.csv
-"","initial","cleaned","Freq"
-"1","FALSE","FALSE",12049
-"2","TRUE","FALSE",0
-"3","FALSE","TRUE",0
-"4","TRUE","TRUE",4710</pre>
-For this file, we have replaced all outliers with the trimmed-mean of that gene's counts from the other samples in within the same grouping (LB2A, LC2A). Now, we have only four samples, split into our two groups. Therefore, we will be replacing our outliers with the average of the gene count of the group. This approach is best used with a large number of samples belonging to each group, such as eight or above. By changing a value, we are also changing the distribution of data, and thus, the p-values. Our file has three columns, "initial", "cleaned", and "Frequency". The initial column represents if there are any adjusted p-values beneath 0.05 before replacing outliers, the cleaned column representing the same but for after replacing outliers, and the frequency is the amount of outliers in the sample changed. The rows represent our two LB2A samples followed by our two LC2A samples. You can see that changing the outliers in one sample changes the adjusted p-values in <i>both</i> samples. It cannot be stressed enough that this best works with large pools of samples, which we do not have!
-
-Let's now look at our -replaceoutliers-results.csv
-<pre style="color: silver; background: black;"> head Croaker_DESeq2-replaceoutliers-results.csv
-"","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj"
-"GeneID:104917796",4769.95035549771,3.26790212928836,0.0653853095785126,49.9791489916304,0,0
-"GeneID:104918527",15829.3714065108,1.9381028852635,0.0442492786239224,43.7996492945244,0,0
-"GeneID:104920815",10289.5933862363,1.9899626227926,0.0490973726004825,40.5309391805019,0,0
-"GeneID:104921101",3409.31956503535,-4.91775690540935,0.0946450825092183,-51.9599832873553,0,0
-"GeneID:104921941",4734.72693038149,2.76662808733791,0.0624881461008418,44.27444659461,0,0
-"GeneID:104924020",12853.7020528709,-1.88815134014643,0.047291546513469,-39.9257685431935,0,0
-"GeneID:104924701",2370.03445131097,-3.76035093454651,0.0920739957113332,-40.8405316343152,0,0
-"GeneID:104925605",11058.8260524593,5.56728188277741,0.0676448603229138,82.3016243392489,0,0
-"GeneID:104927028",2535.71264215129,-3.30668469336064,0.0834467995056178,-39.6262614378401,0,0</pre>
-
-For this file, there are no separate tabs for the different samples, but only for the aggregrate gene behavior of all samples. Our first column is of course the genes. The second column represents each gene's baseMean. The baseMean is the average of the normalized counts. In normalization, the length of each read does not contribute, only the raw number of total counts. The "log2FoldChange" is simply the scale by which the log2 mean changes after normalization. A "log2FoldChange" value of 2 means that after normalization, the log2 mean value has doubled. A "log2FoldChange" value of -2 means that after normalization, the log2 mean value has halved. Our next tab is the "lfcSE", or "log-fold-change-standard-error". This is simply the <a href="https://en.wikipedia.org/wiki/Standard_error">standard error</a> of the log2 mean. The "stat" tab is the <a href="https://en.wikipedia.org/wiki/Wald_test#Mathematical_details">Wald-test</a> statistic of the log 2 mean. You may think of this statistic as an estimation of the significance of the variable, with smaller values representing greater significance. Lastly, we have our <a href="https://en.wikipedia.org/wiki/P-value">p-values</a> and <a href="https://support.minitab.com/en-us/minitab/18/help-and-how-to/modeling-statistics/anova/supporting-topics/multiple-comparisons/what-is-the-adjusted-p-value/">adjusted-p-values</a>, which are additional measures of significance. We can tell that our Wald-stat, p-values, and adjusted-p-values are quite high, reflecting how the small sample size hurts our assumptions. However, we could have found all this out by looking at the -test-conditions file:
-	
-<pre style="color: silver; background: black;">head Croaker_DESeq2-test-conditions.csv
-"","type","description"
-"baseMean","intermediate","mean of normalized counts for all samples"
-"log2FoldChange","results","log2 fold change (MLE): condition treated vs control"
-"lfcSE","results","standard error: condition treated vs control"
-"stat","results","Wald statistic: condition treated vs control"
-"pvalue","results","Wald test p-value: condition treated vs control"
-"padj","results","BH adjusted p-values</pre>
-	
-Our -results-with-normalized file contains all of the information of our -replaceoutliers-results and additionally the normalized counts of each sample.
-
-<pre style="color: silver; background: black;">head Croaker_DESeq2-results-with-normalized.csv
-"","gene","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj","LB2A_1","LB2A_2","LC2A_1","LC2A_2"
-"1","GeneID:104917796",4769.95035549771,3.26790212928836,0.0653853095785126,49.9791489916304,0,0,901.106965996412,893.344158166973,8574.41533538478,8710.93496244265
-"2","GeneID:104918527",15829.3714065108,1.9381028852635,0.0442492786239224,43.7996492945244,0,0,6560.70781492939,6543.00968591525,25098.6197234442,25115.1484017544
-"3","GeneID:104920815",10289.5933862363,1.9899626227926,0.0490973726004825,40.5309391805019,0,0,4107.48228250271,4170.24833394868,16337.3327233147,16543.310205179
-"4","GeneID:104921101",3409.31956503535,-4.91775690540935,0.0946450825092183,-51.9599832873553,0,0,6572.16256449714,6628.41731422352,215.779988572597,220.918392848141
-"5","GeneID:104921941",4734.72693038149,2.76662808733791,0.0624881461008418,44.27444659461,0,0,1221.83995389344,1204.54206820975,8288.42941751584,8224.09628190694
-"6","GeneID:104924020",12853.7020528709,-1.88815134014643,0.047291546513469,-39.9257685431935,0,0,20030.5387441406,20448.7459501297,5466.7705238847,5468.75299332874
-"7","GeneID:104924701",2370.03445131097,-3.76035093454651,0.0920739957113332,-40.8405316343152,0,0,4482.62533084656,4345.97207495076,331.413283884228,320.127115562352
-"8","GeneID:104925605",11058.8260524593,5.56728188277741,0.0676448603229138,82.3016243392489,0,0,463.917357493916,449.617169714806,21652.3345471029,21669.4351355257
-"9","GeneID:104927028",2535.71264215129,-3.30668469336064,0.0834467995056178,-39.6262614378401,0,0,4570.44507753265,4641.46283495983,460.468300973102,470.474355139559</pre>
 
 It is recommended the user study and attempt the code on one's own before moving onward. The resulting files are located in the directory.
 
