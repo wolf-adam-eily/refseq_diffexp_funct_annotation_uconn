@@ -640,7 +640,7 @@ GCF_000972845.1_L_crocea_1.0_protein.faa
 Please enter your desired fasta output destination 
 fasta_out.fasta</pre>
 
-After generating our new fasta file, we must now create the databases against which we will be searching for our annotations. We will be using two sources for our databases: the Uniprot-Swissprot fasta, and the <a href="ftp://ftp.ncbi.nlm.nih.gov/refseq/release/vertebrate_other/">vertebrate_other</a> amino-acd fastas provided through NCBI's RefSeq release. The Uniprot-Swissprot database is already loaded onto the Xanadu server. However, the "vertebrate_other" fastas are not, so we will be retrieving and compiling the RefSeq database ourselves. Looking at the link we see that there are four types of files for each index. Because our "fasta_out" file has protein sequences, we are only interested in the amino acid fastas, the 'faa.gz' files. We may use the '-A' argument of wget (along with other arguments I encourage you to look up) to select only the amino acid fastas. To do this we run:
+After generating our new fasta file, we must now create the databases against which we will be searching for our annotations. We will be using two sources for our databases: the Uniprot-Swissprot fasta, and the <a href="ftp://ftp.ncbi.nlm.nih.gov/refseq/release/vertebrate_other/">vertebrate_other</a> amino-acd fastas provided through NCBI's RefSeq release. The Uniprot-Swissprot database is already loaded onto the <a href="https://bioinformatics.uconn.edu/databases">Xanadu<a/> server. However, the "vertebrate_other" fastas are not, so we will be retrieving and compiling the RefSeq database ourselves. Looking at the link we see that there are four types of files for each index. Because our "fasta_out" file has protein sequences, we are only interested in the amino acid fastas, the 'faa.gz' files. We may use the '-A' argument of wget (along with other arguments I encourage you to look up) to select only the amino acid fastas. To do this we run:
 
 <pre style="color: silver; background: black;">wget -A faa.gz -m -p -E -k -K -np ftp://ftp.ncbi.nlm.nih.gov/refseq/release/vertebrate_other/</pre>
 
@@ -661,7 +661,7 @@ diamond makedb --in vertebrate_other.fasta -d vertebrate_other --taxonmap prot.a
 
 makedb is run with the options --taxonmap and --taxonnodes to structure the databases such that should we prefer alignments made to a specific clade, such as chordates, the database contains the appropriate information to do as we ask.
 
-Now we have all of the ingredients to write our EnTAP script. Because <a href="https://bioinformatics.uconn.edu/databases/">Xanadu contains the databases</a>, it is necessary only to secure copy the fasta_out.fasta file to our appropriate Xanadu directory. However, Xanadu does not have specifically the vertebrate_only.dmnd database, but rather the complete_protein.dmnd database. This is no problem, as we will signal to EnTAP we are only interested in chordate alignments:
+Now we have all of the ingredients to write our EnTAP script. We now secure copy our appropriate files to our Xanadu directory. We are now ready to EnTAP!
 
 <pre style="color: silver; background: black;">nano entap.sh
 
