@@ -176,6 +176,74 @@ Following the sickle run, the resulting file structure will look as follows:
 Examine the .out file generated during the run.  It will provide a summary of the quality control process.
 <pre style="color: silver; background: black;">Input Reads: 26424138 Surviving: 21799606 (82.50%) Dropped: 4624532 (17.50%)</pre>
 
+It is helpful to see how the quality of the data has changed after using sickle. To do this, we will be using the commandline versions of <a href="https://www.bio Informatics.babraham.ac.uk/projects/fastqc/INSTALL.txt">fastqc</a> and <a href="http://multiqc. Info/docs/">MultiQC</a>. These two programs simply create reports of the average quality of our trimmed reads, with some graphs. There is no way to view a --help menu for these programs in the command-line. However, their use is quite simple, we simply run "fastqc <trimmed_fastq>" or "multiqc -f -n trimmed trimmed*". Do not worry too much about the options for MultiQC! Let's write our script:
+
+<pre style="color: silver; background: black;">-bash-4.2$ nano quality_control.sh
+
+  GNU nano 2.3.1                                                    File: quality_control.sh                                                                                                                
+
+#!/bin/bash
+#SBATCH --job-name=quality_control
+#SBATCH --mail-user=
+#SBATCH --mail-type=ALL
+#SBATCH -n 1
+#SBATCH -N 1
+#SBATCH -c 16
+#SBATCH --mem=120G
+#SBATCH -o quality_control_%j.out
+#SBATCH -e quality_control_%j.err
+#SBATCH --partition=general
+
+export TMPDIR=/home/CAM/$USER/tmp/
+
+module load fastqc
+module load MultiQC
+
+fastqc trimmed_LB2A_SRR1964642.fastq
+fastqc trimmed_LB2A_SRR1964643.fastq
+fastqc trimmed_LC2A_SRR1964644.fastq
+fastqc trimmed_LC2A_SRR1964645.fastq
+multiqc -f -n trimmed trimmed*
+
+
+
+                                                                                             [ Read 26 lines ]
+^G Get Help                       ^O WriteOut                       ^R Read File                      ^Y Prev Page                      ^K Cut Text                       ^C Cur Pos
+^X Exit                           ^J Justify                        ^W Where Is                       ^V Next Page                      ^U UnCut Text                     ^T To Spell
+</pre>
+<br>
+<pre style="color: silver; background: black;">-bash-4.2$ sbatch quality_control.sh</pre>
+
+fastqc will create the files "trimmed_file_fastqc.html". To have a look at one, we need to move all of our "trimmed_file_fastqc.html" files into a single directory, and then <a href="https://www.techrepublic.com/article/how-to-use-secure-copy-for-file-transfer/">secure copy</a> that folder to our local directory. Then, we may open our files! If that seems like too much work for you, you may open the files directly through this github. Simply click on any "html" file and you may view it in your browser immediately. Because of this, the steps mentioned above will not be placed in this tutorial.
+
+This script will also create a directory "trimmed_data". Let's look inside of that directory:
+
+<pre style="color: silver; background: black;">-bash-4.2$ cd trimmed_data<
+-bash-4.2$ ls 
+<strong>multiqc_fastqc.txt         multiqc.log
+multiqc_general_stats.txt  multiqc_sources.txt
+</strong></pre>
+
+Let's have a look at the file format from fastqc and multiqc. When loading the fastqc file, you will be greeted with this screen:
+<img src="fastqc1.png">
+
+There are some basic statistics which are all pretty self-explanatory. Notice that none of our sequences fail the quality report! It would be concerning if we had even one because this report is from our trimmed sequence! The same thinking applies to our sequence length. Should the minimum of the sequence length be below 45, we would know that sickle had not run properly. Let's look at the next index in the file:
+<img src="fastqc2.png">
+
+This screen is simply a <a href="https://en.wikipedia.org/wiki/Box_plot">box-and-whiskers plot</a> of our quality scores per base pair. Note that there is a large variance and lower mean scores (but still about in our desired range) for base pairs 1-5. These are the primer sequences! I will leave it to you to ponder the behavior of this graph. If you're stumped, you may want to learn how <a href="https://www.illumina.com/techniques/sequencing.html">Illumina sequencing"</a> works.
+
+Our next index is the per sequence quality scores:
+<img src="fastqc3.png">
+
+This index is simply the total number of base pairs (y-axis) which have a given quality score (x-axis). This plot is discontinuous and discrete, and should you calculate the <a href="https://en.wikipedia.org/wiki/Riemann_sum">Riemann sum</a> the result is the total number of base pairs present across all reads.
+	
+The last index at which we are going to look is the "Overrepresented Sequences" index:
+<img src="fastqc4.png">
+This is simply a list of sequences which appear disproportionately in our reads file. The reads file actually includes the primer sequences for this exact reason. When fastqc calculates a sequence which appears many times beyond the expected distribution, it may check the primer sequences in the reads file to determine if the sequence is a primer. If the sequence is not a primer, the result will be returned as "No Hit". Sequences which are returned as "No Hit" are most likely highly expressed genes.
+
+We see that our multiqc file has the same indices as our fastqc files, but is simply the mean of all the statistics across our fastqc files:
+<img src="multiqc.png">
+
 <h2 id="Fourth_Point_Header">Aligning reads to a genome using hisat2</h2>
 Building an Index:<br>
 <a href="https://ccb.jhu.edu/software/hisat2/manual.shtml">HISAT2</a> is a fast and sensitive aligner for mapping next generation sequencing reads against a reference genome.
