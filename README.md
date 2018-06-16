@@ -29,14 +29,14 @@ If performing headers 1-6 on a personal computer, continue onward.
 
 If performing headers 1-6 on the Xanadu cluster, it is important that after connecting via SSH the directory is set to
 
-<pre style="color: silver; background: black;">cd /home/CAM/$your.user.name</pre> 
+<pre style="color: silver; background: black;">cd /home/CAM/$USER</pre> 
 
 before proceeding. Your home directory contains 10TB of storage and will not pollute the capacities of other users on the cluster. 
 
 The workflow may be cloned into the appropriate directory using the terminal command:
-<pre style="color: silver; background: black;">$git clone https://github.com/wolf-adam-eily/refseq_diffexp_funct_annotation_uconn.git
-$cd refseq_diffexp_funct_annotation_uconn
-$ls  </pre>
+<pre style="color: silver; background: black;">-bash-4.2$ git clone https://github.com/wolf-adam-eily/refseq_diffexp_funct_annotation_uconn.git
+-bash-4.2$ cd refseq_diffexp_funct_annotation_uconn
+-bash-4.2$ ls  </pre>
 
 If performing headers 1-6 on a local computer, it is recommended the command (in the cloned folder): 
 <pre style="color: silver; background: black;">sh -e programs_installation
@@ -118,14 +118,15 @@ or
 
 The first command will simply download the four fastq files to /home/CAM/your_user_name/refseq_diffexp_funct_annotation_uconn. If proceeding through this headers 1-6 on a personal computer or laptop without access to Xanadu, run the second command. This command will combine the fastq-dump with the next step, quality control: downloading a fastq file, trimming that file, and then removing the untrimmed file. This is recommended if disk space is an issue (the four files combined consume about 75GB of disk space).
 Once download is completed, the files were renamed according to the samples for easy identification using the "mv" command. If the first command was run, you should see the following files in your folder: 
-<pre style="color: silver; background: black;">|-- LB2A_SRR1964642.fastq
-|-- LB2A_SRR1964643.fastq
-|-- LC2A_SRR1964644.fastq
-|-- LC2A_SRR1964645.fastq</pre>
+<pre style="color: silver; background: black;">-bash-4.2$ ls &#42;fastq
+<strong>LB2A_SRR1964642.fastq
+LB2A_SRR1964643.fastq
+LC2A_SRR1964644.fastq
+LC2A_SRR1964645.fastq</strong></pre>
 
 Let's have a look at the content of one of the fastq-files:
 
-<pre style="color: silver; background: black;">head -n 12 LB2A_SRR1964642.fastq
+<pre style="color: silver; background: black;">-bash-4.2$ head -n 12 LB2A_SRR1964642.fastq
 @SRR1964642.1 FCC355RACXX:2:1101:1476:2162 length=90
 CAACATCTCAGTAGAAGGCGGCGCCTTCACCTTCGACGTGGGGAATCGCTTCAACCTCACGGGGGCTTTCCTCTACACGTCCTGTCCGGA
 +SRR1964642.1 FCC355RACXX:2:1101:1476:2162 length=90
@@ -142,9 +143,41 @@ We see that for our first three runs we have information about the sampled read 
 
 <h2 id="Third_Point_Header">Quality control using sickle</h2>
 
-Sickle performs quality control on illumina paired-end and single-end short read data using a sliding window. As the window slides along the fastq file, the average score of all the reads contained in the window is calculated. Should the average window score fall beneath a set threshold, <a href="https://github.com/najoshi/sickle/blob/master/README.md">sickle</a> determines the reads responsible and removes them from the run.
+<pre style="color: silver; background: black;">-bash-4.2$ module load sickle
 
-The following command can be applied to each of the four read fastq files:
+-bash-4.2$ sickle
+
+<strong>Usage</strong>: sickle <command> [options]
+
+<strong>Command</strong>:
+pe	paired-end sequence trimming
+se	single-end sequence trimming
+
+--help, display this help and exit
+--version, output version  Information and exit</pre>
+
+We have single-end sequences. 
+
+<pre style="color: silver; background: black;">-bash-4.2$ sickle se
+
+<strong>Usage</strong>: sickle se [options] -f <fastq sequence file> -t <quality type> -o <trimmed fastq file>
+
+<strong>Options</strong>:
+-f, --fastq-file, Input fastq file (required)
+-t, --qual-type, Type of quality values (solexa (CASAVA < 1.3), illumina (CASAVA 1.3 to 1.7), sanger (which is CASAVA >= 1.8)) (required)
+-o, --output-file, Output trimmed fastq file (required)
+-q, --qual-threshold, Threshold for trimming based on average quality in a window. Default 20.
+-l, --length-threshold, Threshold to keep a read based on length after trimming. Default 20.
+-x, --no-fiveprime, Don't do five prime trimming.
+-n, --trunc-n, Truncate sequences at position of first N.
+-g, --gzip-output, Output gzipped files.
+--quiet, Don't print out any trimming  Information
+--help, display this help and exit
+--version, output version  Information and exit</pre>
+
+The quality may be any score from 0 to 40. The default of 20 is much too low for a robust analysis. We want to select only reads with a quality of 35 or better. Additionally, the desired length of each read is 50bp. Again, we see that a default of 20 is much too low for analysis confidence. We want to select only reads whose lengths exceed 45bp. Lastly, we must know the scoring type. While the quality type is not listed on the SRA pages, most SRA reads use the "sanger" quality type. Unless explicitly stated, try running sickle using the sanger qualities. If an error is returned, try illumina. If another error is returned, lastly try solexa.
+
+Let's put all of this together for our sickle script using our downloaded fastq files:
 
 <b>xanadu (contained within the Slurm script, do not run this alone in the terminal!)</b>
 <pre style="color: silver; background: black;">module load sickle
@@ -155,24 +188,15 @@ sickle se -f LB2A_SRR1964642.fastq -t sanger -o trimmed_LB2A_SRR1964642.fastq -q
 
 After this point the tutorial will not specify Xanadu or local in its coding excerpts, but assume that the module has been loaded. However, still use the shell scripts for your setups, as they remain differentiated.
 
-The options we use;
-<pre style="color: silver; background: black;">Options: 
-se    Single end reads
--f    input file name
--t    scoring platform (sanger, illumina, etc.)
--o    output file name
--q    scan the read with the sliding window, cutting when the average quality per base drops below 30 
--l    Removes any reads shorter than 50</pre>
-
 This must be repeated for all four files. If the previous header was run locally, this step has already been performed. Those on Xanadu can run the following shell script to perform the steps:
 <pre style="color: silver; background: black;">sbatch fastq_trimming_xanadu.sh</pre>
  
 Following the sickle run, the resulting file structure will look as follows:
-<pre style="color: silver; background: black;">
-|-- trimmed_LB2A_SRR1964642.fastq
-|-- trimmed_LB2A_SRR1964643.fastq
-|-- trimmed_LC2A_SRR1964644.fastq
-|-- trimmed_LC2A_SRR1964645.fastq</pre>
+<pre style="color: silver; background: black;">-bash-4.2$ ls
+<strong>trimmed_LB2A_SRR1964642.fastq
+trimmed_LB2A_SRR1964643.fastq
+trimmed_LC2A_SRR1964644.fastq
+trimmed_LC2A_SRR1964645.fastq</strong></pre>
 Examine the .out file generated during the run.  It will provide a summary of the quality control process.
 <pre style="color: silver; background: black;">Input Reads: 26424138 Surviving: 21799606 (82.50%) Dropped: 4624532 (17.50%)</pre>
 
@@ -218,7 +242,7 @@ fastqc will create the files "trimmed_file_fastqc.html". To have a look at one, 
 
 This script will also create a directory "trimmed_data". Let's look inside of that directory:
 
-<pre style="color: silver; background: black;">-bash-4.2$ cd trimmed_data<
+<pre style="color: silver; background: black;">-bash-4.2$ cd trimmed_data
 -bash-4.2$ ls 
 <strong>multiqc_fastqc.txt         multiqc.log
 multiqc_general_stats.txt  multiqc_sources.txt
@@ -254,38 +278,42 @@ gunzip GCF_000972845.1_L_crocea_1.0_genomic.fna.gz</pre>
 If you are feeling prudent, you can install the genomic, transcriptomic, and proteomic fastas (yes, all will be used in this tutorial, it is advised you download them now) with the command:
 <pre style="color: silver; background: black;">sh -e genomic_and_protein_downloads</pre>
 We will use the hisat2-build option to make a HISAT index file for the genome. It will create a set of files with the suffix .ht2, these files together build the index. What is an index and why is it helpful? Genome indexing is the same as indexing a tome, like an encyclopedia. It is much easier to locate information in the vastness of an encyclopedia when you consult the index, which is ordered in an easily navigatable way with pointers to the location of the information you seek within the encylopedia. Genome indexing is thus the structuring of a genome such that it is ordered in an easily navigatable way with pointers to where we can find whichever gene is being aligned. The genome index along with the trimmed fasta files are all you need to align the reads to the reference genome (the build command is included in the genome_indexing_and_alignment* files, so it is not necessary to run now).
-<pre style="color: silver; background: black;">hisat2-build -p 4 GCF_000972845.1_L_crocea_1.0_genomic.fna L_crocea
-
-Usage: hisat2-build [options] <reference_in> <bt2_index_base>
+<pre style="color: silver; background: black;">-bash-4.2$ module load hisat2
+-bash-4.2$ hisat2-build
+<strong>Usage: hisat2-build [options] <reference_in> <bt2_index_base>
 reference_in                comma-separated list of files with ref sequences
 hisat2_index_base           write ht2 data to files with this dir/basename
 
 Options:
-    -p                      number of threads</pre>
+    -p                      number of threads</pre></strong>
+
+-bash-4.2$ hisat2-build -p 4 GCF_000972845.1_L_crocea_1.0_genomic.fna L_crocea
 
 After running the command, the following files will be generated as part of the index.  To refer to the index for  mapping the reads in the next step, you will use the file prefix, which in this case is: L_crocea
-<pre style="color: silver; background: black;">|-- GCF_000972845.1_L_crocea_1.0_genomic.fna
-|-- hisat2_index.sh
-|-- L_crocea.1.ht2
-|-- L_crocea.2.ht2
-|-- L_crocea.3.ht2
-|-- L_crocea.4.ht2
-|-- L_crocea.5.ht2
-|-- L_crocea.6.ht2
-|-- L_crocea.7.ht2
-|-- L_crocea.8.ht2</pre>
+<pre style="color: silver; background: black;">-bash-4.2$ ls &#42;ht2
+<strong>L_crocea.1.ht2
+L_crocea.2.ht2
+L_crocea.3.ht2
+L_crocea.4.ht2
+L_crocea.5.ht2
+L_crocea.6.ht2
+L_crocea.7.ht2
+L_crocea.8.ht2</strong></pre>
 
 Aligning the reads using HISAT2:<br>
 Once we have created the index, the next step is to align the reads with HISAT2 using the index we created. The program will give the output in SAM format. We will not delve into the intricacies of the SAM format here, but it is recommended to peruse https://en.wikipedia.org/wiki/SAM_(file_format) again to garner a greater understanding. We align our reads with the following code:
-<pre style="color: silver; background: black;">hisat2 -p 4 --dta -x ../index/L_crocea -q ../quality_control/trim_LB2A_SRR1964642.fastq -S trim_LB2A_SRR1964642.sam
-
-Usage: hisat2 [options]* -x <ht2-idx>  [-S <sam>]
+<pre style="color: silver; background: black;">-bash-4.2$ module load hisat2
+-bash-4.2$ hisat2
+<strong>Usage</strong>: hisat2 [options]&#42; -x <ht2-idx>  [-S <sam>]
 -x <ht2-idx>        path to the Index-filename-prefix (minus trailing .X.ht2) 
 
-Options:
+<strong>Options</strong>:
 -q                  query input files are FASTQ .fq/.fastq (default)
 -p                  number threads
---dta               reports alignments tailored for transcript assemblers</pre>
+--dta               reports alignments tailored for transcript assemblers
+
+hisat2 -p 4 --dta -x ../index/L_crocea -q ../quality_control/trim_LB2A_SRR1964642.fastq -S trim_LB2A_SRR1964642.sam</pre>
+
 
 The above must be repeated for all the files. You may run:
 <pre style="color: silver; background: black;">sbatch genome_indexing_and_alignment_xanadu.sh</pre>
@@ -295,16 +323,15 @@ or
 to process all four files appropriate for your setup.
 
 Once the mapping have been completed, the file structure is as follows:
-<pre style="color: silver; background: black;">
-|-- mapping.sh
-|-- trim_LB2A_SRR1964642.sam
-|-- trim_LB2A_SRR1964643.sam
-|-- trim_LC2A_SRR1964644.sam
-|-- trim_LC2A_SRR1964645.sam</pre>
+<pre style="color: silver; background: black;">-bash-4.2$ ls &#42;sam
+<strong>trim_LB2A_SRR1964642.sam
+trim_LB2A_SRR1964643.sam
+trim_LC2A_SRR1964644.sam
+trim_LC2A_SRR1964645.sam</strong></pre>
 
 When HISAT2 completes its run, it will summarize each of it’s alignments, and it is written to the standard error file, which can be found in the same folder once the run is completed.
 
-<pre style="color: silver; background: black;">
+<pre style="color: silver; background: black;">-bash-4.2$ head -n 20 hisat2&#42;err
 21799606 reads; of these:
   21799606 (100.00%) were unpaired; of these:
     1678851 (7.70%) aligned 0 times
@@ -327,25 +354,79 @@ Let's have a look at the SAM file:
 @SQ SN:NW_017607858.1 LN:11917</pre>
 
 After reading up on the SAM file format, you know that the "@" sign means that we are in the headings section, not the alignment section! The sam file is quite large so there is little purpose in scrolling to find the alignments section (the file is also much too large for using the "grep" command to locate the alignment section). Because of the density of the sam file, it is compressed to binary to create a more easily tractable file for manipulation by future programs. We convert the sam file to b<sub>inary</sub>am with the following command:
-<pre style="color: silver; background: black;">samtools view -@ 4 -uhS trim_LB2A_SRR1964642.sam | samtools sort -@ 4 - sort_trim_LB2A_SRR1964642
 
-Usage: samtools [command] [options] in.sam
+<pre style="color: silver; background: black;">-bash-4.2$ module load samtools
+bash-4.2$ samtools
+<strong>Usage</strong>:   samtools <command> [options]
 
-Command:
-view     prints all alignments in the specified input alignment file (in SAM, BAM, or CRAM format) to standard output in SAM format 
+<strong>Commands</strong>:
+  -- Indexing
+     dict           create a sequence dictionary file
+     faidx          index/extract FASTA
+     index          index alignment
 
-Options:
--h      Include the header in the output<br.
--S      Indicate the input was in SAM format
--u      Output uncompressed BAM. This option saves time spent on compression/decompression and is thus preferred when the output is piped to another samtools command
--@      Number of processors</pre>
+  -- Editing
+     calmd          recalculate MD/NM tags and '=' bases
+     fixmate        fix mate  Information
+     reheader       replace BAM header
+     targetcut      cut fosmid regions (for fosmid pool only)
+     addreplacerg   adds or replaces RG tags
+     markdup        mark duplicates
 
-Usage: samtools [command] [-o out.bam]
+  -- File operations
+     collate        shuffle and group alignments by name
+     cat            concatenate BAMs
+     merge          merge sorted alignments
+     mpileup        multi-way pileup
+     sort           sort alignment file
+     split          splits a file by read group
+     quickcheck     quickly check if SAM/BAM/CRAM file appears intact
+     fastq          converts a BAM to a FASTQ
+     fasta          converts a BAM to a FASTA
 
-Command:
-sort    Sort alignments by leftmost coordinates
+  -- Statistics
+     bedcov         read depth per BED region
+     depth          compute the depth
+     flagstat       simple stats
+     idxstats       BAM index stats
+     phase          phase heterozygotes
+     stats          generate stats (former bamcheck)
 
--o      Write the final sorted output to FILE, rather than to standard output.</pre>
+  -- Viewing
+     flags          explain BAM flags
+     tview          text alignment viewer
+     view           SAM<->BAM<->CRAM conversion
+     depad          convert padded BAM to unpadded BAM
+</pre>
+
+We are truly only interested in sorting our SAM files.
+
+<pre style="color: silver; background: black;">-bash-4.2$ samtools sort
+
+<strong>Usage</strong>: samtools sort [options...] [in.bam]
+<strong>Options</strong>:
+  -l INT     Set compression level, from 0 (uncompressed) to 9 (best)
+  -m INT     Set maximum memory per thread; suffix K/M/G recognized [768M]
+  -n         Sort by read name
+  -t TAG     Sort by value of TAG. Uses position as secondary index (or read name if -n is set)
+  -o FILE    Write final output to FILE rather than standard output
+  -T PREFIX  Write temporary files to PREFIX.nnnn.bam
+      --input-fmt-option OPT[=VAL]
+               Specify a single input file format option in the form
+               of OPTION or OPTION=VALUE
+  -O, --output-fmt FORMAT[,OPT[=VAL]]...
+               Specify output format (SAM, BAM, CRAM)
+      --output-fmt-option OPT[=VAL]
+               Specify a single output file format option in the form
+               of OPTION or OPTION=VALUE
+      --reference FILE
+               Reference sequence FASTA FILE [null]
+  -@, --threads INT
+               Number of additional threads to use [0]
+</pre>
+
+The sort function converts SAM files to BAM automatically. Therefore, we can cut through most of these options and do a simple "samtools sort -o <output.bam> <inupt.sam>. Let's write our command:
+<pre style="color: silver; background: black;">-bash-4.2$ samtools sort -@ 4 -o sort_trim_LB2A_SRR1964642.bam trimmed_LB2A_SRR1964642.sam</pre>
 
 All samples may be run by executing the following command:
 <pre style="color: silver; background: black;">sbatch sam_to_bam_xanadu.sh</pre>
@@ -354,20 +435,39 @@ or
 appropriate for your set-up.
 
 Once the conversion is done you will have the following files in the directory.
-<pre style="color: silver; background: black;">|-- sort_trim_LB2A_SRR1964642.bam
-|-- sort_trim_LB2A_SRR1964643.bam
-|-- sort_trim_LC2A_SRR1964644.bam
-|-- sort_trim_LC2A_SRR1964645.bam</pre>
+<pre style="color: silver; background: black;">-bash-4.2$ ls sort&#42;
+<strong>sort_trim_LB2A_SRR1964642.bam
+sort_trim_LB2A_SRR1964643.bam
+sort_trim_LC2A_SRR1964644.bam
+sort_trim_LC2A_SRR1964645.bam</strong></pre>
 
 <h2 id="Fifth_Point_Header">Generating total read counts from alignent using htseq-count</h2>
-Now we will be using the <a href="http://htseq.readthedocs.io/en/master/count.htmhtseq-count">htseq-count</a> function of the module htseq to count the reads which have mapped to the genome. The thought behind htseq-count is quite intuitive, enumerating matching alignments into a "counts" file. However, this belies the complexity of alignment counting. htseq-count is used in the following manner:
+Now we will be using the <a href="http://htseq.readthedocs.io/en/master/count.htmhtseq-count">htseq-count</a> function of the module htseq to count the reads which have mapped to the genome. The thought behind htseq-count is quite intuitive, enumerating matching alignments into a "counts" file. However, this belies the complexity of alignment counting. htseq is actually a Python module. Because of this, you'll notice something strange if you load it into the submit node:
+<pre style="color: silver; background: black;">-bash-4.2$ module load htseq
+(0.9.1) -bash-4.2$</pre>
 
-<pre style="color: silver; background: black;">htseq-count -s no -r pos -t gene -i Dbxref -f bam ../mapping/sort_trim_LB2A_SRR1964642.bam GCF_000972845.1_L_crocea_1.0_genomic.gff > LB2A_SRR1964642.counts
-Usage: htseq-count [options] alignment_file gff_file</pre>
+We are "logged in" to a new shell! Let's try viewing the help menu:
+<pre style="color: silver; background: black;">-bash-4.2$ module load htseq
+(0.9.1) -bash-4.2$ htseq
+<strong>-bash: htseq: command not found</strong>
+</pre>
 
-This script takes an alignment file in SAM/BAM format and a feature file in
-GFF format and calculates for each feature the number of reads mapping to it.
-<pre style="color: silver; background: black;">Options:
+Let's try viewing the help menu for htseq-count:
+<pre style="color: silver; background: black;">-bash-4.2$ module load htseq
+(0.9.1) -bash-4.2$ htseq-count</pre>
+
+Your terminal should become hung up on whitespace. Because hsteq operates as a shell (within our shell), if we try to run the command with no input then it gets stuck in an infinite loop! Press CTRL + C to kill the infinite loop and unload the module to acccess your normal shell:
+
+<pre style="color: silver; background: black;">-bash-4.2$ module unload htseq</pre>
+
+Because of this behavior, you will have to trust me on our choice of options. But we run htseq count with the following commands:
+
+<pre style="color: silver; background: black;">-bash-4.2$ module load htseq
+-bash-4.2$ htseq-count -s no -r pos -t gene -i Dbxref -f bam ../mapping/sort_trim_LB2A_SRR1964642.bam GCF_000972845.1_L_crocea_1.0_genomic.gff > LB2A_SRR1964642.counts</pre>
+
+
+<pre style="color: silver; background: black;"><strong>Usage</strong>: htseq-count [options] alignment_file gff_file</pre>
+<strong>Options</strong>:
   -f SAMTYPE, --format=SAMTYPE
                         type of  data, either 'sam' or 'bam'
                         (default: sam)
@@ -396,13 +496,14 @@ The above command should be repeated for all other BAM files as well. You can pr
 or on Xanadu with (do not forget to nano the script to insert your email):
 <pre style="color: silver; background: black;">sbatch htseq_count.sh</pre>
 Once all the bam files have been counted, we will be having the following files in the directory.<br>
-<pre style="color: silver; background: black;">|-- sort_trim_LB2A_SRR1964642.counts
-|-- sort_trim_LB2A_SRR1964643.counts
-|-- sort_trim_LC2A_SRR1964644.counts
-|-- sort_trim_LC2A_SRR1964645.counts</pre>
+<pre style="color: silver; background: black;">-bash-4.2$ ls &#42;counts
+<strong>sort_trim_LB2A_SRR1964642.counts
+sort_trim_LB2A_SRR1964643.counts
+sort_trim_LC2A_SRR1964644.counts
+sort_trim_LC2A_SRR1964645.counts</strong></pre>
 
 Let's have a look at the contents of a counts file:
-<pre style="color: silver; background: black;">head sort_trim_LB2A_SRR1964642.counts
+<pre style="color: silver; background: black;">-bash-4.2$ head sort_trim_LB2A_SRR1964642.counts
 GeneID:104917625	18
 GeneID:104917626	7
 GeneID:104917627	0
@@ -420,10 +521,10 @@ We see the layout is quite straightforward, with two columns separated by a tab.
 
 <h2 id="Sixth_Point_Header">Pairwise differential expression with counts in R using DESeq2</h2>
 This part of the tutorial <i>must</i> be run locally. To download the appropriate files to your local computer, we will use the secure copy client, "scp". Close your Xanadu connection and run the following code:
-<pre style="color: silver; background: black;">exit
-logout
-Connection to xanadu-submit-ext.cam.uchc.edu closed.
-scp your.user.name@xanadu-submit-ext.cam.uchc.edu:/path/to/counts/&#42;.counts /path/to/local/destination</pre>
+<pre style="color: silver; background: black;">-bash-4.2$ exit
+<strong>logout
+Connection to xanadu-submit-ext.cam.uchc.edu closed.</strong>
+user@user$ scp your.user.name@xanadu-submit-ext.cam.uchc.edu:/path/to/counts/&#42;.counts /path/to/local/destination</pre>
 Voila! Piece of cake.
 To identify differentially expressed genes, We will use the DESeq2 package within Bioconductor in R to perform normalization and statistical analysis of differences among our two sample groups. This R-code is executed in RStudio for R version 3.4.3 (if the r_installation file did not properly install R 3.4.3 you may visit https://linode.com/docs/development/r/how-to-install-r-on-ubuntu-and-debian/ to troubleshoot). Note that Bioconductor will not run on any previous version of R in Linux, so it is imperative that you successfully install R 3.4.3). For our differential expression analysis, we will be using three types of graphs to visualize the data: Bland-Altman (MA), heatmap, and PCA plots. Let's review each plot before diving in:
 
