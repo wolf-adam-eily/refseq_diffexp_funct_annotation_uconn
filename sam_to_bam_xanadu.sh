@@ -10,7 +10,7 @@
 #SBATCH -o sam_to_bam_xanadu_%j.out
 #SBATCH -e sam_to_bam_xanadu_%j.err
 module load samtools
-samtools view -@ 4 -uhS trimmed_LB2A_SRR1964642.sam | samtools sort -@ 4 -o sort_trim_LB2A_SRR1964642.bam
-samtools view -@ 4 -uhS trimmed_LB2A_SRR1964643.sam | samtools sort -@ 4 -o sort_trim_LB2A_SRR1964643.bam
-samtools view -@ 4 -uhS trimmed_LC2A_SRR1964644.sam | samtools sort -@ 4 -o sort_trim_LC2A_SRR1964644.bam
-samtools view -@ 4 -uhS trimmed_LC2A_SRR1964645.sam | samtools sort -@ 4 -o sort_trim_LC2A_SRR1964645.bam
+samtools sort -@ 4 -o sort_trim_LB2A_SRR1964642.bam trimmed_LB2A_SRR1964642.sam
+samtools sort -@ 4 -o sort_trim_LB2A_SRR1964643.bam trimmed_LB2A_SRR1964643.sam
+samtools sort -@ 4 -o sort_trim_LC2A_SRR1964644.bam trimmed_LC2A_SRR1964644.sam
+samtools sort -@ 4 -o sort_trim_LC2A_SRR1964645.bam trimmed_LC2A_SRR1964645.sam
