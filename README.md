@@ -356,7 +356,7 @@ Let's have a look at the SAM file:
 After reading up on the SAM file format, you know that the "@" sign means that we are in the headings section, not the alignment section! The sam file is quite large so there is little purpose in scrolling to find the alignments section (the file is also much too large for using the "grep" command to locate the alignment section). Because of the density of the sam file, it is compressed to binary to create a more easily tractable file for manipulation by future programs. We convert the sam file to b<sub>inary</sub>am with the following command:
 
 <pre style="color: silver; background: black;">-bash-4.2$ module load samtools
-bash-4.2$ samtools
+-bash-4.2$ samtools
 <strong>Usage</strong>:   samtools <command> [options]
 
 <strong>Commands</strong>:
