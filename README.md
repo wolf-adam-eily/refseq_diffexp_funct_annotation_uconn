@@ -192,7 +192,7 @@ This must be repeated for all four files. If the previous header was run locally
 <pre style="color: silver; background: black;">sbatch fastq_trimming_xanadu.sh</pre>
  
 Following the sickle run, the resulting file structure will look as follows:
-<pre style="color: silver; background: black;">-bash-4.2$ ls
+<pre style="color: silver; background: black;">-bash-4.2$ ls trimmed&#42;							
 <strong>trimmed_LB2A_SRR1964642.fastq
 trimmed_LB2A_SRR1964643.fastq
 trimmed_LC2A_SRR1964644.fastq
