@@ -341,7 +341,7 @@ When HISAT2 completes its run, it will summarize each of it’s alignments, and 
 
 Let's have a look at the SAM file:
 
-<pre style="color: silver; background: black;">head trimmed_LB2A_SRR1964642.sam
+<pre style="color: silver; background: black;">-bash-4.2$ head trimmed_LB2A_SRR1964642.sam
 @HD VN:1.0 SO:unsorted
 @SQ SN:NW_017607850.1 LN:6737
 @SQ SN:NW_017607851.1 LN:5396
