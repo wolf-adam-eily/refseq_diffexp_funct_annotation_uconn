@@ -280,7 +280,7 @@ If you are feeling prudent, you can install the genomic, transcriptomic, and pro
 We will use the hisat2-build option to make a HISAT index file for the genome. It will create a set of files with the suffix .ht2, these files together build the index. What is an index and why is it helpful? Genome indexing is the same as indexing a tome, like an encyclopedia. It is much easier to locate information in the vastness of an encyclopedia when you consult the index, which is ordered in an easily navigatable way with pointers to the location of the information you seek within the encylopedia. Genome indexing is thus the structuring of a genome such that it is ordered in an easily navigatable way with pointers to where we can find whichever gene is being aligned. The genome index along with the trimmed fasta files are all you need to align the reads to the reference genome (the build command is included in the genome_indexing_and_alignment* files, so it is not necessary to run now).
 <pre style="color: silver; background: black;">-bash-4.2$ module load hisat2
 -bash-4.2$ hisat2-build
-<strong>Usage: hisat2-build [options] <reference_in> <bt2_index_base>
+<strong>Usage: hisat2-build</strong> [options] <reference_in> <bt2_index_base>
 reference_in                comma-separated list of files with ref sequences
 hisat2_index_base           write ht2 data to files with this dir/basename
 
