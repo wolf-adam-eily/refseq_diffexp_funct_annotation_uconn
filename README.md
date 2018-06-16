@@ -97,7 +97,7 @@ mv SRR1964643.fastq LB2A_SRR1964643.fastq
 
 We now press CTRL+X which will ask us if we wish to save, simply type "y" to confirm that we do want to save. Next we will be prompted with the file name, we simply hit enter here to save our file (or, if you like, you may change the file name). Now that we have our script, we may run it with the command:
 
-<pre style="color: silver; background: black;">sbatch fastq_dumps.sh</pre>
+<pre style="color: silver; background: black;">-bash-4.2$ sbatch fastq_dumps.sh</pre>
 
 It is advised that you familiarize yourself with the arguments for the Slurm scheduler. While it may seem as though running your commands locally will be more efficient due to the hassle of not initializing and writing scripts, do not fall for that trap! The capacity of the Slurm scheduler far exceeds the quickness of entering the commands locally. While the rest of this tutorial will not include the process of initializing and writing the Slurm arguments in a script in its coding, know that the Xanadu scripts in the cloned directory <i>do</i> contain the Slurm arguments. However, before running any cloned Xanadu script, you must "nano" and enter your appropriate email address!
 
@@ -112,7 +112,7 @@ Because of this, it is important to manually load modules to be used in the Xana
 
 Now we must repeat the fastq-dump command for SRR1964644 and SRR1964645 samples, or alternatively run either of the following commands in the cloned directory (it is important to use the "nano" command to enter your appropriate email address before running this code on Xanadu): 
 
-<pre style="color: silver; background: black;">sbatch fastq_dump_xanadu.sh</pre>
+<pre style="color: silver; background: black;">-bash-4.2$ sbatch fastq_dump_xanadu.sh</pre>
 or
 <pre style="color: silver; background: black;">sh -e fastqdump_and_trim_local</pre>
 
@@ -189,7 +189,7 @@ sickle se -f LB2A_SRR1964642.fastq -t sanger -o trimmed_LB2A_SRR1964642.fastq -q
 After this point the tutorial will not specify Xanadu or local in its coding excerpts, but assume that the module has been loaded. However, still use the shell scripts for your setups, as they remain differentiated.
 
 This must be repeated for all four files. If the previous header was run locally, this step has already been performed. Those on Xanadu can run the following shell script to perform the steps:
-<pre style="color: silver; background: black;">sbatch fastq_trimming_xanadu.sh</pre>
+<pre style="color: silver; background: black;">-bash-4.2$ sbatch fastq_trimming_xanadu.sh</pre>
  
 Following the sickle run, the resulting file structure will look as follows:
 <pre style="color: silver; background: black;">-bash-4.2$ ls trimmed&#42;							
@@ -316,7 +316,7 @@ hisat2 -p 4 --dta -x ../index/L_crocea -q ../quality_control/trim_LB2A_SRR196464
 
 
 The above must be repeated for all the files. You may run:
-<pre style="color: silver; background: black;">sbatch genome_indexing_and_alignment_xanadu.sh</pre>
+<pre style="color: silver; background: black;">-bash-4.2$ sbatch genome_indexing_and_alignment_xanadu.sh</pre>
 or
 <pre style="color: silver; background: black;">sh -e genome_indexing_and_alignment_local</pre>
 
@@ -429,7 +429,7 @@ The sort function converts SAM files to BAM automatically. Therefore, we can cut
 <pre style="color: silver; background: black;">-bash-4.2$ samtools sort -@ 4 -o sort_trim_LB2A_SRR1964642.bam trimmed_LB2A_SRR1964642.sam</pre>
 
 All samples may be run by executing the following command:
-<pre style="color: silver; background: black;">sbatch sam_to_bam_xanadu.sh</pre>
+<pre style="color: silver; background: black;">-bash-4.2$ sbatch sam_to_bam_xanadu.sh</pre>
 or
 <pre style="color: silver; background: black;">sh -e sam_to_bam_local</pre>
 appropriate for your set-up.
@@ -494,7 +494,7 @@ Because of this behavior, you will have to trust me on our choice of options. Bu
 The above command should be repeated for all other BAM files as well. You can process all the BAM files locally with the command:
 <pre style="color: silver; background: black;">sh -e htseq_count</pre>
 or on Xanadu with (do not forget to nano the script to insert your email):
-<pre style="color: silver; background: black;">sbatch htseq_count.sh</pre>
+<pre style="color: silver; background: black;">-bash-4.2$ sbatch htseq_count.sh</pre>
 Once all the bam files have been counted, we will be having the following files in the directory.<br>
 <pre style="color: silver; background: black;">-bash-4.2$ ls &#42;counts
 <strong>sort_trim_LB2A_SRR1964642.counts
