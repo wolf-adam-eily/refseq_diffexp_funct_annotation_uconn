@@ -9,6 +9,7 @@
 #SBATCH --mem=50G
 #SBATCH -o htseq_count_%j.out
 #SBATCH -e htseq_count_%j.err
+module load htseq
 htseq-count -s no -r pos -t gene -i Dbxref -f bam sort_trim_LB2A_SRR1964642.bam GCF_000972845.1_L_crocea_1.0_genomic.gff > LB2A_SRR1964642.counts
 htseq-count -s no -r pos -t gene -i Dbxref -f bam sort_trim_LB2A_SRR1964643.bam GCF_000972845.1_L_crocea_1.0_genomic.gff > LB2A_SRR1964643.counts
 htseq-count -s no -r pos -t gene -i Dbxref -f bam sort_trim_LC2A_SRR1964644.bam GCF_000972845.1_L_crocea_1.0_genomic.gff > LC2A_SRR1964644.counts
