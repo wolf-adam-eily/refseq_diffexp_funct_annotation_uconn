@@ -29,7 +29,7 @@ If performing headers 1-6 on a personal computer, continue onward.
 
 If performing headers 1-6 on the Xanadu cluster, it is important that after connecting via SSH the directory is set to
 
-<pre style="color: silver; background: black;">cd /home/CAM/$USER</pre> 
+<pre style="color: silver; background: black;">cd /home/CAM/$USER/</pre> 
 
 before proceeding. Your home directory contains 10TB of storage and will not pollute the capacities of other users on the cluster. 
 
