@@ -554,19 +554,158 @@ Principal-Component-Analysis is far too complex and nuanced to go into detail he
 directory <- "~/your_directory_with_htseq_counts"
 e_assembly_and_annotation"
 setwd(directory)
-list.files(directory)
+list.files(directory)</pre>
 
-&num; Set the prefix for each output file name
-outputPrefix <- "Croaker_DESeq2"
+We are going to be generating a variety of files. As you learn and continue to do bioinformatic analyses you will see that we are always creating a sequence of files for each of our analyses. You will also find as you continue to work that consistency is the key for efficient completion of your tasks. Consistency is meant in as somewhat catholic -- ideally you will have a base code for type of analysis which reqires minimal change betweeen samples (perhaps only changing variable names and variable set-ups) which outputs files that are named in an easily indexable way. One way to achieve the second objective is to use an "output prefix", which, simply put, is the beginning of your file names generated for each output. For us, we do the following: 
 
+<pre style="color: silver; background: black;">
+outputPrefix <- "Croaker_DESeq2"</pre>
+
+For easy loading, let's create a vector with our sample filenames:
+
+<pre style="color: silver; background: black;">
 sampleFiles<- c("sort_trim_LB2A_SRR1964642.counts","sort_trim_LB2A_SRR1964643.counts",
                 "sort_trim_LC2A_SRR1964644.counts", "sort_trim_LC2A_SRR1964645.counts")
+</pre>
 
-&num; Liver mRNA profiles of 
-&num; control group (LB2A), * 
-&num; thermal stress group (LC2A), *
+Because we will be using DESeq2 for our analysis, it would be helfpul to have a clear set of instructions for us to follow. We can do this by browsing the DESeq2 vignette:
+
+<pre style="color: silver; background: black;">??'DESeq2-package'
+
+DESeq2-package {DESeq2}	R Documentation
+DESeq2 package for differential analysis of count data
+
+<strong>Description</strong>
+
+<em>The main functions for differential analysis are DESeq and <u>results</u>. See the examples at <u>DESeq</u> for basic analysis 
+steps. Two transformations offered for count data are the variance stabilizing transformation, <u>vst</u>, and the "regularized 
+logarithm", <u>rlog</u>. For more detailed information on usage, see the package vignette, by typing vignette("DESeq2"), or the 
+workflow linked to on the first page of the vignette. All support questions should be posted to the Bioconductor support site: 
+http://support.bioconductor.org.</em></pre>
+
+We click on "DESeq" for the basic analysis steps and see this:
+<pre style="color: silver; background: black;">
+DESeq {DESeq2}	R Documentation
+Differential expression analysis based on the Negative Binomial (a.k.a. Gamma-Poisson) distribution
+
+<strong>Description</strong>
+
+<em>This function performs a default analysis through the steps:
+
+estimation of size factors: <u>estimateSizeFactors</u>
+
+estimation of dispersion: <u>estimateDispersions</u>
+
+Negative Binomial GLM fitting and Wald statistics: <u>nbinomWaldTest</u>
+
+For complete details on each step, see the manual pages of the respective functions. After the DESeq function returns a DESeqDataSet 
+object, results tables (log2 fold changes and p-values) can be generated using the results function. Shrunken LFC can then be 
+generated using the lfcShrink function. All support questions should be posted to the Bioconductor support site: 
+http://support.bioconductor.org.</em>
+
+<strong>Usage</strong>
+
+DESeq(object, test = c("Wald", "LRT"), fitType = c("parametric", "local",
+  "mean"), sfType = c("ratio", "poscounts", "iterate"), betaPrior,
+  full = design(object), reduced, quiet = FALSE,
+  minReplicatesForReplace = 7, modelMatrixType, useT = FALSE, minmu = 0.5,
+  parallel = FALSE, BPPARAM = bpparam())
+<strong>Arguments</strong>
+
+object		a DESeqDataSet object, see the constructor functions DESeqDataSet, DESeqDataSetFromMatrix, 
+		<u>DESeqDataSetFromHTSeqCount</u>.
+test		either "Wald" or "LRT", which will then use either Wald significance tests (defined by nbinomWaldTest), or the 
+		likelihood ratio test on the difference in deviance between a full and reduced model formula (defined by nbinomLRT)
+fitType		either "parametric", "local", or "mean" for the type of fitting of dispersions to the mean intensity. See 
+		estimateDispersions for description.
+sfType		either "ratio", "poscounts", or "iterate" for teh type of size factor estimation. See estimateSizeFactors for 
+		description.
+betaPrior	whether or not to put a zero-mean normal prior on the non-intercept coefficients See nbinomWaldTest for description of 
+		the calculation of the beta prior. In versions >=1.16, the default is set to FALSE, and shrunken LFCs are obtained 
+		afterwards using lfcShrink.
+full		for test="LRT", the full model formula, which is restricted to the formula in design(object). alternatively, it can be 
+		a model matrix constructed by the user. advanced use: specifying a model matrix for full and test="Wald" is possible 
+		if betaPrior=FALSE
+reduced		for test="LRT", a reduced formula to compare against, i.e., the full formula with the term(s) of interest removed. 
+		alternatively, it can be a model matrix constructed by the user
+quiet		whether to print messages at each step
+minReplicatesForReplace	the minimum number of replicates required in order to use replaceOutliers on a sample. If there are samples 
+			with so many replicates, the model will be refit after these replacing outliers, flagged by Cook's distance. 
+			Set to Inf in order to never replace outliers.
+modelMatrixType		either "standard" or "expanded", which describe how the model matrix, X of the GLM formula is formed. 
+			"standard" is as created by model.matrix using the design formula. "expanded" includes an indicator variable 
+			for each level of factors in addition to an intercept. for more information see the Description of 
+			nbinomWaldTest. betaPrior must be set to TRUE in order for expanded model matrices to be fit.
+useT		logical, passed to nbinomWaldTest, default is FALSE, where Wald statistics are assumed to follow a standard Normal
+minmu		lower bound on the estimated count for fitting gene-wise dispersion and for use with nbinomWaldTest and nbinomLRT
+parallel	if FALSE, no parallelization. if TRUE, parallel execution using BiocParallel, see next argument BPPARAM. A note on 
+		running in parallel using BiocParallel: it may be advantageous to remove large, unneeded objects from your current R 
+		environment before calling DESeq, as it is possible that R's internal garbage collection will copy these files while 
+		running on worker nodes.
+BPPARAM		an optional parameter object passed internally to bplapply when parallel=TRUE. If not specified, the parameters last 
+		registered with register will be used.</pre>
+		
+To see instructions for our "object" argument we can click on the link for DESeqDataFromHTSeqCount because our data is from HTSeq. However. Before that, let's think about how DESeq2 works. Let's start with step one, clinking on "estimateSizeFactors":
+
+<pre style="color: silver; background: black;">
+estimateSizeFactors {DESeq2}	R Documentation
+Estimate the size factors for a DESeqDataSet
+
+<strong>Description</strong>
+
+<em>This function estimates the size factors using the "median ratio method" described by Equation 5 in Anders and Huber (2010). The 
+estimated size factors can be accessed using the accessor function sizeFactors. Alternative library size estimators can also be 
+supplied using the assignment function sizeFactors<-.</em>
+
+<strong>Usage</strong>
+
+## S4 method for signature 'DESeqDataSet'
+estimateSizeFactors(object, type = c("ratio",
+  "poscounts", "iterate"), locfunc = stats::median, geoMeans, controlGenes,
+  normMatrix)
+<strong>Arguments</strong>
+
+object		a DESeqDataSet
+type		Method for estimation: either "ratio", "poscounts", or "iterate". "ratio" uses the standard median ratio method 
+		introduced in DESeq. The size factor is the median ratio of the sample over a "pseudosample": for each gene, the 
+		geometric mean of all samples. "poscounts" and "iterate" offer alternative estimators, which can be used even when all 
+		genes contain a sample with a zero (a problem for the default method, as the geometric mean becomes zero, and the 
+		ratio undefined). The "poscounts" estimator deals with a gene with some zeros, by calculating a modified geometric 
+		mean by taking the n-th root of the product of the non-zero counts. This evolved out of use cases with Paul McMurdie's 
+		phyloseq package for metagenomic samples. The "iterate" estimator iterates between estimating the dispersion with a 
+		design of ~1, and finding a size factor vector by numerically optimizing the likelihood of the ~1 model.
+locfunc		a function to compute a location for a sample. By default, the median is used. However, especially for low counts, the 
+		shorth function from the genefilter package may give better results.
+geoMeans	by default this is not provided and the geometric means of the counts are calculated within the function. A vector of 
+		geometric means from another count matrix can be provided for a "frozen" size factor calculation
+controlGenes	optional, numeric or logical index vector specifying those genes to use for size factor estimation (e.g. housekeeping 
+		or spike-in genes)
+normMatrix	optional, a matrix of normalization factors which do not yet control for library size. Note that this argument should 
+		not be used (and will be ignored) if the dds object was created using tximport. In this case, the information in 
+		assays(dds)[["avgTxLength"]] is automatically used to create appropriate normalization factors. Providing normMatrix 
+		will estimate size factors on the count matrix divided by normMatrix and store the product of the size factors and 
+		normMatrix as normalizationFactors. It is recommended to divide out the row-wise geometric mean of normMatrix so the 
+		rows roughly are centered on 1.
+<strong>Details</strong>
+
+Typically, the function is called with the idiom:
+
+dds <- estimateSizeFactors(dds)</pre>
+
+
+
+It is important with any R, Python, Perl, or similar analysis that we are as clear as possible about each variable and step. One reason is to hold ourselves accountable and limit the risk of a small mistake which produces an erroneous result (and our paper getting recalled). Another, but incredibly important reason, is so that fellow scientists who are following or reviewing our work do not have to make a single assumption about our process. This maximizes our reproducibility, a crucial component of our work being verified. Let's describe our samples for ourselves and others:
+<pre style="color: silver; background: black;">
+&num; Liver mRNA profiles of control group: (LB2A) 
+&num; Liver mRNA profiles of thermal stress group: (LC2A)
+&num; ""CONTROL"" LB2A_1: sort_trim_LB2A_SRR1964642.counts, LB2A_2: sort_trim_LB2A_SRR1964643.counts
+&num; ""TREATED"" LC2A_1: sort_trim_LB2A_SRR1964644.counts, LC2A_2: sort_trim_LC2A_SRR1964645.counts
+
 sampleNames <- c("LB2A_1","LB2A_2","LC2A_1","LC2A_2")
 sampleCondition <- c("control","control","treated","treated")
+</pre>
+
+Let's create a dataframe. The options we are using for the data.frame function are a part of <a href=https://bioconductor.org/packages/release/bioc/html/Biobase.html">Biobase</a>. You can find out about each argument by typing in the argument name and pressing TAB. For instance, "data.frame(sampleName(TAB) "
 
 sampleTable <- data.frame(sampleName = sampleNames,
                           fileName = sampleFiles,
