@@ -761,7 +761,7 @@ The last step has the most complicated formula but is the simplest in meaning:
 
 <center><img src="equation3.png",height="60",width="60"></center>
 
-The <a href="http://mathworld.wolfram.com/DoubleSeries.html">double summation</a> is the sum of the log of all our scaled transcriptome sizes, and <b><i>KR</i></b> is the number of scaled transcriptomes (do the math, it's true!). However, we are taking the <a href="http://www.ugrad.math.ubc.ca/coursedoc/math100/notes/derivative/exp2.html">natural log</a> of the sum of all our scaled transcriptome sizes. ln(a) + ln(b) = ln(ab), therefore we are taking the log of the <i>product</i> of all our transcriptome sizes. This is quite clever, but suppose that each un-scaled transcriptome had the same exact expression profile (and size) as the control. Notice:
+The <a href="http://mathworld.wolfram.com/DoubleSeries.html">double summation</a> is the sum of the log of all our scaled transcriptome sizes. Because ln(a) + ln(b) = ln(ab), we are taking the log of the <i>product</i> of all our transcriptome sizes. This is quite clever, but suppose that each un-scaled transcriptome had the same exact expression profile (and size) as the control. Notice:
 
 <center><img src="equation4.png",height="100",widht="100"></center>
 
