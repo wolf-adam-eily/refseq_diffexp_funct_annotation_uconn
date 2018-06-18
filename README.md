@@ -763,16 +763,17 @@ The last step has the most complicated formula but is the simplest in meaning:
 
 The <a href="http://mathworld.wolfram.com/DoubleSeries.html">double summation</a> is the sum of the log of all our scaled transcriptome sizes. Because ln(a) + ln(b) = ln(ab), we are taking the log of the <i>product</i> of all our transcriptome sizes. This is quite clever, but suppose that each un-scaled transcriptome had the same exact expression profile (and size) as the control. Notice:
 
-<center><img src="equation4.png",height="100",widht="100"></center>
+<center><img src="equation4.png"></center>
 
 By the exponential-log identity:
 
-<center><img src="equation5.png",height="60",width="60></center>
+<center><img src="equation5.png"></center>
 
 Our result is simply the size of all our transcriptomes! This is just the average size of all our scaled transcriptomes! We finish our normalization by dividing all of our real transcriptome sizes by the average size of our scaled transcriptomes. You may be wondering why this much work is worth the trouble. R handls these computations in a matter of seconds, so it not as troublesome as it appears! Secondly, we saw the range of our un-normalized counts in the density plot from 0 to 5 million. The range was so great as to hinder us from determining if the distribution fit a known model. Let's do a very simple (and common) normalization of our counts by taking the log2 transform of it. Lastly, we'll visualize our distribution:
 
 <pre style="color: silver; background: black;">sampleTable[,2:5] = log2(sampleTable[,2:5]+1)
 plot(density(sampleTable[,2]),main="Distribution of Counts Improper Normalization")</pre>
+
 <img src="distribution_normalized.png">
 
 The distribution is much more readily accessible now. However, this is not the true distribution of the data! The log2 transform, while common, aggressively shifts distributions toward 0 (read <a href="https://en.wikipedia.org/wiki/Natural_logarithm">here</a> if you're curious about the details). For very closely related samples where up-regulation or down-regulation may be more nuanced something as aggressive as the log2 transform may erase the differential expression. We avoid this dilemma by normalizing via scalars rather than functions.
