@@ -698,7 +698,7 @@ Before we begin, there are a few assumptions we make. The first is that we have 
 
 Our first step is to find a way to determine the average expression of each gene for a given condition across all samples fitting that condition. Our result is this:
 
-<img src="equation1.png">
+<center><img src="equation1.png",height="60",width="60"></center>
 
 Where k ∈ {<b>Z</b><sup>+</sup>}: 1 &le; k &le; K, g ∈ {<b>Z</b><sup>+</sup>}: 1 &le; g &le; G, and r ∈ {<b>Z</b><sup>+</sup>}: 1 &le; r &le; R  . Each k is the index of a separate condition (so for us, we have two conditions -- our control is condition 1 (k = 1) and our thermal stress is condition 2 (k = 2)) and each g is the index of a separate gene (if we have 25000 unique genes then g = 1, 2, 3 . . . 250000) and each r is the index of a separate replicate (we have 2 replicates per sample, so r = 1, 2). R, G, and K are the total number of replicates, genes sampled, and conditions, respectively.
 
@@ -755,19 +755,19 @@ dim(sampleTable)
 
 R scales its axes automatically by the given minima and maxima. Therefore, we know that there are counts up to 5,000,000 and we have 27244 genes. The vast majority of our counts are near 0. Suppose that all of our counts were 0 except for one count, which was 5,000,000. Now we take the average of our counts (5,000,000/27,244) and receive a value of 183.5. We therefore say that given our samples, the expected count is 183.5 . . . but look at the distribution! The expected count should be 0 or very near to it! This is the danger in taking the average. Therefore, we do not want to take the average for our objective stated before the coding chunk. What if instead we took the <i>median</i> of our counts? We see that for our data the median <i>is</i> a much better capture of the distributon than the mean! Let's now make our scaled transcriptomes (notice the control has a <b>&tau;</b> value of 1, this formula also only shows for two conditions, but an infinite number are possible):
 
-<img src="equation2.png">
+<center><img src="equation2.png",height="60","width="60"></center>
 
 The last step has the most complicated formula but is the simplest in meaning:
 
-<img src="equation3.png">
+<center><img src="equation3.png",height="60",width="60"></center>
 
 The <a href="http://mathworld.wolfram.com/DoubleSeries.html">double summation</a> is the sum of all our scaled transcriptome sizes, and <b><i>KR</i></b> is the number of scaled transcriptomes (do the math, it's true!). However, we are taking the <a href="http://www.ugrad.math.ubc.ca/coursedoc/math100/notes/derivative/exp2.html">natural log</a> of the sum of all our scaled transcriptome sizes. ln(a) + ln(b) = ln(ab), therefore we are taking the log of the <i>product</i> of all our transcriptome sizes. This is quite clever, but suppose that each un-scaled transcriptome had the same exact expression profile (and size) as the control. Notice:
 
-<img src="equation4.png">
+<center><img src="equation4.png",height="100",widht="100"></center>
 
 By the exponential-log identity:
 
-<img src="equation5.png">
+<center><img src="equation5.png",height="60",width="60></center>
 
 Our result is simply the size of all our transcriptomes! This is just the average size of all our scaled transcriptomes! We finish our normalization by dividing all of our real transcriptome sizes by the average size of our scaled transcriptomes. You may be wondering why this much work is worth the trouble. R handls these computations in a matter of seconds, so it not as troublesome as it appears! Secondly, we saw the range of our un-normalized counts in the density plot from 0 to 5 million. The range was so great as to hinder us from determining if the distribution fit a known model. Let's do a very simple (and common) normalization of our counts by taking the log2 transform of it. Lastly, we'll visualize our distribution:
 
