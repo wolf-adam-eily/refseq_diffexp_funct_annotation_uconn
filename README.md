@@ -692,6 +692,90 @@ Typically, the function is called with the idiom:
 
 dds <- estimateSizeFactors(dds)</pre>
 
+Because the only argument of the size factors estimation is our data frame we do not need to worry about all of the arguments that the function extracts from our data. However, if we are using this tool in our analysis it is important that we understand what it is! Each of our samples have a different <a href="https://en.wikipedia.org/wiki/Coverage_(genetics)">sequencing depth</a>. We expect samples with greater coverage to have, on average, a higher number of counts per gene, regardless if the those genes are actually up-regulated. We can remedy this by approximating our reads as if they were drawn from samples of all equal sequencing depths. One way to do this is creating a metric for the size of each transcriptome and comparing those sizes across transcriptomes. We then find constants for each transcriptome that when multiplied by the size of the respective transciptome yields the average size of all transcriptomes. We are going to walk through the math of this here, you may view the paper from which this algebraic result derives <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3918003/">here</a>:
+
+Before we begin, there are a few assumptions we make. The first is that we have sampled the same genes in every single sample. The second is that the coverage of each sample is the size of its transcriptome. That is, we have successfully read every single transcript in the sample. 
+
+Our first step is to find a way to determine the average expression of each gene for a given condition across all samples fitting that condition. Our result is this:
+
+<img src="equation1.png">
+
+Where k ∈ {<b>Z</b><sup>+</sup>}: 1 &le; k &le; K, g ∈ {<b>Z</b><sup>+</sup>}: 1 &le; g &le; G, and r ∈ {<b>Z</b><sup>+</sup>}: 1 &le; r &le; R  . Each k is the index of a separate condition (so for us, we have two conditions -- our control is condition 1 (k = 1) and our thermal stress is condition 2 (k = 2)) and each g is the index of a separate gene (if we have 25000 unique genes then g = 1, 2, 3 . . . 250000) and each r is the index of a separate replicate (we have 2 replicates per sample, so r = 1, 2). R, G, and K are the total number of replicates, genes sampled, and conditions, respectively.
+
+Let's break down this equation: The left-hand side simply states that we are calculating an average expression (X-bar) of a certain gene given across samples with the same condition, We will start with the variables on the right hand side. X<sub>gkr</sub> is the count of our gene in replicate r in condition k and N<sub>kr</sub> is the total number of reads (counts across all genes) we sequenced in our replicte in condition k. Therefore, the fraction <sup>X<sub>gkr</sub></sup>&frasl;<sub>N<sub>kr</sub></sub> is the percentage of the total transcriptome of our sample for which gene g accounts. Now we move to our summation: we see we are calculating the percentage described prior for all of our replicaten in condition k and adding them together. By dividing this number by the total number of replicates <b>R</b> we simply have the average percentage of the transcriptome for which gene g accounts in condition k. We perform this operation for all genes in all replicates in all conditions. Now we have the average proportions of each gene per condition. We need to relate these averages across conditions. That is, we need to determine the relative increase or decrease of each genes percentage compared to the control group. For each gene this can be done simply by dividing the average percentage of each gene  in the control (the equation above for k = 1) by the percentage of the average percentage of the gene in the condition (the equation above for k > 1). We will call this result <b>&tau;</b><sub>g</sub>. Notice that this result is 1 for every single gene in the control. Should the expression profiles across conditions be exact this result will be 1 for every gene, period. Genes which are down-regulated on average will have values greater than 1, whereas genes which are up-regulated on average will have values between 0 and 1. Notice that this metric is unaffected by the transcriptome size. We can determine if on average the <i>transcriptome</i> of a condition is up or downregulated according to condition using the values calculated prior. Suppose a condition has a <b>W&tau;</b><sub>g</sub> metric of 0.5 for all genes. That is, its genes are on average up-regulated by a factor of 2. Well then the condition's transcriptome would be expected to be twice as large! Knowing this, we could make this condition's transcriptome size equal with the control by scaling all counts by a factor of 0.5 (think about it, it's true!), giving us an effective normalization. You may be tempted to take the average of all <b>W</b><sub>i</sub>. Let's take a look at our distributions to see if this is a good or bad idea (this code will be presented with no explanation, do not focus too much on getting through it right now):
+
+<pre style="color: silver; background: black;">sampleTable = list()
+for (file in sampleFiles){sampleTable = append(sampleTable, read.table(file,header=F))}
+length(sampleTable)
+<strong>[1] 8</strong>
+
+head(sampleTable[1])
+$`V1`
+   [1] GeneID:104917625 GeneID:104917626 GeneID:104917627 GeneID:104917628 GeneID:104917629 GeneID:104917630
+   [7] GeneID:104917631 GeneID:104917632 GeneID:104917634 GeneID:104917635 GeneID:104917636 GeneID:104917637
+  [13] GeneID:104917638 GeneID:104917639 GeneID:104917640 GeneID:104917641 GeneID:104917642 GeneID:104917643
+head(sampleTable[2])
+<strong>$`V2`
+   [1]     18      7      0    199     71     23    111     25    276    254     73    384    262     49      0
+  [16]      6    202     99    176    100     59    144     16    165      0     42      0     72     62     30
+  [31]      0      1     12      0     72      0    186     77    390      1    788     24    261    780     18
+  [46]      0      0      0      0     92    658     45    240    196     12     15     42      0      3     24
+  [61]     27     27      0      0      3   1667      0     42    153      6    248    392      2    925    145</strong>
+
+sampleTable = as.data.frame(sampleTable)
+
+head(sampleTable)<strong>
+                V1  V2             V1.1 V2.1             V1.2 V2.2             V1.3 V2.3
+1 GeneID:104917625  18 GeneID:104917625   40 GeneID:104917625   29 GeneID:104917625   14
+2 GeneID:104917626   7 GeneID:104917626    6 GeneID:104917626   12 GeneID:104917626   17
+3 GeneID:104917627   0 GeneID:104917627    0 GeneID:104917627    0 GeneID:104917627    0
+4 GeneID:104917628 199 GeneID:104917628  188 GeneID:104917628  242 GeneID:104917628  250
+5 GeneID:104917629  71 GeneID:104917629   69 GeneID:104917629   62 GeneID:104917629   59
+6 GeneID:104917630  23 GeneID:104917630   23 GeneID:104917630    2 GeneID:104917630    1</strong>
+
+keep = c(1, 2, 4, 6, 8)
+
+sampleTable = sampleTable[,keep]
+
+head(sampleTable)
+<strong>                V1  V2 V2.1 V2.2 V2.3
+1 GeneID:104917625  18   40   29   14
+2 GeneID:104917626   7    6   12   17
+3 GeneID:104917627   0    0    0    0
+4 GeneID:104917628 199  188  242  250
+5 GeneID:104917629  71   69   62   59
+6 GeneID:104917630  23   23    2    1</strong>
+
+plot(density(sampleTable[,2]),main="Distribution of Counts")
+for (i in 2:5){lines(density(sampleTable[,i]))}
+
+dim(sampleTable)
+<strong>[1] 27244     5</strong></pre>
+<img src="distribution_of_counts.png">
+
+R scales its axes automatically by the given minima and maxima. Therefore, we know that there are counts up to 5,000,000 and we have 27244 genes. The vast majority of our counts are near 0. Suppose that all of our counts were 0 except for one count, which was 5,000,000. Now we take the average of our counts (5,000,000/27,244) and receive a value of 183.5. We therefore say that given our samples, the expected count is 183.5 . . . but look at the distribution! The expected count should be 0 or very near to it! This is the danger in taking the average. Therefore, we do not want to take the average for our objective stated before the coding chunk. What if instead we took the <i>median</i> of our counts? We see that for our data the median <i>is</i> a much better capture of the distributon than the mean! Let's now make our scaled transcriptomes (notice the control has a <b>&tau;</b> value of 1, this formula also only shows for two conditions, but an infinite number are possible):
+
+<img src="equation2.png">
+
+The last step has the most complicated formula but is the simplest in meaning:
+
+<img src="equation3.png">
+
+The <a href="http://mathworld.wolfram.com/DoubleSeries.html">double summation</a> is the sum of all our scaled transcriptome sizes, and <b><i>KR</i></b> is the number of scaled transcriptomes (do the math, it's true!). However, we are taking the <a href="http://www.ugrad.math.ubc.ca/coursedoc/math100/notes/derivative/exp2.html">natural log</a> of the sum of all our scaled transcriptome sizes. ln(a) + ln(b) = ln(ab), therefore we are taking the log of the <i>product</i> of all our transcriptome sizes. This is quite clever, but suppose that each un-scaled transcriptome had the same exact expression profile (and size) as the control. Notice:
+
+<img src="equation4.png">
+
+By the exponential-log identity:
+
+<img src="equation5.png">
+
+Our result is simply the size of all our transcriptomes! This is just the average size of all our scaled transcriptomes! We finish our normalization by dividing all of our real transcriptome sizes by the average size of our scaled transcriptomes. You may be wondering why this much work is worth the trouble. R handls these computations in a matter of seconds, so it not as troublesome as it appears! Secondly, we saw the range of our un-normalized counts in the density plot from 0 to 5 million. The range was so great as to hinder us from determining if the distribution fit a known model. Let's do a very simple (and common) normalization of our counts by taking the log2 transform of it. Lastly, we'll visualize our distribution:
+
+<pre style="color: silver; background: black;">sampleTable[,2:5] = log2(sampleTable[,2:5]+1)
+plot(density(sampleTable[,2]),main="Distribution of Counts Improper Normalization")</pre>
+<img src="distribution_normalized.png">
+
+The distribution is much more readily accessible now. However, this is not the true distribution of the data! The log2 transform, while common, aggressively shifts distributions toward 0 (read <a href="https://en.wikipedia.org/wiki/Natural_logarithm">here</a> if you're curious about the details). For very closely related samples where up-regulation or down-regulation may be more nuanced something as aggressive as the log2 transform may erase the differential expression. We avoid this dilemma by normalizing via scalars rather than functions.
 
 
 It is important with any R, Python, Perl, or similar analysis that we are as clear as possible about each variable and step. One reason is to hold ourselves accountable and limit the risk of a small mistake which produces an erroneous result (and our paper getting recalled). Another, but incredibly important reason, is so that fellow scientists who are following or reviewing our work do not have to make a single assumption about our process. This maximizes our reproducibility, a crucial component of our work being verified. Let's describe our samples for ourselves and others:
