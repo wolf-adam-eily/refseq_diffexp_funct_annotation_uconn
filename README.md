@@ -732,11 +732,9 @@ Our equation does not exactly match the model. This is because the model also ca
 
 <img src="finished_binomial_explanation.png">
 
+We now have the negative binomial model! But how does this relate to our expression data? The negative binomial model outputs probability, but we only have raw counts. We could divide the raw counts of each sample by the total number of counts in that sample, creating the percentage of the transcriptome for each gene in each sample. This is a good idea, but we expect samples with up-regulation to have larger transcriptomes. Therefore, if we divide each sample by its own transcriptome size, the percentages may be the same across samples in which there actually was significant up-regulation! Therefore, we want to create a metric which is the approximate <i>true control</i> transcriptome size. This metric would, in theory, be the <i>expected</i> size of the control transcriptome. If we now divide our sample counts by the true control transcriptome then our value is the percentage of the control transcriptome for which the gene's expression would account. This would produce higher values for up-regulated transcriptomes and not affect the value of control transcriptomes very greatly. By doing this we will have accomplished two feats: the first is simply the creation of an expected control transcriptome, and the second is a way to detect up-regulation or down-regulation, period. This procedure is called "estimating size factors".
 
-
-<pre style="color: silver; background: black;">
-
-To see instructions for our "object" argument we can click on the link for DESeqDataFromHTSeqCount because our data is from HTSeq. However. Before that, let's think about how DESeq2 works. Let's start with step one, clinking on "estimateSizeFactors":
+This is the first step in the DESeq procedure, so let's review it in detail by clicking on "estimateSizeFactors" in the DESeq vignette:
 
 <pre style="color: silver; background: black;">
 estimateSizeFactors {DESeq2}	R Documentation
