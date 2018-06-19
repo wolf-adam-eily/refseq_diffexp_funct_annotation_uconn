@@ -645,6 +645,97 @@ parallel	if FALSE, no parallelization. if TRUE, parallel execution using BiocPar
 BPPARAM		an optional parameter object passed internally to bplapply when parallel=TRUE. If not specified, the parameters last 
 		registered with register will be used.</pre>
 		
+The description states that DESeq2 fits <a href="https://en.wikipedia.org/wiki/Negative_binomial_distribution">negative binomial</a> curves to the counts distributions for each condition and then calculates Wald statistics. Let's see if the negative binomial is a good fit for the curves of our conditions:
+
+sampleTable = list()
+for (file in sampleFiles){sampleTable = append(sampleTable, read.table(file,header=F))}
+length(sampleTable)
+<strong>[1] 8</strong>
+
+head(sampleTable[1])
+$`V1`
+   [1] GeneID:104917625 GeneID:104917626 GeneID:104917627 GeneID:104917628 GeneID:104917629 GeneID:104917630
+   [7] GeneID:104917631 GeneID:104917632 GeneID:104917634 GeneID:104917635 GeneID:104917636 GeneID:104917637
+  [13] GeneID:104917638 GeneID:104917639 GeneID:104917640 GeneID:104917641 GeneID:104917642 GeneID:104917643
+head(sampleTable[2])
+<strong>$`V2`
+   [1]     18      7      0    199     71     23    111     25    276    254     73    384    262     49      0
+  [16]      6    202     99    176    100     59    144     16    165      0     42      0     72     62     30
+  [31]      0      1     12      0     72      0    186     77    390      1    788     24    261    780     18
+  [46]      0      0      0      0     92    658     45    240    196     12     15     42      0      3     24
+  [61]     27     27      0      0      3   1667      0     42    153      6    248    392      2    925    145</strong>
+
+sampleTable = as.data.frame(sampleTable)
+
+head(sampleTable)<strong>
+                V1  V2             V1.1 V2.1             V1.2 V2.2             V1.3 V2.3
+1 GeneID:104917625  18 GeneID:104917625   40 GeneID:104917625   29 GeneID:104917625   14
+2 GeneID:104917626   7 GeneID:104917626    6 GeneID:104917626   12 GeneID:104917626   17
+3 GeneID:104917627   0 GeneID:104917627    0 GeneID:104917627    0 GeneID:104917627    0
+4 GeneID:104917628 199 GeneID:104917628  188 GeneID:104917628  242 GeneID:104917628  250
+5 GeneID:104917629  71 GeneID:104917629   69 GeneID:104917629   62 GeneID:104917629   59
+6 GeneID:104917630  23 GeneID:104917630   23 GeneID:104917630    2 GeneID:104917630    1</strong>
+
+keep = c(1, 2, 4, 6, 8)
+
+sampleTable = sampleTable[,keep]
+
+head(sampleTable)
+<strong>                V1  V2 V2.1 V2.2 V2.3
+1 GeneID:104917625  18   40   29   14
+2 GeneID:104917626   7    6   12   17
+3 GeneID:104917627   0    0    0    0
+4 GeneID:104917628 199  188  242  250
+5 GeneID:104917629  71   69   62   59
+6 GeneID:104917630  23   23    2    1</strong>
+
+par(mfrow=c(2,2))
+colnames(sampleTable) = c("gene","LB2A_1","LB2A_2","LC2A_1","LC2A_2")
+hist(sampleTable[,2:5],main)</pre>
+<img src="untrimmed_histograms">
+
+Most of our genes are clustered around the origin. However, a few highly expressed genes are shifting the scale of the histogram so greatly that we cannot see anything. Let's remove these outliers from our histograms:
+
+<pre style="color: silver; background: black;">summary(sampleTable[,2:5])
+ <strong>    LB2A_1            LB2A_2            LC2A_1            LC2A_2       
+ Min.   :      0   Min.   :      0   Min.   :      0   Min.   :      0  
+ 1st Qu.:      0   1st Qu.:      0   1st Qu.:      0   1st Qu.:      0  
+ Median :     11   Median :     11   Median :     10   Median :     10  
+ Mean   :    980   Mean   :    958   Mean   :    955   Mean   :    973  
+ 3rd Qu.:    105   3rd Qu.:    103   3rd Qu.:     98   3rd Qu.:     99  
+ Max.   :5429730   Max.   :5461036   Max.   :4939489   Max.   :5224203  </strong></pre>
+ 
+ All four samples have similar distributions. It can be clearly seen that the maxima are outliers. Let's plot our histograms with a cut-off expression count around 2000 (double the mean):
+ 
+<pre style="color: silver; background: black;">under_2000 = sampleTable[,2:5]<2000
+dim(under_2000)
+<strong>[1] 27244     4</strong>
+head(under_2000)
+<strong>     LB2A_1 LB2A_2 LC2A_1 LC2A_2
+[1,]   TRUE   TRUE   TRUE   TRUE
+[2,]   TRUE   TRUE   TRUE   TRUE
+[3,]   TRUE   TRUE   TRUE   TRUE
+[4,]   TRUE   TRUE   TRUE   TRUE
+[5,]   TRUE   TRUE   TRUE   TRUE
+[6,]   TRUE   TRUE   TRUE   TRUE</strong>
+for(i in 2:5){hist(sampleTable[under_2000[,i-1],i])}</pre>
+<img src="trimmed_histograms.png">
+
+The data fits a negative binomial curve! Because the negative binomial curve is a probability distribution, should we create two separate curves (one for each condition) we can then compare the probabilities of a gene's count from one condition to the other. To fit the negative binomial curve, we need to know the negative binomial <i>function</i>, which is:
+<img src="negative_binomial_function.png">
+
+While this seems confusing, is actually common sense! The negative binomial interprets only binary events, or more simply put, events with only two possible outcomes. Most commonly those outcomes are success and failure. There is one main assumption made in this model: the outcome of each individual event does not affect the outcome of succeeding events. That is, the probability of success is the same for every single event, regardless if the previous event was a success or a failure. We will call this probability of success <i>p</i>. Suppose we now wanted to estimate the probability that we will have A successes and B failures in C tries with a probability of success <i>p</i>. Let's suppose that we are flipping an unfair coin with a probability of heads being 0.3. We want to know the probability of the flip being heads 2 times in 4 flips. We know from <a href="https://people.richland.edu/james/lecture/m170/ch05-rul.html">probability rules</a> that the answer is:
+
+<img src="binomial_explanation.png">
+
+Our equation does not exactly match the model. This is because the model also calculates the probability of success on the final try! For us that means <i>r = 3</i> and we're taking our probability of 2 successes in 4 tries and simply adding a 3rd success on the fifth try. That is:
+
+<img src="finished_binomial_explanation.png">
+
+
+
+<pre style="color: silver; background: black;">
+
 To see instructions for our "object" argument we can click on the link for DESeqDataFromHTSeqCount because our data is from HTSeq. However. Before that, let's think about how DESeq2 works. Let's start with step one, clinking on "estimateSizeFactors":
 
 <pre style="color: silver; background: black;">
@@ -704,49 +795,7 @@ Where k ∈ {<b>Z</b><sup>+</sup>}: 1 &le; k &le; K, g ∈ {<b>Z</b><sup>+</sup>
 
 Let's break down this equation: The left-hand side simply states that we are calculating an average expression (X-bar) of a certain gene given across samples with the same condition, We will start with the variables on the right hand side. X<sub>gkr</sub> is the count of our gene in replicate r in condition k and N<sub>kr</sub> is the total number of reads (counts across all genes) we sequenced in our replicte in condition k. Therefore, the fraction <sup>X<sub>gkr</sub></sup>&frasl;<sub>N<sub>kr</sub></sub> is the percentage of the total transcriptome of our sample for which gene g accounts. Now we move to our summation: we see we are calculating the percentage described prior for all of our replicaten in condition k and adding them together. By dividing this number by the total number of replicates <b>R</b> we simply have the average percentage of the transcriptome for which gene g accounts in condition k. We perform this operation for all genes in all replicates in all conditions. Now we have the average proportions of each gene per condition. We need to relate these averages across conditions. That is, we need to determine the relative increase or decrease of each genes percentage compared to the control group. For each gene this can be done simply by dividing the average percentage of each gene  in the control (the equation above for k = 1) by the percentage of the average percentage of the gene in the condition (the equation above for k > 1). We will call this result <b>&tau;</b><sub>g</sub>. Notice that this result is 1 for every single gene in the control. Should the expression profiles across conditions be exact this result will be 1 for every gene, period. Genes which are down-regulated on average will have values greater than 1, whereas genes which are up-regulated on average will have values between 0 and 1. Notice that this metric is unaffected by the transcriptome size. We can determine if on average the <i>transcriptome</i> of a condition is up or downregulated according to condition using the values calculated prior. Suppose a condition has a <b>&tau;</b><sub>g</sub> metric of 0.5 for all genes. That is, its genes are on average up-regulated by a factor of 2. Well then the condition's transcriptome would be expected to be twice as large! Knowing this, we could make this condition's transcriptome size equal with the control by scaling all counts by a factor of 0.5 (think about it, it's true!), giving us an effective normalization. You may be tempted to take the average of all <b>W</b><sub>i</sub>. Let's take a look at our distributions to see if this is a good or bad idea (this code will be presented with no explanation, do not focus too much on getting through it right now):
 
-<pre style="color: silver; background: black;">sampleTable = list()
-for (file in sampleFiles){sampleTable = append(sampleTable, read.table(file,header=F))}
-length(sampleTable)
-<strong>[1] 8</strong>
-
-head(sampleTable[1])
-$`V1`
-   [1] GeneID:104917625 GeneID:104917626 GeneID:104917627 GeneID:104917628 GeneID:104917629 GeneID:104917630
-   [7] GeneID:104917631 GeneID:104917632 GeneID:104917634 GeneID:104917635 GeneID:104917636 GeneID:104917637
-  [13] GeneID:104917638 GeneID:104917639 GeneID:104917640 GeneID:104917641 GeneID:104917642 GeneID:104917643
-head(sampleTable[2])
-<strong>$`V2`
-   [1]     18      7      0    199     71     23    111     25    276    254     73    384    262     49      0
-  [16]      6    202     99    176    100     59    144     16    165      0     42      0     72     62     30
-  [31]      0      1     12      0     72      0    186     77    390      1    788     24    261    780     18
-  [46]      0      0      0      0     92    658     45    240    196     12     15     42      0      3     24
-  [61]     27     27      0      0      3   1667      0     42    153      6    248    392      2    925    145</strong>
-
-sampleTable = as.data.frame(sampleTable)
-
-head(sampleTable)<strong>
-                V1  V2             V1.1 V2.1             V1.2 V2.2             V1.3 V2.3
-1 GeneID:104917625  18 GeneID:104917625   40 GeneID:104917625   29 GeneID:104917625   14
-2 GeneID:104917626   7 GeneID:104917626    6 GeneID:104917626   12 GeneID:104917626   17
-3 GeneID:104917627   0 GeneID:104917627    0 GeneID:104917627    0 GeneID:104917627    0
-4 GeneID:104917628 199 GeneID:104917628  188 GeneID:104917628  242 GeneID:104917628  250
-5 GeneID:104917629  71 GeneID:104917629   69 GeneID:104917629   62 GeneID:104917629   59
-6 GeneID:104917630  23 GeneID:104917630   23 GeneID:104917630    2 GeneID:104917630    1</strong>
-
-keep = c(1, 2, 4, 6, 8)
-
-sampleTable = sampleTable[,keep]
-
-head(sampleTable)
-<strong>                V1  V2 V2.1 V2.2 V2.3
-1 GeneID:104917625  18   40   29   14
-2 GeneID:104917626   7    6   12   17
-3 GeneID:104917627   0    0    0    0
-4 GeneID:104917628 199  188  242  250
-5 GeneID:104917629  71   69   62   59
-6 GeneID:104917630  23   23    2    1</strong>
-
-plot(density(sampleTable[,2]),main="Distribution of Counts")
+<pre style="color: silver; background: black;">plot(density(sampleTable[,2]),main="Distribution of Counts")
 for (i in 2:5){lines(density(sampleTable[,i]))}
 
 dim(sampleTable)
