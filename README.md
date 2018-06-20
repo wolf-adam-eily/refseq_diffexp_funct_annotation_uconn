@@ -647,6 +647,7 @@ BPPARAM		an optional parameter object passed internally to bplapply when paralle
 		
 The description states that DESeq2 fits <a href="https://en.wikipedia.org/wiki/Negative_binomial_distribution">negative binomial</a> curves to the counts distributions for each condition and then calculates Wald statistics. Let's see if the negative binomial is a good fit for the curves of our conditions:
 
+<pre style="color: silver; background: black;">
 sampleTable = list()
 for (file in sampleFiles){sampleTable = append(sampleTable, read.table(file,header=F))}
 length(sampleTable)
