@@ -825,6 +825,89 @@ plot(density(sampleTable[,2]),main="Distribution of Counts Improper Normalizatio
 
 The distribution is much more readily accessible now. However, this is not the true distribution of the data! The log2 transform, while common, aggressively shifts distributions toward 0 (read <a href="https://en.wikipedia.org/wiki/Natural_logarithm">here</a> if you're curious about the details). For very closely related samples where up-regulation or down-regulation may be more nuanced something as aggressive as the log2 transform may erase the differential expression. We avoid this dilemma by normalizing via scalars rather than functions.
 
+In order to assess the statistical significance of our findings to generate results we need to fit our negative binomial distribution. We need to know the probability of read being mapped, the total number of reads that were attempted to be mapped, and the total number of reads which succeeded in being mapped. It may seem tempting to use the information we have, i.e., take our transcriptome size as the total number of tries to find the probability. After further thought, the logic breaks down: We need to know the percentage of reads attempted to be mapped -- but all of our information are from reads which were successfully mapped! This also prevents us from determining our probability of success, as we cannot determine the number of failures. Let's instead try to write our distribution in variables we can actually measure -- the mean and variance. As stated before, the negative binomial distribution is binary. We will assign a success as a value of 1 and a failure as a value of 0. This way only successes will contribute to the mean (and to some extent, the variance). We can write the mean and <a href="https://en.wikipedia.org/wiki/Variance">variance</a> as functions of our probability of success and number of failures. Alternatively, we can write the mean and variance as the probabiliy of failure and number of successees. It does not matter which you use, but we will be using the former. The mean is:
+
+<img src="negative_binomial_mean.png">
+
+This becomes readily apparent when we think of it like this:
+
+<img src="mean_explanation.png">
+
+This works because the fracitonal component has the same units in both the numerator and denominator (tries per sample). These dimensions reduce to give us simple the number of successes we can expect per failure. Now, if we multiply by the number of failures we observed we get the average number of successes, not as a percentage. Because only successes contribute to the value of the function, the average number of successes is itself the mean.
+
+Next we want to call the variance in these terms. Remember, the variance is how much we expect a sample to deviate from the average. Our equation is:
+
+<img src="variance.png">
+
+This becomes straight-forward when we think of it like this:
+
+<img src="variance_explained.png">
+
+This formula describes the ratio of how many more times there is a success rather than a fail per try. Funny enough, this is the intuitive meaning behind the variance which often becomes abstract in other models. Now let's write our negative binomial distribution in terms of its mean and variance:
+
+<img src="new_binomial.png">
+
+The next question we have is to determine the mean and variance for our data as accurately as we can. This is the next step in DESeq2, called "estimating dipsersion". Dispersion is just another term for variance. Let's have a look how DESeq2 determines the mean and variance (click on estimateDispersions):
+
+<pre style="color: silver; background: black;">estimateDispersions {DESeq2}	R Documentation
+Estimate the dispersions for a DESeqDataSet
+
+<strong>Description</strong>
+
+<em>This function obtains dispersion estimates for Negative Binomial distributed data.</em>
+
+<strong>Usage</strong>
+
+## S4 method for signature 'DESeqDataSet'
+estimateDispersions(object, fitType = c("parametric",
+  "local", "mean"), maxit = 100, quiet = FALSE, modelMatrix = NULL,
+  minmu = 0.5)
+<strong>Arguments</strong>
+
+object		a DESeqDataSet
+fitType		either "parametric", "local", or "mean" for the type of fitting of dispersions to the mean intensity.
+parametric 	- fit a dispersion-mean relation of the form:
+			dispersion = asymptDisp + extraPois / mean
+			via a robust gamma-family GLM. The coefficients asymptDisp and extraPois are given in the attribute 	
+			coefficients of the dispersionFunction of the object.
+local 		- use the locfit package to fit a local regression of log dispersions over log base mean (normal scale means and 
+			dispersions are input and output for dispersionFunction). The points are weighted by normalized mean count in 
+			the local regression.
+mean 		- use the mean of gene-wise dispersion estimates.
+maxit		control parameter: maximum number of iterations to allow for convergence
+quiet		whether to print messages at each step
+modelMatrix	an optional matrix which will be used for fitting the expected counts. by default, the model matrix is constructed 
+		from design(object)
+minmu		lower bound on the estimated count for fitting gene-wise dispersion
+<strong>Details</strong>
+
+Typically the function is called with the idiom:
+
+dds <- estimateDispersions(dds)
+
+The fitting proceeds as follows: for each gene, an estimate of the dispersion is found which maximizes the Cox Reid-adjusted profile likelihood (the methods of Cox Reid-adjusted profile likelihood maximization for estimation of dispersion in RNA-Seq data were developed by McCarthy, et al. (2012), first implemented in the edgeR package in 2010); a trend line capturing the dispersion-mean relationship is fit to the maximum likelihood estimates; a normal prior is determined for the log dispersion estimates centered on the predicted value from the trended fit with variance equal to the difference between the observed variance of the log dispersion estimates and the expected sampling variance; finally maximum a posteriori dispersion estimates are returned. This final dispersion parameter is used in subsequent tests. The final dispersion estimates can be accessed from an object using dispersions. The fitted dispersion-mean relationship is also used in varianceStabilizingTransformation. All of the intermediate values (gene-wise dispersion estimates, fitted dispersion estimates from the trended fit, etc.) are stored in mcols(dds), with information about these columns in mcols(mcols(dds)).
+
+The log normal prior on the dispersion parameter has been proposed by Wu, et al. (2012) and is also implemented in the DSS package.
+
+In DESeq2, the dispersion estimation procedure described above replaces the different methods of dispersion from the previous version of the DESeq package.
+
+estimateDispersions checks for the case of an analysis with as many samples as the number of coefficients to fit, and will temporarily substitute a design formula ~ 1 for the purposes of dispersion estimation. Note that analysis of designs without replicates will be removed in the Oct 2018 release: DESeq2 v1.22.0, after which DESeq2 will give an error.
+
+The lower-level functions called by estimateDispersions are: estimateDispersionsGeneEst, estimateDispersionsFit, and estimateDispersionsMAP.</pre>
+
+We see that the only required argument on our end is the "object" argument. DESeq2 will estimate the dispersions using all three fits and select the most robust option. Let's investigate the procedure:
+
+A note: While I strongly encourage all readers to continue along, those without study to at least linear algebra and multivariate calculus are at a distinct disadvantage in the explanation of the "estimateDispersions" function. If this applies to you, feel free to skip this section. For all others, continue on:
+
+The first sentence informs us that DESeq2 calculates an estimate of the dispersion for each gene, and combines those estimates to create the dispersion estimate for the model. Here is where we see the fit types come into play. DEseq2 says it maximizes the <a href="https://www.nuffield.ox.ac.uk/users/cox/cox223.pdf">Cox Reid-adjusted profile likelihood</a> to determine the variance per gene. Before we consider that. Let's review profile likelihoods:
+
+Likelihood functions and probability distributions are one and the same. We will switch to using "likelihood function" now in place of "distribution". The likelihood function is called such because if we evaluate some value along its x-axis the result is the <i>likelihood</i> that the x-value in question appears in our sample. Thus, for us, we see that our negative binomial distribution is a likelihood function with arguments x, &mu;, and &sigma;<sup>2</sup>. That is:
+
+<img src="likelihood1.png">
+
+Which means the likelihood of x, given &mu; and &sigma;<sup>2</sup> is (function).
+
+Suppose we had an experimentally deteremined value of &mu; in which we were very confident. We can hold &mu; constant and maximize the likelihood function with respect to &sigma;<sup>2</sup> to determine the <i>maximum likelihood estimate</i> of &sigma;<sup>2</sup>. For those of you scratching your heads, I recommend reading about <a href="https://en.wikipedia.org/wiki/Derivative">derivatives</a>, as a concrete understanding of calculus is somewhat necessary for the bioinformatician. Now, should we calculuate the partial derivative of the likelihood function with respect to &sigma;<sup>2</sup> we will encounter a very complex process with <a href="https://en.wikipedia.org/wiki/Product_rule">product rules</a> and <a href="https://en.wikipedia.org/wiki/Quotient_rule">quotient rules</a>. We do not want that. We know that the function log(x) is a <a href="https://en.wikipedia.org/wiki/Monotonic_function">monotone</a> map of <b>R</b><sup>2</sup>. All this means is that for any ordered set of numbers (x's), log(x) will increase if x increase and decrease if x decreases. Therefore, if we have a function <b>X</b>, and transform it via log to log(<b>X</b>), their >a href="https://en.wikipedia.org/wiki/Maxima_and_minima">maxima</a> will appear at the same value of <b>X</b>. Therefore, 
 
 It is important with any R, Python, Perl, or similar analysis that we are as clear as possible about each variable and step. One reason is to hold ourselves accountable and limit the risk of a small mistake which produces an erroneous result (and our paper getting recalled). Another, but incredibly important reason, is so that fellow scientists who are following or reviewing our work do not have to make a single assumption about our process. This maximizes our reproducibility, a crucial component of our work being verified. Let's describe our samples for ourselves and others:
 <pre style="color: silver; background: black;">
