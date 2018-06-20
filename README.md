@@ -693,7 +693,7 @@ head(sampleTable)
 par(mfrow=c(2,2))
 colnames(sampleTable) = c("gene","LB2A_1","LB2A_2","LC2A_1","LC2A_2")
 hist(sampleTable[,2:5],main)</pre>
-<img src="untrimmed_histograms">
+<img src="untrimmed_histograms.png">
 
 Most of our genes are clustered around the origin. However, a few highly expressed genes are shifting the scale of the histogram so greatly that we cannot see anything. Let's remove these outliers from our histograms:
 
