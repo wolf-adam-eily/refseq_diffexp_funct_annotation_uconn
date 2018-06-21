@@ -923,7 +923,6 @@ Because our domain is <b>R</b>, we need to replace the factorial with the <a hre
 Our values are sufficiently large; we use <a href="https://en.wikipedia.org/wiki/Stirling%27s_approximation">Stirling's approximation</a> of the <a href="https://en.wikipedia.org/wiki/Gamma_function#The_log-gamma_function">log-gamma</a> function formula:
 
 <img src="likelihood5.png">
-
 Combining like terms:
 
 <img src="likelihood6.png">
@@ -934,8 +933,49 @@ At least we can determine our maximum-likelihood estimates using partial derivat
 
 <img src="likelihood8.png">
 
-We solve these for the mean in terms of the variance and an observed value (x) and the variance in terms of the mean and an observed value(x), respectively. :
+We solve these for the mean in terms of the variance and an observed value (x) and the variance in terms of the mean and an observed value(x), respectively. If this seems like far too much effort and somewhat improbable, you're absolutely correct. The algebraic difficulty of these partial differential equations far exceeds the amount of work we have to do to find our information. We have thousands of trials if we view each gene as such. We can extract any general trends from the dispersion and mean of each gene and fit those trends to its own distribution. The mean is the average number of successes and the variance is the expected number of additional or fewer successes for a random trial squared. If the ratio of variance over the mean for each gene fits a distribution model, we can find the maximum-likelihood estimate of the variance over mean ratio.  Lastly, multiplying the variance-mean ratio by the actual mean of our data (in this case, the estimated transcriptome size determined earlier) will yield the variance of the data. Let's create a a histogram of the variance/mean ratio:
 
+<pre style="color: silver; background: black;">distribution = vector(length=nrow(sampleTable))
+for (i in 1:nrow(sampleTable)){distribution[i]=var(t(sampleTable[i,2:5]))/mean(t(sampleTable[i,2:5]))}
+distribution = as.matrix(distribution,ncol=1)
+head(distribution)
+<strong>           [,1]
+[1,]  5.4224422
+[2,]  2.4444444
+[3,]        NaN
+[4,]  4.3211983
+[5,]  0.4942529
+[6,] 12.5918367</strong>
+##remove Nas
+distribution = distribution[complete.cases(distribution),]
+summary(distribution)
+    <strong>Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+    0.00     0.75     2.10    54.81     8.05 42314.36 </strong>
+##let's take only values below 100
+under_100 = distribution < 100
+length(distribution)
+<strong>[1] 19204</strong>
+hist(distribution)</pre>
+
+<img src="distribution1.png">
+
+This distribution looks a lot like the negative binomial distribution. But our bins are too large. Let's make the bins smaller and see:
+<pre style="color: silver; background: black;">
+hist(distribution,breaks=1000)</pre>
+
+<img src="distribution2.png">
+
+The spike being slightly to the right of 0 and the bin at 0 presenting symmetry combined with the steepness of the descent tells us that this is the (mostly) right-hand side of the <a href="https://en.wikipedia.org/wiki/Normal_distribution">normal distribution</a>. Truthfully, the steepness of the curve is the giveaway. Notice the gradual descent of the negative binomial distribution when <a href="https://en.wikipedia.org/wiki/Negative_binomial_distribution#/media/File:Negbinomial.gif">r = 1</a>. Knowing that our variance-mean ratio is normally distributed, we are going to repeat the process of creating the maximum-likelihood estimate with the normal distribution equation. The derivation of the equation is much beyond the scope of this tutorial. Therefore, unlike the negative binomial distribution, its derivation will not be included:
+
+<img src="partials_normal.png">
+
+These results make sense. For a normal distribution the mean has the highest likelihood. Therefore, given a variance, the mean maximum-likelihood estimate would be greatest when it equals x. Likewise, the variance is how much we expect x to deviate from the mean. Therefore, given if we know x and have calculuated a mean, the normal distribution will fit x the greatest when the distance of x from the mean is the variance. 
+
+DESeq2 calculates the variance-mean ratio of the dataset by approximating the variance-mean ratios for each gene given a normal distribution. You may think it as simple as finding the maximum-likelihood estimates. However, the partial differential equations have <a href="https://en.wikipedia.org/wiki/Second_derivative">second-order behavior</a>. That is, even though we have found a maximum for the given data, <i>the parameter in question is expected to move, and change the likelihood, in accordance with its second derivative</i>. If you are unsure of the theory behind this, read about <a href="https://en.wikipedia.org/wiki/Acceleration">acceleration</a> for insight. Let's see how much our parameters are expected to move:
+
+<img src="second_order_normal.png">
+
+Therefore, at our maximum-likelihod estimate, we expect the <b>mean itself</b> to change by -1/(variance). This illustrates that we do not actually having a maximum-likelihood for the model, but only for our data! We want to find the maximum-likelihood for the parameter in the model, as our data is subject to various error. We have all of the understanding laid out for the Cox Reid-Adjusted Profile Likelihood. Which we will cover next:
 
 
 
