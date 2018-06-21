@@ -912,7 +912,37 @@ Suppose we had an experimentally deteremined value of &mu; in which we were very
 
 <img src="likelihood2.png">
 
-Let's look at the partial derivatives of our log-likelihood:
+We replace the binomial coefficient with its formula:
+
+<img src="likelihood3.png">
+
+Because our domain is <b>R</b>, we need to replace the factorial with the <a href="https://en.wikipedia.org/wiki/Gamma_function">gamma function</a>:
+
+<img src="likelihood4.png">
+
+Our values are sufficiently large; we use <a href="https://en.wikipedia.org/wiki/Stirling%27s_approximation">Stirling's approximation</a> of the <a href="https://en.wikipedia.org/wiki/Gamma_function#The_log-gamma_function">log-gamma</a> function formula:
+
+<img src="likelihood5.png">
+
+Combining like terms:
+
+<img src="likelihood6.png">
+
+At least we can determine our maximum-likelihood estimates using partial derivatives. The maximum-likelihood estimate for the mean and variance are (although the variance has an exponent, we count the variance as order of 1):
+
+<img src="likelihood7.png">
+
+<img src="likelihood8.png">
+
+We solve these for the mean in terms of the variance and an observed value (x) and the variance in terms of the mean and an observed value(x), respectively. :
+
+
+
+
+
+We now take our partial derivatives for our maximum-likelihood estimate formulae:
+
+
 
 
 
