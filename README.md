@@ -975,7 +975,11 @@ DESeq2 calculates the variance-mean ratio of the dataset by approximating the va
 
 <img src="second_order_normal.png">
 
-Therefore, at our maximum-likelihod estimate, we expect the <b>mean itself</b> to change by -1/(variance). This illustrates that we do not actually have a maximum-likelihood for the model, but only for our data! We want to find the maximum-likelihood for the parameter in the model, as our data is subject to various error. We have all of the understanding laid out for the Cox Reid-Adjusted Profile Likelihood. Which we will cover next:
+Therefore, at our maximum-likelihod estimate, we expect the <b>mean itself</b> to change by -1/(variance). This illustrates that we do not actually have a maximum-likelihood for the model, but only for our data! We want to find the maximum-likelihood for the parameter in the model, as our data is subject to various error. We have all of the understanding laid out for the Cox Reid-Adjusted Profile Likelihood. Which we will cover next: 
+
+The Cox Reid-Adjusted Profile Likelihood is an algorithm for generating more accurate estimations of parameters in statistical modeling.The parameters fit into two categories: &psi;, the parameters of interest, and &phi;, all other parameters (known as nuisance parameters). Furthermore, the likelihood of &psi; is directly related to the value of the likelihood function given &phi; and a set of observations. We call the value of the likelihood function with a &psi; of our choosing given&phi; and a set of observations <i>y</i> the likelihood profile of &psi;:
+
+
 
 
 
