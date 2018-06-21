@@ -975,7 +975,7 @@ DESeq2 calculates the variance-mean ratio of the dataset by approximating the va
 
 <img src="second_order_normal.png">
 
-Therefore, at our maximum-likelihod estimate, we expect the <b>mean itself</b> to change by -1/(variance). This illustrates that we do not actually having a maximum-likelihood for the model, but only for our data! We want to find the maximum-likelihood for the parameter in the model, as our data is subject to various error. We have all of the understanding laid out for the Cox Reid-Adjusted Profile Likelihood. Which we will cover next:
+Therefore, at our maximum-likelihod estimate, we expect the <b>mean itself</b> to change by -1/(variance). This illustrates that we do not actually have a maximum-likelihood for the model, but only for our data! We want to find the maximum-likelihood for the parameter in the model, as our data is subject to various error. We have all of the understanding laid out for the Cox Reid-Adjusted Profile Likelihood. Which we will cover next:
 
 
 
