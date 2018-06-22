@@ -971,16 +971,36 @@ The spike being slightly to the right of 0 and the bin at 0 presenting symmetry 
 
 These results make sense. For a normal distribution the mean has the highest likelihood. Therefore, given a variance, the mean maximum-likelihood estimate would be greatest when it equals x. Likewise, the variance is how much we expect x to deviate from the mean. Therefore, given if we know x and have calculuated a mean, the normal distribution will fit x the greatest when the distance of x from the mean is the variance. 
 
-DESeq2 calculates the variance-mean ratio of the dataset by approximating the variance-mean ratios for each gene given a normal distribution. You may think it as simple as finding the maximum-likelihood estimates. However, the partial differential equations have <a href="https://en.wikipedia.org/wiki/Second_derivative">second-order behavior</a>. That is, even though we have found a maximum for the given data, <i>the parameter in question is expected to move, and change the likelihood, in accordance with its second derivative</i>. If you are unsure of the theory behind this, read about <a href="https://en.wikipedia.org/wiki/Acceleration">acceleration</a> for insight. Let's see how much our parameters are expected to move:
+DESeq2 calculates the variance-mean ratio of the dataset by approximating the variance-mean ratios for each gene given a normal distribution. You may think it as simple as finding the maximum-likelihood estimates. However, the partial differential equations have <a href="https://en.wikipedia.org/wiki/Second_derivative">second-order behavior</a>. That is, even though we have found a maximum for the given data, <i>the likelihood for the given values is expected to move in accordance with its second derivative</i>. Our actual likelihood for the given data is thus slightly beneath the maximum, leaving room for improvement. If you are unsure of the theory behind this, read about <a href="https://en.wikipedia.org/wiki/Acceleration">acceleration</a> for insight. Let's see how much our parameters are expected to move:
 
 <img src="second_order_normal.png">
 
-Therefore, at our maximum-likelihod estimate, we expect the <b>mean itself</b> to change by -1/(variance). This illustrates that we do not actually have a maximum-likelihood for the model, but only for our data! We want to find the maximum-likelihood for the parameter in the model, as our data is subject to various error. We have all of the understanding laid out for the Cox Reid-Adjusted Profile Likelihood. Which we will cover next: 
+Therefore, at our maximum-likelihod estimate, we expect the <b>likelihood itself</b> to change by -1/(variance) for the given data. We have maximized the data, but the true likelihood is more complex than only the first-order behavior. We have all of the understanding laid out for the Cox Reid-Adjusted Profile Likelihood. Which we will cover next: 
 
-The Cox Reid-Adjusted Profile Likelihood is an algorithm for generating more accurate estimations of parameters in statistical modeling.The parameters fit into two categories: &psi;, the parameters of interest, and &phi;, all other parameters (known as nuisance parameters). Furthermore, the likelihood of &psi; is directly related to the value of the likelihood function given &phi; and a set of observations. We call the value of the likelihood function with a &psi; of our choosing given&phi; and a set of observations <i>y</i> the likelihood profile of &psi;:
+The Cox Reid-Adjusted Profile Likelihood is an algorithm for generating more accurate estimations of parameters in statistical modeling.The parameters fit into two categories: &psi;, the parameters of interest, and &phi;, all other parameters (known as nuisance parameters). Furthermore, the likelihood of &psi; is the value of the likelihood function given &phi; and a set of observations. We call the value of the log-likelihood function with a &psi; of our choosing given &phi; and a set of observations <i>y</i> the log-likelihood profile of &psi;:
 
+<img src="likelihood_profile.png">
 
+Suppose instead that we define the nuisance parameters as a function of &psi; and all parameters which are orthogonal to it by the <a href="https://en.wikipedia.org/wiki/Fisher_information_metric">Fisher metric</a>, &lambda;. Therefore:
 
+<img src="parameterization.png">
+
+Such that for &psi; and all &lambda;:
+
+<img src="fisher_metric.png">
+
+Let's take a moment to think about why a value of 0 for the Fisher metric creates orthogonal pairings.
+
+We know that the integral of our likelihood function of all possible values of x is equal to 1. Let's consider a few scenarios:
+Because the variables are defined, we know that neither of the partial derivatives are 0 (the derivative of a first-order variable is 1). Suppose that the derivatives for both are positive for all x, then our final answer will be a positive number. Likewise, if both derivatives are negative for all x our final answer will be a positive number. This means that there must be some values of x for which the first partial derivative is positive and the second is negative. Should this be the case for all x then the answer will be a negative value. Therefore, there must be a balance that for some x that one derivative is positive and the other negative and some other x that both derivatives are negative or positive. For an answer of 0 the integral over values of x where both are negative or positive is <i>exactly equal</i> to the integral over values of x where one is negative and one is positive. If we think of the inside of the integral as a distribution of its own, that is:
+
+<img src="fisher_likelihood.png">
+
+then there is an exactly 50% chance that the derivatives move together or in opposite directions. We can safely assert that they are independent of one another, and the behavior of one does not influence the behavior of the other. Thus, they are orthogonal. Therefore, in our parameterization:
+
+<img src="parameterization.png">
+
+we parametrize our nuisance parameters as a function of our parameter of interest and all parameters whose behavior do not change the parameter of interest. If you are wondering why this is so important, suppose we determine are attempting to determine the maximum likelihood of &psi; for given &phi; where &psi; is a function of &phi;. First, we need to determine the maximum likelihood of &phi; given what we think &psi; is. Because &psi; is a function of &phi;, when we determine the maximum likelihood of &phi; we have just changed the value of &psi;! As long as &psi; is a function of &phi; we have no way to assess the likelihood of our static, chosen &psi;. This is why we need to reparameterize our nuisance parameters such that it is composed of the set of all parameters which will not interfere with the likelihood of our parameter of interest.
 
 
 
