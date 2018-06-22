@@ -996,13 +996,43 @@ Because the variables are defined, we know that neither of the partial derivativ
 
 <img src="fisher_likelihood.png">
 
-then there is an exactly 50% chance that the derivatives move together or in opposite directions. We can safely assert that they are independent of one another, and the behavior of one does not influence the behavior of the other. Thus, they are orthogonal. Therefore, in our parameterization:
+then there is an exactly 50% chance that the derivatives move together or in opposite directions. We can safely assert that they are independent of one another, and the behavior of one does not influence the behavior of the other. Thus, they are orthogonal. You may be wondering why we have added in the minimum of the inside of the integral. THe integral may have negative values, which makes no physical sense in a likelihood model! Therefore, we shift the entire distribution up by its greatest negative value so that all values are above 0. Therefore, in our parameterization:
 
 <img src="parameterization.png">
 
-we parametrize our nuisance parameters as a function of our parameter of interest and all parameters whose behavior do not change the parameter of interest. If you are wondering why this is so important, suppose we determine are attempting to determine the maximum likelihood of &psi; for given &phi; where &psi; is a function of &phi;. First, we need to determine the maximum likelihood of &phi; given what we think &psi; is. Because &psi; is a function of &phi;, when we determine the maximum likelihood of &phi; we have just changed the value of &psi;! As long as &psi; is a function of &phi; we have no way to assess the likelihood of our static, chosen &psi;. This is why we need to reparameterize our nuisance parameters such that it is composed of the set of all parameters which will not interfere with the likelihood of our parameter of interest.
+we parametrize our nuisance parameters as a function of our parameter of interest and all parameters whose behavior do not change the parameter of interest. If you are wondering why this is so important, suppose we determine are attempting to determine the maximum likelihood of &psi; for given &phi; where &psi; is a function of &phi;. First, we need to determine the maximum likelihood of &phi; given what we think &psi; is. Because &psi; is a function of &phi;, when we determine the maximum likelihood of &phi; we have just changed the value of &psi;! As long as &psi; is a function of &phi; we have no way to assess the likelihood of our static, chosen &psi;. This is why we need to reparameterize our nuisance parameters such that it is composed of the set of all parameters which will not interfere with the likelihood of our parameter of interest. With our parameterization, the Cox Reid-Adjusted Profile Likelihood is:
 
+<img src="adjusted_profile_1.png">
 
+Where &lambda;<sub>mle</sub> is the maximum-likelihood estimate of the orthogonal nusiance parameters given observations <i>x</x> and our guess for &psi;, and variables are as otherwise described. The variable <i>j<sub>&lambda;&lambda;</sub>(&psi;,&lambda;)</i> is an n by n matrix (n being the number of lambdas) where the (r,s)th entry is:
+
+<img src="lambda_matrix.png">
+
+Let's dig a little deeper into this formula. First, the term:
+
+<img src="lambda_matrix.png">
+
+may be thought of as how the likelihood changes with &lambda;<sup>r</sup> as we account for the influence of &lambda;<sup>s</sup> on &lambda;<sup>r</sup>. The matrix <i>j<sub>&lambda;&lambda;</sub></i> then accounts for the way in which each parameter affects the likelihood while accounting for how the parameter itself is influenced with &psi; remaining constant (as &psi; and all &lambda; are orthogonal, this would not work if we could not hold &psi; constant!). If we view the matrix as an n dimensional vector space with each column, s, representing how the likelihood changes with the parameter &lambda;<sup>s</sup> and each row, r, representing how the parameter &lambda;<sup>s</sup> is influenced by &lambda;<sup>r</sup>. How the likelihood changes in total acccording to &lambda;<sup>s</sup> is described by taking the entire column s as a vector-function (each r representing a different axis). Note that the columns are not necessarily orthogonal. However, if we can find the total change along each axis, we can then simply multiply those changes across each axis to get the volume represented by the matrix. If you had read the acceleration page linked earlier then you know that the volume calculation is the <a href="https://en.wikipedia.org/wiki/Integral">total change</a> in the likelihood at the maximum. Lucky for us, the <a href="https://en.wikipedia.org/wiki/Determinant#Definition">determinant</a> is the signed area of a matrix. That is, given our n-dimensional vector space represented by our matrix, the determinant represents exactly as described prior -- the volume associated with the change alongisde each axis given the vectors in the matrix. Notice that the matrix is symmetric along its diagonal. This means that each value is actually repeated twice, and we have doubled the length of the change along each axis! This is a simple fix, we can simply cut the total volume of our matrix by half (as every side may be represnted as 2n) to calculate the true change of the likelihood at the maximum. 
+
+You may be wondering why we are taking the log of the determinant when the values in the matrix are calculated based on the log-likelihood, giving us a double log where you may not think one is needed. However, observe the behavior when we take the log of the volume of a cube:
+
+<img src="log_cube.png">
+
+We get the individual changes associated with each side! Now suppose that we place our l, w, and h along the x, y, and z axes and place them in a matrix such that the first column of the matrix represents x, the second column in the matrix represents y, and the final column in the matrix represents z. Each row represents a vector. We can represent our cube as:
+
+<img src="matrix_cube.png">
+
+Now let's calculate the volume of our cube and take its log:
+
+<img src="log_determinant.png">
+
+Where <b>tr</b> is the <a href="https://en.wikipedia.org/wiki/Trace_(linear_algebra)">trace</a>. This identity holds for any matrix symmetric along its diagonal (I'll let you ponder why this is so), which we have. You may be wondering why this is advantageous. There are two main reasons: First, imagine that you had 20 or 30 nuisance parameters in a very large model. While software like R can calculate the determinant of large matrices, they cannot calculate abstract derivatives! Therefore, you will have to determine each first and second derivative by hand. Accounting for the symmetry, that is 200 to 450 derivatives! Notice for us:
+
+<img src="j_matrix.png">
+
+Which, counting both first and second derivatives is only 40 or 60 for the example prior. The 
+
+B which details how the likelihood is expected to change at its maximum then the integral of all the vector-functions combined will be the total expeted change in the likelihood at its maximum. Because the integral calculates 
 
 We now take our partial derivatives for our maximum-likelihood estimate formulae:
 
