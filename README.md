@@ -1038,7 +1038,7 @@ The Cox Reid works simply for the normal distribution as its two parameters, &mu
 
 <img src="cox_reid_normal.png">
 
-Which is much simpler than what we had modeling the dispersion as a negative binomial distribution!
+Which is much simpler than what we had modeling the dispersion as a negative binomial distribution (also, interestingly enough, our likelihood is a little bit higher than expected)!
 
 We use the Cox Reid-adjusted profile-likelihood to calculate our variance-mean ratio according to a normal distribution for each gene, also calculating the actual variance-mean ratio for that gene. We perform a <a href="https://en.wikipedia.org/wiki/Linear_regression">linear regression</a> on the maximum likelihood and experimental variance-mean ratios. Using the linear regression to determine our expected variance-mean ratio, we create a normal distribution which captures our experimental variance-mean relations by setting the mean to the expected variance-mean ratio (from the linear regression) and the variance (of the normal distribution) to the <a href="https://en.wikipedia.org/wiki/Expected_value">expected value</a> of (expected variance-mean ratio - observed variance-mean ratio)<sup>2</sup>. Lastly, we use <a href="https://brilliant.org/wiki/bayes-theorem/">Bayes' Theorem</a> to assess the <a href="https://en.wikipedia.org/wiki/Posterior_probability">posterior probability</a> of our model, which we maximize to find our final most-likely variance-mean ratio.
 
