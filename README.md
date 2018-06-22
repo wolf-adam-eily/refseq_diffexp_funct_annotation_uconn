@@ -1045,7 +1045,17 @@ The Cox Reid works simply for the normal distribution as its two parameters, &mu
 
 Which is much simpler than what we had modeling the dispersion as a negative binomial distribution (also, interestingly enough, our likelihood is a little bit higher than expected)!
 
-We use the Cox Reid-adjusted profile-likelihood to calculate our variance-mean ratio according to a normal distribution for each gene, also calculating the actual variance-mean ratio for that gene. We perform a <a href="https://en.wikipedia.org/wiki/Linear_regression">linear regression</a> on the maximum likelihood and experimental variance-mean ratios. Using the linear regression to determine our expected variance-mean ratio, we create a normal distribution which captures our experimental variance-mean relations by setting the mean to the expected variance-mean ratio (from the linear regression) and the variance (of the normal distribution) to the <a href="https://en.wikipedia.org/wiki/Expected_value">expected value</a> of (expected variance-mean ratio - observed variance-mean ratio)<sup>2</sup>. Lastly, we use <a href="https://brilliant.org/wiki/bayes-theorem/">Bayes' Theorem</a> to assess the <a href="https://en.wikipedia.org/wiki/Posterior_probability">posterior probability</a> of our model, which we maximize to find our final most-likely variance-mean ratio.
+We use the Cox Reid-adjusted profile-likelihood to calculate our variance-mean ratio according to a normal distribution for each gene, also calculating the actual variance-mean ratio for that gene. We perform a <a href="https://en.wikipedia.org/wiki/Linear_regression">linear regression</a> on the maximum-likelihood variance-mean ratios, with the mean along the x-axis and the variance along the y-axis. Now, whenever we look at a single gene its mean can be taken and we consult our linear regression, which will point us to its expected. Then a normal distribution is created which maximizes the likelihood of all of our sample gene's variance-mean ratios. To do this, a few steps are followed:
+
+1. We take the mean of <i>all</i> the sample gene indiviudal means
+2. We use this mean with our linear regression to determine the expected variance
+3. The mean of the normal distribution (that we are creating now) is set to the variance-mean ratio from steps 1 and 2
+4. The variance is set to the average of the difference of each experimental variance-mean ratio from the expected, squared (the formal definition)
+
+Lastly, we use <a href="https://brilliant.org/wiki/bayes-theorem/">Bayes' Theorem</a> to assess the <a href="https://en.wikipedia.org/wiki/Posterior_probability">posterior probability</a> of our model, which we maximize to find our final most-likely variance-mean ratio.
+
+
+
 
 It is important with any R, Python, Perl, or similar analysis that we are as clear as possible about each variable and step. One reason is to hold ourselves accountable and limit the risk of a small mistake which produces an erroneous result (and our paper getting recalled). Another, but incredibly important reason, is so that fellow scientists who are following or reviewing our work do not have to make a single assumption about our process. This maximizes our reproducibility, a crucial component of our work being verified. Let's describe our samples for ourselves and others:
 <pre style="color: silver; background: black;">
