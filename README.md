@@ -930,11 +930,13 @@ Combining like terms:
 
 <img src="likelihood6.png">
 
-At least we can determine our maximum-likelihood estimates using partial derivatives. The maximum-likelihood estimate for the mean and variance are (although the variance has an exponent, we count the variance as order of 1):
+At last we can determine our maximum-likelihood estimates using partial derivatives. The maximum-likelihood estimate for the mean and variance are (although the variance has an exponent, we count the variance as order of 1):
 
 <img src="likelihood7.png">
 
 <img src="likelihood8.png">
+
+<b><u><strong>YOU SHOULD NOW BEGIN PAYING FULL ATTENTION</b></u></strong>
 
 We solve these for the mean in terms of the variance and an observed value (x) and the variance in terms of the mean and an observed value(x), respectively. If this seems like far too much effort and somewhat improbable, you're absolutely correct. The algebraic difficulty of these partial differential equations far exceeds the amount of work we have to do to find our information. We have thousands of trials if we view each gene as such. We can extract any general trends from the dispersion and mean of each gene and fit those trends to its own distribution. The mean is the average number of successes and the variance is the expected number of additional or fewer successes for a random trial squared. If the ratio of variance over the mean for each gene fits a distribution model, we can find the maximum-likelihood estimate of the variance over mean ratio.  Lastly, multiplying the variance-mean ratio by the actual mean of our data (in this case, the estimated transcriptome size determined earlier) will yield the variance of the data. Let's create a a histogram of the variance/mean ratio:
 
