@@ -996,7 +996,7 @@ Because the variables are defined, we know that neither of the partial derivativ
 
 <img src="fisher_likelihood.png">
 
-then there is an exactly 50% chance that the derivatives move together or in opposite directions. We can safely assert that they are independent of one another, and the behavior of one does not influence the behavior of the other. Thus, they are orthogonal. You may be wondering why we have added in the minimum of the inside of the integral. THe integral may have negative values, which makes no physical sense in a likelihood model! Therefore, we shift the entire distribution up by its greatest negative value so that all values are above 0. Therefore, in our parameterization:
+then there is an exactly 50% chance that the derivatives move together or in opposite directions. We can safely assert that they are independent of one another, and the behavior of one does not influence the behavior of the other. Thus, they are orthogonal. You may be wondering why we have added in the minimum of the inside of the integral. The integral may have negative values, which makes no physical sense in a likelihood model! Therefore, we shift the entire distribution up by its greatest negative value so that all values are above 0. Therefore, in our parameterization:
 
 <img src="parameterization.png">
 
@@ -1004,7 +1004,7 @@ we parametrize our nuisance parameters as a function of our parameter of interes
 
 <img src="adjusted_profile_1.png">
 
-Where &lambda;<sub>mle</sub> is the maximum-likelihood estimate of the orthogonal nusiance parameters given observations <i>x</x> and our guess for &psi;, and variables are as otherwise described. The variable <i>j<sub>&lambda;&lambda;</sub>(&psi;,&lambda;)</i> is an n by n matrix (n being the number of lambdas) where the (r,s)th entry is:
+Where &lambda;<sub>mle</sub> is the maximum-likelihood estimate of the orthogonal nusiance parameters given observations <i>x</i> and our guess for &psi;, and variables are as otherwise described. The variable <i>j<sub>&lambda;&lambda;</sub>(&psi;,&lambda;)</i> is an n by n matrix (n being the number of lambdas) where the (r,s)th entry is:
 
 <img src="lambda_matrix.png">
 
