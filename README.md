@@ -1050,10 +1050,25 @@ We use the Cox Reid-adjusted profile-likelihood to calculate our variance-mean r
 1. We take the mean of <i>all</i> the sample gene indiviudal means
 2. We use this mean with our linear regression to determine the expected variance
 3. The mean of the normal distribution (that we are creating now) is set to the variance-mean ratio from steps 1 and 2
-4. The variance is set to the average of the difference of each experimental variance-mean ratio from the expected, squared (the formal definition)
+4. The variance is set to the average of the difference of each experimental variance-mean ratio from the value in step 3, squared (the formal definition)
 
 Lastly, we use <a href="https://brilliant.org/wiki/bayes-theorem/">Bayes' Theorem</a> to assess the <a href="https://en.wikipedia.org/wiki/Posterior_probability">posterior probability</a> of our model, which we maximize to find our final most-likely variance-mean ratio.
 
+You may see in the vignette that the information generated from this process (our theoretical variance) has more use than in creating our negative binomial distribution. Particularly, the variance-mean linear regression has the option to be used in the <a href="https://en.wikipedia.org/wiki/Variance-stabilizing_transformation">variance-stabilizing transformation</a> step. Despite its fancy name, variance-stabilizing transformation is quite simple. The theory is that for a large set number of observations, X, we expect the extractable information from X to be the same every time we make a new set of X observations. The particular values of each X will not be the same, as X corresponds to the observation of a random event, but the <i>information</i> of X, i.e., its variance, mean, mode, should be the same each and every time we make X observations. The reason for this is that we expect a random event to be un-influenced by anything but its parameters. If the parameters are the same for our X observations every time and X is sufficiently large, we expect the same distribution!
+
+Now consider the samples of our genes. We have considered each gene as a separate distribution, but the distribution type fitting each gene to be the same. We also know that each gene has the same number of observations, X=4, and two parameters which vary (mean and variance). X is not sufficiently large, but pretend that it is. We know that one parameter is a function of the other (as evidence by our linear regression). Our parameters are:
+
+Mean: varies
+Number of observation: same for each gene
+Variance: function of gene-mean
+
+Therefore, should two genes have the same mean, they should also have the same variance. That is, they belong to the same exact distribution model. However, this is not the case! There are a variety of reasons for this, the largest culprits being <a href="http://www.molmine.com/magma/global_analysis/batch_effect.html">batch effectws</a>, technological bias, and human error. We use our linear regression to transform the data as if it were an ideally identically distributed random variable with the following steps:
+
+1. Calculate a gene-mean
+2. Use the linear regression to determine the ideal variance of the gene
+3. Transform the counts of the gene such that its mean does not change and the variance is the ideal variance
+
+Step 3 is carried out via a function created using the linear regression. There are a <a href="https://www.stat.ncsu.edu/people/bloomfield/courses/ST762/slides/MD-02-2.pdf">variety of ways</a> to do this, but DESeq2 keeps theirs a baker's secret. 
 
 
 
