@@ -970,7 +970,7 @@ hist(distribution,breaks=1000)</pre>
 
 <img src="distribution2.png">
 
-The spike being slightly to the right of 0 and the bin at 0 presenting symmetry combined with the steepness of the descent tells us that this is the (mostly) right-hand side of the <a href="https://en.wikipedia.org/wiki/Normal_distribution">normal distribution</a>. Truthfully, the steepness of the curve is the giveaway. Notice the gradual descent of the negative binomial distribution when <a href="https://en.wikipedia.org/wiki/Negative_binomial_distribution#/media/File:Negbinomial.gif">r = 1</a>. Knowing that our variance-mean ratio is normally distributed, we are going to repeat the process of creating the maximum-likelihood estimate with the normal distribution equation. The derivation of the equation is much beyond the scope of this tutorial. Therefore, unlike the negative binomial distribution, its derivation will not be included:
+The spike being slightly to the right of 0, the bin at 0 presenting symmetry, and the steepness of the descent tells us that this is the (mostly) right-hand side of the <a href="https://en.wikipedia.org/wiki/Normal_distribution">normal distribution</a>. Truthfully, the steepness of the curve is the giveaway. Notice the gradual descent of the negative binomial distribution when <a href="https://en.wikipedia.org/wiki/Negative_binomial_distribution#/media/File:Negbinomial.gif">r = 1</a>. Knowing that our variance-mean ratio is normally distributed, we are going to repeat the process of creating the maximum-likelihood estimate with the normal distribution equation. The derivation of the equation is much beyond the scope of this tutorial. Therefore, unlike the negative binomial distribution, its derivation will not be included:
 
 <img src="partials_normal.png">
 
@@ -1001,7 +1001,11 @@ Because the variables are defined, we know that neither of the partial derivativ
 
 <img src="fisher_likelihood.png">
 
-then there is an exactly 50% chance that the derivatives move together or in opposite directions. We can safely assert that they are independent of one another, and the behavior of one does not influence the behavior of the other. Thus, they are orthogonal. You may be wondering why we have added in the minimum of the inside of the integral. The integral may have negative values, which makes no physical sense in a likelihood model! Therefore, we shift the entire distribution up by its greatest negative value so that all values are above 0. Therefore, in our parameterization:
+then there is an exactly 50% chance that the derivatives move together or in opposite directions. That is:
+
+<img src="orthogonal_fisher.png">
+
+From this we can safely assert that they are independent of one another, and the behavior of one does not influence the behavior of the other. Thus, for Fisher metrics of 0 the indices are orthogonal. You may be wondering why we have added in the minimum of the inside of the integral. The integral may have negative values, which makes no physical sense in a likelihood model! Therefore, we shift the entire distribution up by its greatest negative value so that all values are above 0 (this also prevents the norm from creating a division by 0). Therefore, in our parameterization:
 
 <img src="parameterization.png">
 
