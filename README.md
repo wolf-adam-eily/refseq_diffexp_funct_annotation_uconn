@@ -542,7 +542,7 @@ Voila! Piece of cake.
 
 To identify differentially expressed genes, We will use the DESeq2 package within Bioconductor in R to perform normalization and statistical analysis of differences among our two sample groups. This R-code is executed in RStudio for R version 3.4.3 (if the r_installation file did not properly install R 3.4.3 you may visit https://linode.com/docs/development/r/how-to-install-r-on-ubuntu-and-debian/ to troubleshoot). Note that Bioconductor will not run on any previous version of R in Linux, so it is imperative that you successfully install R 3.4.3). For our differential expression analysis, we will be using three types of graphs to visualize the data: Bland-Altman (MA), heatmap, and PCA plots. Let's review each plot before diving in:
 
-<b>Bland-Altman(MA) Plot</b>
+<b>Bland-Altman(MA) Plot</b><br>
 The Bland-Altman plot is a binary analysis, gathering information on the relationships between two-sets of data. Because we have four sets of data, we will be breaking our data into two separate groups (LB2A and LC2A), then generating two superimposed plots comparing each member of the two groups to each member of the other group. Before we go further, what <i>is</i> a Bland-Altman plot? An MA plot is the comparison of the log-differences for two datasets to the log-averages. That is:
 
 <pre {
@@ -556,10 +556,10 @@ The Bland-Altman plot is a binary analysis, gathering information on the relatio
 <i>A</i> = &frac12;log<sub>2</sub>(D<sub>1</sub>D<sub>2</sub>) = &frac12;(log<sub>2</sub>(D<sub>1</sub>)+log<sub>2</sub>(D<sub>2</sub>))</strong></pre>
 with D<sub>1</sub> and D<sub>2</sub> being datasets 1 and 2, respectively. We plot M on the vertical axis and A on the horizontal axis. We see here that should two datapoints from datasets 1 and 2 be equal, they will plot at (D<sub>1</sub>==D<sub>2</sub>, 0). Therefore, should our entire plot run along y=0, it is safe to say, that for us, none of our genes were differentially expressed. However, should there be large deviations from y=0, we are provided with insight that we may have differentially expressed genes.
 
-<b>Heatmap</b>
+<b>Heatmap</b><br>
 Heatmaps are the most readily readable visualizations for determining differential expression, unless, like me, you are colorblind! Heatmaps are discrete plots. That is, the values along the x and y axis move in integer increments, with no places in-between. Typically, the x-and-y axes contain different types of information about each dataset, and combine to capture the whole image of the dataset. For us, we may find it useful to make one axis our groups (our four datasets) and the other axis the genes sampled from those datasets. Now each cell in our grid will correspond to the expression of a gene from a sample. We then assign a color-palette to each possible range of gene expression. For instance, an expression between 300-500 may be blue while an expression of 501-1000 may be violet. After coloring all of our cells responsibly, we now have simple, discrete snapshots of each datasets expression distribution. Should we notice that two groups have very similar looking snapshots, we may cluster those groups safely with the assumption that they do not share differentially expressed genes, and therefore belong to the same space. 
 
-<b>Principal Component Analysis(PCA)</b>
+<b>Principal Component Analysis(PCA)</b><br>
 Principal-Component-Analysis is far too complex and nuanced to go into detail here. However, you may download an entire tutorial <a href="https://docs.wixstatic.com/ugd/d07f4e_eafc861e1cff411e88b89cf2739e8565.pdf">here</a> for differential expression analysis in R which covers much of what we are about to do, including Principal Component Analysis (pages 15-18, "singular-value-decomposition"). Now! Let's get coding!
 
 <h3 id="getting_started">Loading data in R and getting started</h2>
