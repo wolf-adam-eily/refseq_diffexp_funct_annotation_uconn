@@ -1062,9 +1062,9 @@ You may see in the vignette that the information generated from this process (ou
 
 Now consider the samples of our genes. We have considered each gene as a separate distribution, but the distribution type fitting each gene to be the same. We also know that each gene has the same number of observations, X=4, and two parameters which vary (mean and variance). X is not sufficiently large, but pretend that it is. We know that one parameter is a function of the other (as evidence by our linear regression). Our parameters are:
 
-Mean: varies
-Number of observation: same for each gene
-Variance: function of gene-mean
+Mean: varies<br>
+Number of observation: same for each gene<br>
+Variance: function of gene-mean<br>
 
 Therefore, should two genes have the same mean, they should also have the same variance. That is, they belong to the same exact distribution model. However, this is not the case! There are a variety of reasons for this, the largest culprits being <a href="http://www.molmine.com/magma/global_analysis/batch_effect.html">batch effectws</a>, technological bias, and human error. We use our linear regression to transform the data as if it were an ideally identically distributed random variable with the following steps:
 
@@ -1073,6 +1073,108 @@ Therefore, should two genes have the same mean, they should also have the same v
 3. Transform the counts of the gene such that its mean does not change and the variance is the ideal variance
 
 Step 3 is carried out via a function created using the linear regression. There are a <a href="https://www.stat.ncsu.edu/people/bloomfield/courses/ST762/slides/MD-02-2.pdf">variety of ways</a> to do this, but DESeq2 keeps theirs a baker's secret. 
+
+The final step in a standard DESeq2 analysis is the "nbinomWaldTest". We click on its page in the DESeq2 vignette and see:
+
+<pre style="color: silver; background: black;">
+<em>nbinomWaldTest {DESeq2}	R Documentation</em>
+Wald test for the GLM coefficients
+
+<strong>Description</strong>
+
+<em>This function tests for significance of coefficients in a Negative Binomial GLM, using previously calculated sizeFactors (or normalizationFactors) and dispersion estimates. See DESeq for the GLM formula.</em>
+
+<strong>Usage</strong>
+
+nbinomWaldTest(object, betaPrior = FALSE, betaPriorVar, modelMatrix = NULL,
+  modelMatrixType, betaTol = 1e-08, maxit = 100, useOptim = TRUE,
+  quiet = FALSE, useT = FALSE, df, useQR = TRUE, minmu = 0.5)
+<strong>Arguments</strong>
+
+object			a DESeqDataSet
+betaPrior		whether or not to put a zero-mean normal prior on the non-intercept coefficients
+betaPriorVar		a vector with length equal to the number of model terms including the intercept. betaPriorVar gives the 
+			variance of the prior on the sample betas on the log2 scale. if missing (default) this is estimated from the 
+			data
+modelMatrix		an optional matrix, typically this is set to NULL and created within the function
+modelMatrixType		either "standard" or "expanded", which describe how the model matrix, X of the formula in DESeq, is formed. 
+			"standard" is as created by model.matrix using the design formula. "expanded" includes an indicator variable 
+			for each level of factors in addition to an intercept. betaPrior must be set to TRUE in order for expanded 
+			model matrices to be fit.
+betaTol			control parameter defining convergence
+maxit			the maximum number of iterations to allow for convergence of the coefficient vector
+useOptim		whether to use the native optim function on rows which do not converge within maxit
+quiet			whether to print messages at each step
+useT			whether to use a t-distribution as a null distribution, for significance testing of the Wald statistics. If 
+			FALSE, a standard normal null distribution is used. See next argument df for information about which t is 
+			used. If useT=TRUE then further calls to results will make use of mcols(object)$tDegreesFreedom that is stored 
+			by nbinomWaldTest.
+df			the degrees of freedom for the t-distribution. This can be of length 1 or the number of rows of object. If 
+			this is not specified, the degrees of freedom will be set by the number of samples minus the number of columns 
+			of the design matrix used for dispersion estimation. If "weights" are included in the assays(object), then the 
+			sum of the weights is used in lieu of the number of samples.
+useQR			whether to use the QR decomposition on the design matrix X while fitting the GLM
+minmu			lower bound on the estimated count while fitting the GLM
+<strnog>Details</strong>
+
+The fitting proceeds as follows: standard maximum likelihood estimates for GLM coefficients (synonymous with "beta", "log2 fold 
+change", "effect size") are calculated. Then, optionally, a zero-centered Normal prior distribution (betaPrior) is assumed for the 
+coefficients other than the intercept.
+
+Note that this posterior log2 fold change estimation is now not the default setting for nbinomWaldTest, as the standard workflow for 
+coefficient shrinkage has moved to an additional function link{lfcShrink}.
+
+For calculating Wald test p-values, the coefficients are scaled by their standard errors and then compared to a standard Normal 
+distribution. The results function without any arguments will automatically perform a contrast of the last level of the last variable 
+in the design formula over the first level. The contrast argument of the results function can be used to generate other comparisons.
+
+The Wald test can be replaced with the nbinomLRT for an alternative test of significance.
+
+Notes on the log2 fold change prior:
+
+The variance of the prior distribution for each non-intercept coefficient is calculated using the observed distribution of the maximum 
+likelihood coefficients. The final coefficients are then maximum a posteriori estimates using this prior (Tikhonov/ridge 
+regularization). See below for details on the prior variance and the Methods section of the DESeq2 manuscript for more detail. The use 
+of a prior has little effect on genes with high counts and helps to moderate the large spread in coefficients for genes with low 
+counts.
+
+The prior variance is calculated by matching the 0.05 upper quantile of the observed MLE coefficients to a zero-centered Normal 
+distribution. In a change of methods since the 2014 paper, the weighted upper quantile is calculated using the wtd.quantile function 
+from the Hmisc package. The weights are the inverse of the expected variance of log counts, so the inverse of 1/mu-bar + alpha_tr 
+using the mean of normalized counts and the trended dispersion fit. The weighting ensures that noisy estimates of log fold changes 
+from small count genes do not overly influence the calculation of the prior variance. See estimateBetaPriorVar. The final prior 
+variance for a factor level is the average of the estimated prior variance over all contrasts of all levels of the factor.
+
+When a log2 fold change prior is used (betaPrior=TRUE), then nbinomWaldTest will by default use expanded model matrices, as described 
+in the modelMatrixType argument, unless this argument is used to override the default behavior. This ensures that log2 fold changes 
+will be independent of the choice of reference level. In this case, the beta prior variance for each factor is calculated as the 
+average of the mean squared maximum likelihood estimates for each level and every possible contrast.</pre>
+
+Before we cover how DESeq2 calculates its Wald Test statistics we want to know what a <a href="https://en.wikipedia.org/wiki/Wald_test">Wald Test</a> is. But there is a hidden step separating our previous calculations and the Wald test: the determination of differentially expressed genes! 
+
+DESeq2 does not actually use the distributions we have created to determine differentially expressed genes. Rather, the information from the likelihood models has been gradually utilized to transform our data such that technological bias and human error have been "removed" (whether this is removing these or encouraging them is up to you). Notice that we first transformed our data by dividing by an idealized transcriptome size, and next transformed our data by forcing <a href="https://en.wikipedia.org/wiki/Homoscedasticity">homoskedasticity</a> -- ensuring that data with the same mean have the same variance -- by taking information from our normal distributions and applying it to our counts. After we finish transforming our data with these steps DESeq2 determines which genes best fit a linear regression between classes (control = 0, treated = 1). The coefficient in the linear regression of each gene is the <a href="https://en.wikipedia.org/wiki/Fold_change">log2-fold change</a> of the gene between classes. 
+
+The Wald Test allows us to determine the likelihood of the log2-fold change for each differentially expressed gene through the assu that the coefficient values follow a normal distribution. The normal distribution is created using the mean and variance of the coefficient values as parameters. However, not <i>all</i> of the coefficient values are used to determine the mean and variance. Because of the nature of differential expression, we expect genes with very high coefficients to most certainly be differentially expressed, as it would be rare for human error or technological bias to result in the appearance of dramatic up-regulation between classes. Therefore, if we subset our genes to those with very high coefficients and model the normal distribution after these we are creating a distribution most confidently based off of differentially expressed genes. To do this, DESeq2 takes genes with coefficients in the upper 0.05 quantile, i.e., genes with coefficients higher than 95% of all other genes, and fits a normal distribution such that its upper 0.05 quantile most closely matches our upper 0.05 quantile. All of the coefficients are then uniformly scaled such that the square of the difference of their <a href="https://en.wikipedia.org/wiki/Residual_(numerical_analysis)">residuals</a> are minimized. The procedure is as follows:
+
+Suppose we have an idealized prior normal distribution as well as a collection of data said to fit that distribution. We notice that the values <i>x</i> and <i>y</i> appear in our data 13% and 28% of the time. However, our idealized prior has a likelihood of <i>x</i> and <i>y</i> as 15% and 27% respectively. There exists a scalar which when multiplied by <i>x</i> and <i>y</i> results in <i>x<sub>1</sub></i> and <i>y<sub>1</sub></i> whose likelihoods are 15% and 28.5%. Because we have multiplied both <i>x</i> and <i>y</i> by the same scalar, we have not changed the relationship between the two. Our square of differences before was:
+
+<math>(15-13)<sup>2</sup> + (28-27)<sup>2</sup> = 5</math>
+
+and now are:
+
+<math>(15-15)<sup>2</sup> + (28-28.5)<sup>2</sup> = 0.25</math>
+
+We've transformed our data in such a way that the information between its individual points has been maintained but it into a known model has increased. This is a very simple explanation of <a href="https://en.wikipedia.org/wiki/Tikhonov_regularization">Tikhonov regularization</a>, and is the method DESeq2 uses to transform the gene coefficients into a maximized fit of the prior distribution, making the posterior distribution. We are now ready for the Wald Test, which is in the form:
+
+
+
+This is known as <a href="https://en.wikipedia.org/wiki/Tikhonov_regularization">Tikhonov regularization</a>. Lastly, we perform the Wald Test, which is in the form:
+
+<img src="wald_test">
+
+For us, &lambda;<sub><i>guess<i></sub> is the percentage of genes with a certain log-fold change, <b>A</b> and &lambda;<sub><i>mle</i></sub> is the percentage of genes with the log-fold change <b>A</b> according to the idealized normal distribution. DESeq2 does not actually use this statistic, however! The Wald Test is more a description of the process through which we transformed our coefficients. With our final coefficients, DESeq2 conducts a <a href="https://en.wikipedia.org/wiki/Likelihood-ratio_test">likelihood-ratio test</a> between our &lambda;<sub><i>guess<i></sub> and &lambda;<sub><i>mle</i></sub> (&lambda;<sub><i>guess<i></sub>&frasl;&lambda;<sub><i>mle</i></sub>). The value returned is subtracted from one, and there is our p-value.
+	
+Congratulations! You are an expert on DESeq2! Now let's use it!
 
 
 
