@@ -1192,7 +1192,7 @@ Suppose we have an idealized prior normal distribution as well as a collection o
 
 and now are:
 
-<math>(15-15)<sup>2</sup> + (28-28.5)<sup>2</sup> = 0.25</math>
+<math>(15-15)<sup>2</sup> + (28-28.5)<sup>2</sup> = 0.025</math>
 
 We've transformed our data in such a way that the information between its individual points has been maintained but its fit into a known model has increased. This is a very simple explanation of <a href="https://en.wikipedia.org/wiki/Tikhonov_regularization">Tikhonov regularization</a>, and is the method DESeq2 uses to transform the gene coefficients into a maximized fit of the prior distribution, making the posterior distribution. We are now ready for the Wald Test, which is in the form:
 
