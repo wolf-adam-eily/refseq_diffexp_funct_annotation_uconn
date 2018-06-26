@@ -20,7 +20,8 @@ All steps have been provided for the UConn CBC Xanadu cluster here with appropr
 	<li><a href="#how_deseq2_works_5">6.7 Parameter estimation technique: mean and variance</a></li>
 	<ol>	<li><a href="#how_deseq2_works_6">6.7a Cox Reid-Adjusted Likelihood</a></li>
 		<li><a href="#how_deseq2_works_7">6.7b Estimating variance with CRAL</a></li></ol>
-		<li><a href="#how_deseq2_works_8">6.8 Calculating significance of findings</ol>
+		<li><a href="#how_deseq2_works_8">6.8 Calculating significance of findings</a></li>
+		<li><a href="#using_deseq2">6.9 Using DESeq2</a></li></ol>
 <li><a href="#EnTAP">7 EnTAP: Functional Annotation for Genomes</a></li>
  <li><a href="#Integration">8 Integrating the DE Results with the Annotation Results</a></li>
 <li><a href="#Citation">Citations</a></li>
@@ -1201,10 +1202,18 @@ For us, &lambda;<sub><i>guess</i></sub> is the percentage of genes with a certai
 	
 Congratulations! You are an expert on DESeq2! Now let's use it!
 
+<h3 id="using_deseq2">Using DESeq2</h2>
 
-
-It is important with any R, Python, Perl, or similar analysis that we are as clear as possible about each variable and step. One reason is to hold ourselves accountable and limit the risk of a small mistake which produces an erroneous result (and our paper getting recalled). Another, but incredibly important reason, is so that fellow scientists who are following or reviewing our work do not have to make a single assumption about our process. This maximizes our reproducibility, a crucial component of our work being verified. Let's describe our samples for ourselves and others:
+Because of the detailed explanation of DESeq2 before this, we will only be showing the code with some insights here. Always remember that the DESeq2 vignette comes with complete instructions on how to use DESeq2 for analysis. If you are ever confused, visit the vignette,find the appropriate step and read up. This is true for most Bioconductor packages, so do not be afraid to try new software! The vignette is your best friend:
 <pre style="color: silver; background: black;">
+library("DESeq2")
+# Set the working directory
+directory <- "~/your_directory_with_htseq_counts"
+setwd(directory)
+list.files(directory)
+outputPrefix <- "Croaker_DESeq2"
+sampleFiles<- c("sort_trim_LB2A_SRR1964642.counts","sort_trim_LB2A_SRR1964643.counts",
+                "sort_trim_LC2A_SRR1964644.counts", "sort_trim_LC2A_SRR1964645.counts")
 &num; Liver mRNA profiles of control group: (LB2A) 
 &num; Liver mRNA profiles of thermal stress group: (LC2A)
 &num; ""CONTROL"" LB2A_1: sort_trim_LB2A_SRR1964642.counts, LB2A_2: sort_trim_LB2A_SRR1964643.counts
@@ -1216,6 +1225,7 @@ sampleCondition <- c("control","control","treated","treated")
 
 Let's create a dataframe. The options we are using for the data.frame function are a part of <a href=https://bioconductor.org/packages/release/bioc/html/Biobase.html">Biobase</a>. You can find out about each argument by typing in the argument name and pressing TAB. For instance, "data.frame(sampleName(TAB) "
 
+<pre style="color: silver; background: black;">
 sampleTable <- data.frame(sampleName = sampleNames,
                           fileName = sampleFiles,
                           condition = sampleCondition)
