@@ -1201,7 +1201,7 @@ This is known as <a href="https://en.wikipedia.org/wiki/Tikhonov_regularization"
 
 <img src="wald_test">
 
-For us, &lambda;<sub><i>guess</i></sub> is the percentage of genes with a certain log-fold change, <b>A</b> and &lambda;<sub><i>mle</i></sub> is the percentage of genes with the log-fold change <b>A</b> according to the idealized normal distribution. DESeq2 does not actually use this statistic, however! The Wald Test is more a description of the process through which we transformed our coefficients. With our final coefficients, DESeq2 conducts a <a href="https://en.wikipedia.org/wiki/Likelihood-ratio_test">likelihood-ratio test</a> between our &lambda;<sub><i>guess<i></sub> and &lambda;<sub><i>mle</i></sub> (&lambda;<sub><i>guess<i></sub>&frasl;&lambda;<sub><i>mle</i></sub>). The value returned is subtracted from one, and there is our p-value.
+For us, &lambda;<sub><i>guess</i></sub> is the percentage of genes with a certain log-fold change, <b>A</b> and &lambda;<sub><i>mle</i></sub> is the percentage of genes with the log-fold change <b>A</b> according to the idealized normal distribution. DESeq2 does not actually use this statistic, however! The Wald Test is more a description of the process through which we transformed our coefficients. With our final coefficients, DESeq2 conducts a <a href="https://en.wikipedia.org/wiki/Likelihood-ratio_test">likelihood-ratio test</a> between our &lambda;<sub><i>guess</i></sub> and &lambda;<sub><i>mle</i></sub> (&lambda;<sub><i>guess<i></sub>&frasl;&lambda;<sub><i>mle</i></sub>). The value returned is subtracted from one, and there is our p-value.
 	
 Congratulations! You are an expert on DESeq2! Now let's use it!
 
