@@ -1195,10 +1195,6 @@ and now are:
 
 We've transformed our data in such a way that the information between its individual points has been maintained but it into a known model has increased. This is a very simple explanation of <a href="https://en.wikipedia.org/wiki/Tikhonov_regularization">Tikhonov regularization</a>, and is the method DESeq2 uses to transform the gene coefficients into a maximized fit of the prior distribution, making the posterior distribution. We are now ready for the Wald Test, which is in the form:
 
-
-
-This is known as <a href="https://en.wikipedia.org/wiki/Tikhonov_regularization">Tikhonov regularization</a>. Lastly, we perform the Wald Test, which is in the form:
-
 <img src="wald_test.png">
 
 For us, &lambda;<sub><i>guess</i></sub> is the percentage of genes with a certain log-fold change, <b>A</b> and &lambda;<sub><i>mle</i></sub> is the percentage of genes with the log-fold change <b>A</b> according to the idealized normal distribution. DESeq2 does not actually use this statistic, however! The Wald Test is more a description of the process through which we transformed our coefficients. With our final coefficients, DESeq2 conducts a <a href="https://en.wikipedia.org/wiki/Likelihood-ratio_test">likelihood-ratio test</a> between our &lambda;<sub><i>guess</i></sub> and &lambda;<sub><i>mle</i></sub> (&lambda;<sub><i>guess</i></sub>&frasl;&lambda;<sub><i>mle</i></sub>). The value returned is subtracted from one, and there is our p-value.
