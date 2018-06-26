@@ -536,6 +536,9 @@ This part of the tutorial <i>must</i> be run locally. To download the appropriat
 Connection to xanadu-submit-ext.cam.uchc.edu closed.</strong>
 user@user$ scp your.user.name@xanadu-submit-ext.cam.uchc.edu:/path/to/counts/&#42;.counts /path/to/local/destination</pre>
 Voila! Piece of cake.
+
+<h3 id="types_of_plots">Common plots for differential expression analysis</h3>
+
 To identify differentially expressed genes, We will use the DESeq2 package within Bioconductor in R to perform normalization and statistical analysis of differences among our two sample groups. This R-code is executed in RStudio for R version 3.4.3 (if the r_installation file did not properly install R 3.4.3 you may visit https://linode.com/docs/development/r/how-to-install-r-on-ubuntu-and-debian/ to troubleshoot). Note that Bioconductor will not run on any previous version of R in Linux, so it is imperative that you successfully install R 3.4.3). For our differential expression analysis, we will be using three types of graphs to visualize the data: Bland-Altman (MA), heatmap, and PCA plots. Let's review each plot before diving in:
 
 <b>Bland-Altman(MA) Plot</b>
@@ -558,6 +561,7 @@ Heatmaps are the most readily readable visualizations for determining differenti
 <b>Principal Component Analysis(PCA)</b>
 Principal-Component-Analysis is far too complex and nuanced to go into detail here. However, you may download an entire tutorial <a href="https://docs.wixstatic.com/ugd/d07f4e_eafc861e1cff411e88b89cf2739e8565.pdf">here</a> for differential expression analysis in R which covers much of what we are about to do, including Principal Component Analysis (pages 15-18, "singular-value-decomposition"). Now! Let's get coding!
 
+<h3 id="getting_started">Loading data in R and getting started</h2>
 <pre style="color: silver; background: black;">library("DESeq2")
 
 &num; Set the working directory
@@ -578,7 +582,7 @@ sampleFiles<- c("sort_trim_LB2A_SRR1964642.counts","sort_trim_LB2A_SRR1964643.co
                 "sort_trim_LC2A_SRR1964644.counts", "sort_trim_LC2A_SRR1964645.counts")
 </pre>
 
-Because we will be using DESeq2 for our analysis, it would be helfpul to have a clear set of instructions for us to follow. We can do this by browsing the DESeq2 vignette:
+Because we will be using DESeq2 for our analysis, it would be helpful to have a clear set of instructions for us to follow. We can do this by browsing the DESeq2 vignette:
 
 <pre style="color: silver; background: black;">??'DESeq2-package'
 
@@ -655,6 +659,8 @@ parallel	if FALSE, no parallelization. if TRUE, parallel execution using BiocPar
 BPPARAM		an optional parameter object passed internally to bplapply when parallel=TRUE. If not specified, the parameters last 
 		registered with register will be used.</pre>
 		
+<h3 id="how_deseq2_works_1">Introduction to DESeq2 -- negative binomial curves</h3>
+
 The description states that DESeq2 fits <a href="https://en.wikipedia.org/wiki/Negative_binomial_distribution">negative binomial</a> curves to the counts distributions for each condition and then calculates Wald statistics. Let's see if the negative binomial is a good fit for the curves of our conditions:
 
 <pre style="color: silver; background: black;">
@@ -742,6 +748,8 @@ While this seems confusing, is actually common sense! The negative binomial inte
 Our equation does not exactly match the model. This is because the model also calculates the probability of success on the final try! For us that means <i>r = 3</i> and we're taking our probability of 2 successes in 4 tries and simply adding a 3rd success on the fifth try. That is:
 
 <img src="finished_binomial_explanation.png">
+
+<h3 id="how_deseq2_works_2">Estimating true transcriptome size</h3>
 
 We now have the negative binomial model! But how does this relate to our expression data? The negative binomial model outputs probability, but we only have raw counts. We could divide the raw counts of each sample by the total number of counts in that sample, creating the percentage of the transcriptome for each gene in each sample. This is a good idea, but we expect samples with up-regulation to have larger transcriptomes. Therefore, if we divide each sample by its own transcriptome size, the percentages may be the same across samples in which there actually was significant up-regulation! Therefore, we want to create a metric which is the approximate <i>true control</i> transcriptome size. This metric would, in theory, be the <i>expected</i> size of the control transcriptome. If we now divide our sample counts by the true control transcriptome then our value is the percentage of the control transcriptome for which the gene's expression would account. This would produce higher values for up-regulated transcriptomes and not affect the value of control transcriptomes very greatly. Furthermore, with a standardized transcriptome size, each gene value in our counts is now a measurement of how many successes (mapped reads) we expect for a given gene in a given condition in n (the total size of the transcriptome) tries. We have a true negative binomial distribution! This procedure is called "estimating size factors".
 
@@ -836,6 +844,7 @@ plot(density(sampleTable[,2]),main="Distribution of Counts Improper Normalizatio
 
 The distribution is much more readily accessible now. However, this is not the true distribution of the data! The log2 transform, while common, aggressively shifts distributions toward 0 (read <a href="https://en.wikipedia.org/wiki/Natural_logarithm">here</a> if you're curious about the details). For very closely related samples where up-regulation or down-regulation may be more nuanced something as aggressive as the log2 transform may erase the differential expression. We avoid this dilemma by normalizing via scalars rather than functions.
 
+<h3 id="how_deseq2_works_3">Reparameterizing the negative binomial distribution</h3>
 In order to assess the statistical significance of our findings to generate results we need to fit our negative binomial distribution. We need to know the probability of read being mapped, the total number of reads that were attempted to be mapped, and the total number of reads which succeeded in being mapped. It may seem tempting to use the information we have, i.e., take our transcriptome size as the total number of tries to find the probability. After further thought, the logic breaks down: We need to know the percentage of reads attempted to be mapped -- but all of our information are from reads which were successfully mapped! This also prevents us from determining our probability of success, as we cannot determine the number of failures. Let's instead try to write our distribution in variables we can actually measure -- the mean and variance. As stated before, the negative binomial distribution is binary. We will assign a success as a value of 1 and a failure as a value of 0. This way only successes will contribute to the mean (and to some extent, the variance). We can write the mean and <a href="https://en.wikipedia.org/wiki/Variance">variance</a> as functions of our probability of success and number of failures. Alternatively, we can write the mean and variance as the probabiliy of failure and number of successees. It does not matter which you use, but we will be using the former. The mean is:
 
 <img src="negative_binomial_mean.png">
@@ -910,6 +919,7 @@ We see that the only required argument on our end is the "object" argument. DESe
 
 A note: While I strongly encourage all readers to continue along, those without study to at least linear algebra and multivariate calculus are at a distinct disadvantage in the explanation of the "estimateDispersions" function. If this applies to you, feel free to skip this section. For all others, continue on:
 
+<h3 id="how_deseq2_works_4">Parameter estimation theory: mean and variance</h3>
 The first sentence informs us that DESeq2 calculates an estimate of the dispersion for each gene, and combines those estimates to create the dispersion estimate for the model. Here is where we see the fit types come into play. DEseq2 says it maximizes the <a href="https://www.nuffield.ox.ac.uk/users/cox/cox223.pdf">Cox Reid-adjusted profile likelihood</a> to determine the variance per gene. Before we consider that. Let's review profile likelihoods:
 
 Likelihood functions and probability distributions are one and the same. We will switch to using "likelihood function" now in place of "distribution". The likelihood function is called such because if we evaluate some value along its x-axis the result is the <i>likelihood</i> that the x-value in question appears in our sample. Thus, for us, we see that our negative binomial distribution is a likelihood function with arguments x, &mu;, and &sigma;<sup>2</sup>. That is:
@@ -948,7 +958,10 @@ At last we can determine our maximum-likelihood estimates using partial derivati
 
 <b><u><strong>YOU SHOULD NOW BEGIN PAYING FULL ATTENTION</b></u></strong>
 
-We solve these for the mean in terms of the variance and an observed value (x) and the variance in terms of the mean and an observed value(x), respectively. If this seems like far too much effort and somewhat improbable, you're absolutely correct. The algebraic difficulty of these partial differential equations far exceeds the amount of work we have to do to find our information. We have thousands of trials if we view each gene as such. We can extract any general trends from the dispersion and mean of each gene and fit those trends to its own distribution. The mean is the average number of successes and the variance is the expected number of additional or fewer successes for a random trial squared. If the ratio of variance over the mean for each gene fits a distribution model, we can find the maximum-likelihood estimate of the variance over mean ratio.  Lastly, multiplying the variance-mean ratio by the actual mean of our data (in this case, the estimated transcriptome size determined earlier) will yield the variance of the data. Let's create a a histogram of the variance/mean ratio:
+We solve these for the mean in terms of the variance and an observed value (x) and the variance in terms of the mean and an observed value(x), respectively. If this seems like far too much effort and somewhat improbable, you're absolutely correct. The algebraic difficulty of these partial differential equations far exceeds the amount of work we have to do to find our information. 
+
+<h3 id="how_deseq2_works_5">Parameter estimation technique: mean and variance</h3>
+We have thousands of trials if we view each gene as such. We can extract any general trends from the dispersion and mean of each gene and fit those trends to its own distribution. The mean is the average number of successes and the variance is the expected number of additional or fewer successes for a random trial squared. If the ratio of variance over the mean for each gene fits a distribution model, we can find the maximum-likelihood estimate of the variance over mean ratio.  Lastly, multiplying the variance-mean ratio by the actual mean of our data (in this case, the estimated transcriptome size determined earlier) will yield the variance of the data. Let's create a a histogram of the variance/mean ratio:
 
 <pre style="color: silver; background: black;">distribution = vector(length=nrow(sampleTable))
 for (i in 1:nrow(sampleTable)){distribution[i]=var(t(sampleTable[i,2:5]))/mean(t(sampleTable[i,2:5]))}
@@ -992,6 +1005,8 @@ DESeq2 calculates the variance-mean ratio of the dataset by approximating the va
 
 Therefore, at our maximum-likelihod estimate, we expect the <b>likelihood itself</b> to change by -1/(variance) for the given data. We have maximized the data, but the true likelihood is more complex than only the first-order behavior. We have all of the understanding laid out for the Cox Reid-Adjusted Profile Likelihood. Which we will cover next: 
 
+
+<h3 id="how_deseq2_works_6">Cox Reid Adjusted Likelihood</h3>
 The Cox Reid-Adjusted Profile Likelihood is an algorithm for generating more accurate estimations of parameters in statistical modeling.The parameters fit into two categories: &psi;, the parameters of interest, and &phi;, all other parameters (known as nuisance parameters). Furthermore, the likelihood of &psi; is the value of the likelihood function given &phi; and a set of observations. We call the value of the log-likelihood function with a &psi; of our choosing given &phi; and a set of observations <i>y</i> the log-likelihood profile of &psi;:
 
 <img src="likelihood_profile.png">
@@ -1053,6 +1068,8 @@ Which, counting both first and second derivatives is only 40 or 60 for the examp
 
 Lastly, because we know we're at a maximum for the likelihood-function in our calcaulations both the first and <a href="https://en.wikipedia.org/wiki/Derivative_test#Second_derivative_test_(single_variable)">second derivatives must be negative</a>. Because the determinant is signed this would have us taking the log of a negative value (which is an <a href="https://en.wikipedia.org/wiki/Imaginary_unit">imaginary</a>). Because of this the negative derivative is taken, resulting in the absolute value of the expected change. Again, because we know that all change must be negative we can simply subtract the absolute value of the expected change from our likelihood estimate. We repeat this process until we have found the inflection point of the adjusted likelihood. If you are wondering why we cannot simply maximize the adjusted likelihood function: the values of &phi;<sub>mle</sub> change with each guess of &psi;, so no two adjusted-likelihood functions are identical! There is a tradeoff here as the adjusted-likelihood can only maximize the parameters of interest. You cannot calculate the most likely parameter of interest using the adjusted-likelihood and then the nuisance parameters because the adjusted-likelihood of the nuisance parameters requires the parameters of interest to change. 
 
+<h3 id="how_deseq2_works_7">Estimating variance with CRAL</h3>
+
 The Cox Reid works simply for the normal distribution as its two parameters, &mu; and &sigma;<sup>2</sup> are orthogonal. Therefore, we go about calculating our maximum-likely estimate for the variance using the mean as the only nuisance parameter. That gives us:
 
 <img src="cox_reid_normal.png">
@@ -1084,6 +1101,8 @@ Therefore, should two genes have the same mean, they should also have the same v
 
 Step 3 is carried out via a function created using the linear regression. There are a <a href="https://www.stat.ncsu.edu/people/bloomfield/courses/ST762/slides/MD-02-2.pdf">variety of ways</a> to do this, but DESeq2 keeps theirs a baker's secret. 
 
+
+<h3 id="how_deseq2_works8">Calculating significance of findings </h3>
 The final step in a standard DESeq2 analysis is the "nbinomWaldTest". We click on its page in the DESeq2 vignette and see:
 
 <pre style="color: silver; background: black;">
