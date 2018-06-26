@@ -1223,7 +1223,7 @@ sampleNames <- c("LB2A_1","LB2A_2","LC2A_1","LC2A_2")
 sampleCondition <- c("control","control","treated","treated")
 </pre>
 
-Let's create a dataframe. The options we are using for the data.frame function are a part of <a href=https://bioconductor.org/packages/release/bioc/html/Biobase.html">Biobase</a>. You can find out about each argument by typing in the argument name and pressing TAB. For instance, "data.frame(sampleName(TAB) "
+Let's create a dataframe. The options we are using for the data.frame function are a part of <a href="https://bioconductor.org/packages/release/bioc/html/Biobase.html">Biobase</a>. You can find out about each argument by typing in the argument name and pressing TAB. For instance, "data.frame(sampleName(TAB) "
 
 <pre style="color: silver; background: black;">
 sampleTable <- data.frame(sampleName = sampleNames,
