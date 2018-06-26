@@ -1102,7 +1102,7 @@ Therefore, should two genes have the same mean, they should also have the same v
 Step 3 is carried out via a function created using the linear regression. There are a <a href="https://www.stat.ncsu.edu/people/bloomfield/courses/ST762/slides/MD-02-2.pdf">variety of ways</a> to do this, but DESeq2 keeps theirs a baker's secret. 
 
 
-<h3 id="how_deseq2_works8">Calculating significance of findings </h3>
+<h3 id="how_deseq2_works_8">Calculating significance of findings </h3>
 The final step in a standard DESeq2 analysis is the "nbinomWaldTest". We click on its page in the DESeq2 vignette and see:
 
 <pre style="color: silver; background: black;">
