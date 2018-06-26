@@ -471,13 +471,13 @@ Your terminal should become hung up on whitespace. Because hsteq operates as a s
 
 <pre style="color: silver; background: black;">-bash-4.2$ module unload htseq</pre>
 
-Because of this behavior, you will have to trust me on our choice of options. But we run htseq count with the following commands:
+Because of this behavior, you will have to trust me on our choice of options. We run htseq count with the following commands:
 
 <pre style="color: silver; background: black;">-bash-4.2$ module load htseq
 -bash-4.2$ htseq-count -s no -r pos -t gene -i Dbxref -f bam ../mapping/sort_trim_LB2A_SRR1964642.bam GCF_000972845.1_L_crocea_1.0_genomic.gff > LB2A_SRR1964642.counts</pre>
 
 
-<pre style="color: silver; background: black;"><strong>Usage</strong>: htseq-count [options] alignment_file gff_file</pre>
+<pre style="color: silver; background: black;"><strong>Usage</strong>: htseq-count [options] alignment_file gff_file
 <strong>Options</strong>:
   -f SAMTYPE, --format=SAMTYPE
                         type of  data, either 'sam' or 'bam'
