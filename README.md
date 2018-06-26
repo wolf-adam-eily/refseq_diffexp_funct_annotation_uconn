@@ -260,24 +260,24 @@ multiqc_general_stats.txt  multiqc_sources.txt
 </strong></pre>
 
 Let's have a look at the file format from fastqc and multiqc. When loading the fastqc file, you will be greeted with this screen:
-<img src="fastqc1.png">
+<img src="images/fastqc1.png">
 
 There are some basic statistics which are all pretty self-explanatory. Notice that none of our sequences fail the quality report! It would be concerning if we had even one because this report is from our trimmed sequence! The same thinking applies to our sequence length. Should the minimum of the sequence length be below 45, we would know that sickle had not run properly. Let's look at the next index in the file:
-<img src="fastqc2.png">
+<img src="images/fastqc2.png">
 
 This screen is simply a <a href="https://en.wikipedia.org/wiki/Box_plot">box-and-whiskers plot</a> of our quality scores per base pair. Note that there is a large variance and lower mean scores (but still about in our desired range) for base pairs 1-5. These are the primer sequences! I will leave it to you to ponder the behavior of this graph. If you're stumped, you may want to learn how <a href="https://www.illumina.com/techniques/sequencing.html">Illumina sequencing"</a> works.
 
 Our next index is the per sequence quality scores:
-<img src="fastqc3.png">
+<img src="images/fastqc3.png">
 
 This index is simply the total number of base pairs (y-axis) which have a given quality score (x-axis). This plot is discontinuous and discrete, and should you calculate the <a href="https://en.wikipedia.org/wiki/Riemann_sum">Riemann sum</a> the result is the total number of base pairs present across all reads.
 	
 The last index at which we are going to look is the "Overrepresented Sequences" index:
-<img src="fastqc4.png">
+<img src="images/fastqc4.png">
 This is simply a list of sequences which appear disproportionately in our reads file. The reads file actually includes the primer sequences for this exact reason. When fastqc calculates a sequence which appears many times beyond the expected distribution, it may check the primer sequences in the reads file to determine if the sequence is a primer. If the sequence is not a primer, the result will be returned as "No Hit". Sequences which are returned as "No Hit" are most likely highly expressed genes.
 
 We see that our multiqc file has the same indices as our fastqc files, but is simply the mean of all the statistics across our fastqc files:
-<img src="multiqc.png">
+<img src="images/multiqc.png">
 
 <h2 id="Fourth_Point_Header">Aligning reads to a genome using hisat2</h2>
 Building an Index:<br>
@@ -710,7 +710,7 @@ head(sampleTable)
 par(mfrow=c(2,2))
 colnames(sampleTable) = c("gene","LB2A_1","LB2A_2","LC2A_1","LC2A_2")
 hist(sampleTable[,2:5],main)</pre>
-<img src="untrimmed_histograms.png">
+<img src="images/untrimmed_histograms.png">
 
 Most of our genes are clustered around the origin. However, a few highly expressed genes are shifting the scale of the histogram so greatly that we cannot see anything. Let's remove these outliers from our histograms:
 
@@ -737,18 +737,18 @@ head(under_2000)
 [5,]   TRUE   TRUE   TRUE   TRUE
 [6,]   TRUE   TRUE   TRUE   TRUE</strong>
 for(i in 2:5){hist(sampleTable[under_2000[,i-1],i])}</pre>
-<img src="trimmed_histograms.png">
+<img src="images/trimmed_histograms.png">
 
 The data fits a negative binomial curve! Because the negative binomial curve is a probability distribution, should we create two separate curves (one for each condition) we can then compare the probabilities of a gene's count from one condition to the other. To fit the negative binomial curve, we need to know the negative binomial <i>function</i>, which is:
-<img src="negative_binomial_function.png">
+<img src="images/negative_binomial_function.png">
 
 While this seems confusing, is actually common sense! The negative binomial interprets only binary events, or more simply put, events with only two possible outcomes. Most commonly those outcomes are success and failure. There is one main assumption made in this model: the outcome of each individual event does not affect the outcome of succeeding events. That is, the probability of success is the same for every single event, regardless if the previous event was a success or a failure. We will call this probability of success <i>p</i>. Suppose we now wanted to estimate the probability that we will have A successes and B failures in C tries with a probability of success <i>p</i>. Let's suppose that we are flipping an unfair coin with a probability of heads being 0.3. We want to know the probability of the flip being heads 2 times in 4 flips. We know from <a href="https://people.richland.edu/james/lecture/m170/ch05-rul.html">probability rules</a> that the answer is:
 
-<img src="binomial_explanation.png">
+<img src="images/binomial_explanation.png">
 
 Our equation does not exactly match the model. This is because the model also calculates the probability of success on the final try! For us that means <i>r = 3</i> and we're taking our probability of 2 successes in 4 tries and simply adding a 3rd success on the fifth try. That is:
 
-<img src="finished_binomial_explanation.png">
+<img src="images/finished_binomial_explanation.png">
 
 <h3 id="how_deseq2_works_2">Estimating true transcriptome size</h3>
 
@@ -807,7 +807,7 @@ Before we begin, there are a few assumptions we make. The first is that we have 
 
 Our first step is to find a way to determine the average expression of each gene for a given condition across all samples fitting that condition. Our result is this:
 
-<center><img src="equation1.png",height="60",width="60"></center>
+<center><img src="images/equation1.png",height="60",width="60"></center>
 
 Where k ∈ {<b>Z</b><sup>+</sup>}: 1 &le; k &le; K, g ∈ {<b>Z</b><sup>+</sup>}: 1 &le; g &le; G, and r ∈ {<b>Z</b><sup>+</sup>}: 1 &le; r &le; R  . Each k is the index of a separate condition (so for us, we have two conditions -- our control is condition 1 (k = 1) and our thermal stress is condition 2 (k = 2)) and each g is the index of a separate gene (if we have 25000 unique genes then g = 1, 2, 3 . . . 250000) and each r is the index of a separate replicate (we have 2 replicates per sample, so r = 1, 2). R, G, and K are the total number of replicates, genes sampled, and conditions, respectively.
 
@@ -818,55 +818,55 @@ for (i in 2:5){lines(density(sampleTable[,i]))}
 
 dim(sampleTable)
 <strong>[1] 27244     5</strong></pre>
-<img src="distribution_of_counts.png">
+<img src="images/distribution_of_counts.png">
 
 R scales its axes automatically by the given minima and maxima. Therefore, we know that there are counts up to 5,000,000 and we have 27244 genes. The vast majority of our counts are near 0. Suppose that all of our counts were 0 except for one count, which was 5,000,000. Now we take the average of our counts (5,000,000/27,244) and receive a value of 183.5. We therefore say that given our samples, the expected count is 183.5 . . . but look at the distribution! The expected count should be 0 or very near to it! This is the danger in taking the average. Therefore, we do not want to take the average for our objective stated before the coding chunk. What if instead we took the <i>median</i> of our counts? We see that for our data the median <i>is</i> a much better capture of the distributon than the mean! Let's now make our scaled transcriptomes (notice the control has a <b>&tau;</b> value of 1, this formula also only shows for two conditions, but an infinite number are possible):
 
-<center><img src="equation2.png",height="60","width="60"></center>
+<center><img src="images/equation2.png",height="60","width="60"></center>
 
 The last step has the most complicated formula but is the simplest in meaning:
 
-<center><img src="equation3.png",height="60",width="60"></center>
+<center><img src="images/equation3.png",height="60",width="60"></center>
 
 The <a href="http://mathworld.wolfram.com/DoubleSeries.html">double summation</a> is the sum of the log of all our scaled transcriptome sizes. Because ln(a) + ln(b) = ln(ab), we are taking the log of the <i>product</i> of all our transcriptome sizes. This is quite clever, but suppose that each un-scaled transcriptome had the same exact expression profile (and size) as the control. Notice:
 
-<center><img src="equation4.png"></center>
+<center><img src="images/equation4.png"></center>
 
 By the exponential-log identity:
 
-<center><img src="equation5.png"></center>
+<center><img src="images/equation5.png"></center>
 
 Our result is simply the size of all our transcriptomes! This is just the average size of all our scaled transcriptomes! We finish our normalization by dividing all of our real transcriptome sizes by the average size of our scaled transcriptomes. You may be wondering why this much work is worth the trouble. R handls these computations in a matter of seconds, so it not as troublesome as it appears! Secondly, we saw the range of our un-normalized counts in the density plot from 0 to 5 million. The range was so great as to hinder us from determining if the distribution fit a known model. Let's do a very simple (and common) normalization of our counts by taking the log2 transform of it. Lastly, we'll visualize our distribution:
 
 <pre style="color: silver; background: black;">sampleTable[,2:5] = log2(sampleTable[,2:5]+1)
 plot(density(sampleTable[,2]),main="Distribution of Counts Improper Normalization")</pre>
 
-<img src="distribution_normalized.png">
+<img src="images/distribution_normalized.png">
 
 The distribution is much more readily accessible now. However, this is not the true distribution of the data! The log2 transform, while common, aggressively shifts distributions toward 0 (read <a href="https://en.wikipedia.org/wiki/Natural_logarithm">here</a> if you're curious about the details). For very closely related samples where up-regulation or down-regulation may be more nuanced something as aggressive as the log2 transform may erase the differential expression. We avoid this dilemma by normalizing via scalars rather than functions.
 
 <h3 id="how_deseq2_works_3">Reparameterizing the negative binomial distribution</h3>
 In order to assess the statistical significance of our findings to generate results we need to fit our negative binomial distribution. We need to know the probability of read being mapped, the total number of reads that were attempted to be mapped, and the total number of reads which succeeded in being mapped. It may seem tempting to use the information we have, i.e., take our transcriptome size as the total number of tries to find the probability. After further thought, the logic breaks down: We need to know the percentage of reads attempted to be mapped -- but all of our information are from reads which were successfully mapped! This also prevents us from determining our probability of success, as we cannot determine the number of failures. Let's instead try to write our distribution in variables we can actually measure -- the mean and variance. As stated before, the negative binomial distribution is binary. We will assign a success as a value of 1 and a failure as a value of 0. This way only successes will contribute to the mean (and to some extent, the variance). We can write the mean and <a href="https://en.wikipedia.org/wiki/Variance">variance</a> as functions of our probability of success and number of failures. Alternatively, we can write the mean and variance as the probabiliy of failure and number of successees. It does not matter which you use, but we will be using the former. The mean is:
 
-<img src="negative_binomial_mean.png">
+<img src="images/negative_binomial_mean.png">
 
 This becomes readily apparent when we think of it like this:
 
-<img src="mean_explanation.png">
+<img src="images/mean_explanation.png">
 
 This works because the fracitonal component has the same units in both the numerator and denominator (tries per sample). These dimensions reduce to give us simple the number of successes we can expect per failure. Now, if we multiply by the number of failures we observed we get the average number of successes, not as a percentage. Because only successes contribute to the value of the function, the average number of successes is itself the mean.
 
 Next we want to call the variance in these terms. Remember, the variance is how much we expect a sample to deviate from the average. Our equation is:
 
-<img src="variance.png">
+<img src="images/variance.png">
 
 This becomes straight-forward when we think of it like this:
 
-<img src="variance_explained.png">
+<img src="images/variance_explained.png">
 
 This formula describes the ratio of how many more times there is a success rather than a fail per try. Funny enough, this is the intuitive meaning behind the variance which often becomes abstract in other models. Now let's write our negative binomial distribution in terms of its mean and variance:
 
-<img src="new_binomial.png">
+<img src="images/new_binomial.png">
 
 The next question we have is to determine the mean and variance for our data as accurately as we can. This is the next step in DESeq2, called "estimating dipsersion". Dispersion is just another term for variance. Let's have a look how DESeq2 determines the mean and variance (click on estimateDispersions):
 
@@ -925,7 +925,7 @@ The first sentence informs us that DESeq2 calculates an estimate of the dispersi
 
 Likelihood functions and probability distributions are one and the same. We will switch to using "likelihood function" now in place of "distribution". The likelihood function is called such because if we evaluate some value along its x-axis the result is the <i>likelihood</i> that the x-value in question appears in our sample. Thus, for us, we see that our negative binomial distribution is a likelihood function with arguments x, &mu;, and &sigma;<sup>2</sup>. That is:
 
-<img src="likelihood1.png">
+<img src="images/likelihood1.png">
 
 Which means the likelihood of x, given &mu; and &sigma;<sup>2</sup> is (function).
 
@@ -934,28 +934,28 @@ Suppose we had an experimentally deteremined value of &mu; in which we were very
 <b><strong><u>DO NOT PERFORM THESE CALCULATIONS -- LOOK AND SCROLL.<br>
 	THERE IS A MUCH BETTER ALTERNATIVE -- THIS IS HERE TO DEMONSTRATE A POINT</b></strong></u>
 
-<img src="likelihood2.png">
+<img src="images/likelihood2.png">
 
 We replace the binomial coefficient with its formula:
 
-<img src="likelihood3.png">
+<img src="images/likelihood3.png">
 
 Because our domain is <b>R</b>, we need to replace the factorial with the <a href="https://en.wikipedia.org/wiki/Gamma_function">gamma function</a>:
 
-<img src="likelihood4.png">
+<img src="images/likelihood4.png">
 
 Our values are sufficiently large; we use <a href="https://en.wikipedia.org/wiki/Stirling%27s_approximation">Stirling's approximation</a> of the <a href="https://en.wikipedia.org/wiki/Gamma_function#The_log-gamma_function">log-gamma</a> function formula:
 
-<img src="likelihood5.png">
+<img src="images/likelihood5.png">
 Combining like terms:
 
-<img src="likelihood6.png">
+<img src="images/likelihood6.png">
 
 At last we can determine our maximum-likelihood estimates using partial derivatives. The maximum-likelihood estimate for the mean and variance are (although the variance has an exponent, we count the variance as order of 1):
 
-<img src="likelihood7.png">
+<img src="images/likelihood7.png">
 
-<img src="likelihood8.png">
+<img src="images/likelihood8.png">
 
 <b><u><strong>YOU SHOULD NOW BEGIN PAYING FULL ATTENTION</b></u></strong>
 
@@ -986,23 +986,23 @@ length(distribution)
 <strong>[1] 19204</strong>
 hist(distribution)</pre>
 
-<img src="distribution1.png">
+<img src="images/distribution1.png">
 
 This distribution looks a lot like the negative binomial distribution. But our bins are too large. Let's make the bins smaller and see:
 <pre style="color: silver; background: black;">
 hist(distribution,breaks=1000)</pre>
 
-<img src="distribution2.png">
+<img src="images/distribution2.png">
 
 The spike being slightly to the right of 0, the bin at 0 presenting symmetry, and the steepness of the descent tells us that this is the (mostly) right-hand side of the <a href="https://en.wikipedia.org/wiki/Normal_distribution">normal distribution</a>. Truthfully, the steepness of the curve is the giveaway. Notice the gradual descent of the negative binomial distribution when <a href="https://en.wikipedia.org/wiki/Negative_binomial_distribution#/media/File:Negbinomial.gif">r = 1</a>. Knowing that our variance-mean ratio is normally distributed, we are going to repeat the process of creating the maximum-likelihood estimate with the normal distribution equation. The derivation of the equation is much beyond the scope of this tutorial. Therefore, unlike the negative binomial distribution, its derivation will not be included:
 
-<img src="partials_normal.png">
+<img src="images/partials_normal.png">
 
 These results make sense. For a normal distribution the mean has the highest likelihood. Therefore, given a variance, the mean maximum-likelihood estimate would be greatest when it equals x. Likewise, the variance is how much we expect x to deviate from the mean. Therefore, given if we know x and have calculuated a mean, the normal distribution will fit x the greatest when the distance of x from the mean is the variance. 
 
 DESeq2 calculates the variance-mean ratio of the dataset by approximating the variance-mean ratios for each gene given a normal distribution. You may think it as simple as finding the maximum-likelihood estimates. However, the partial differential equations have <a href="https://en.wikipedia.org/wiki/Second_derivative">second-order behavior</a>. That is, even though we have found a maximum for the given data, <i>the likelihood for the given values is expected to move in accordance with its second derivative</i>. Our actual likelihood for the given data is thus slightly beneath the maximum, leaving room for improvement. If you are unsure of the theory behind this, read about <a href="https://en.wikipedia.org/wiki/Acceleration">acceleration</a> for insight. Let's see how much our parameters are expected to move:
 
-<img src="second_order_normal.png">
+<img src="images/second_order_normal.png">
 
 Therefore, at our maximum-likelihod estimate, we expect the <b>likelihood itself</b> to change by -1/(variance) for the given data. We have maximized the data, but the true likelihood is more complex than only the first-order behavior. We have all of the understanding laid out for the Cox Reid-Adjusted Profile Likelihood. Which we will cover next: 
 
@@ -1010,60 +1010,60 @@ Therefore, at our maximum-likelihod estimate, we expect the <b>likelihood itself
 <h3 id="how_deseq2_works_6">Cox Reid Adjusted Likelihood</h3>
 The Cox Reid-Adjusted Profile Likelihood is an algorithm for generating more accurate estimations of parameters in statistical modeling.The parameters fit into two categories: &psi;, the parameters of interest, and &phi;, all other parameters (known as nuisance parameters). Furthermore, the likelihood of &psi; is the value of the likelihood function given &phi; and a set of observations. We call the value of the log-likelihood function with a &psi; of our choosing given &phi; and a set of observations <i>y</i> the log-likelihood profile of &psi;:
 
-<img src="likelihood_profile.png">
+<img src="images/likelihood_profile.png">
 
 Suppose instead that we define the nuisance parameters as a function of &psi; and all parameters which are orthogonal to it by the <a href="https://en.wikipedia.org/wiki/Fisher_information_metric">Fisher metric</a>, &lambda;. Therefore:
 
-<img src="parameterization.png">
+<img src="images/parameterization.png">
 
 Such that for &psi; and all &lambda;:
 
-<img src="fisher_metric.png">
+<img src="images/fisher_metric.png">
 
 Let's take a moment to think about why a value of 0 for the Fisher metric creates orthogonal pairings.
 
 We know that the integral of our likelihood function of all possible values of x is equal to 1. Let's consider a few scenarios:
 Because the variables are defined, we know that neither of the partial derivatives are 0 (the derivative of a first-order variable is 1). Suppose that the derivatives for both are positive for all x, then our final answer will be a positive number. Likewise, if both derivatives are negative for all x our final answer will be a positive number. This means that there must be some values of x for which the first partial derivative is positive and the second is negative. Should this be the case for all x then the answer will be a negative value. Therefore, there must be a balance that for some x that one derivative is positive and the other negative and some other x that both derivatives are negative or positive. For an answer of 0 the integral over values of x where both are negative or positive is <i>exactly equal</i> to the integral over values of x where one is negative and one is positive. If we think of the inside of the integral as a distribution of its own, that is:
 
-<img src="fisher_likelihood.png">
+<img src="images/fisher_likelihood.png">
 
 then there is an exactly 50% chance that the derivatives move together or in opposite directions. That is:
 
-<img src="orthogonal_fisher.png">
+<img src="images/orthogonal_fisher.png">
 
 From this we can safely assert that they are independent of one another, and the behavior of one does not influence the behavior of the other. Thus, for Fisher metrics of 0 the indices are orthogonal. You may be wondering why we have added in the minimum of the inside of the integral. The integral may have negative values, which makes no physical sense in a likelihood model! Therefore, we shift the entire distribution up by its greatest negative value so that all values are above 0 (this also prevents the norm from creating a division by 0). Therefore, in our parameterization:
 
-<img src="parameterization.png">
+<img src="images/parameterization.png">
 
 we parametrize our nuisance parameters as a function of our parameter of interest and all parameters whose behavior do not change the parameter of interest. If you are wondering why this is so important, suppose we determine are attempting to determine the maximum likelihood of &psi; for given &phi; where &psi; is a function of &phi;. First, we need to determine the maximum likelihood of &phi; given what we think &psi; is. Because &psi; is a function of &phi;, when we determine the maximum likelihood of &phi; we have just changed the value of &psi;! As long as &psi; is a function of &phi; we have no way to assess the likelihood of our static, chosen &psi;. This is why we need to reparameterize our nuisance parameters such that it is composed of the set of all parameters which will not interfere with the likelihood of our parameter of interest. With our parameterization, the Cox Reid-Adjusted Profile Likelihood is:
 
-<img src="adjusted_profile_1.png">
+<img src="images/adjusted_profile_1.png">
 
 Where &lambda;<sub>mle</sub> is the maximum-likelihood estimate of the orthogonal nusiance parameters given observations <i>x</i> and our guess for &psi;, and variables are as otherwise described. The variable <i>j<sub>&lambda;&lambda;</sub>(&psi;,&lambda;)</i> is an n by n matrix (n being the number of lambdas) where the (r,s)th entry is:
 
-<img src="lambda_matrix.png">
+<img src="images/lambda_matrix.png">
 
 Let's dig a little deeper into this formula. First, the term:
 
-<img src="lambda_matrix.png">
+<img src="images/lambda_matrix.png">
 
 may be thought of as how the likelihood changes with &lambda;<sup>r</sup> as we account for the influence of &lambda;<sup>s</sup> on &lambda;<sup>r</sup>. The matrix <i>j<sub>&lambda;&lambda;</sub></i> then accounts for the way in which each parameter affects the likelihood while accounting for how the parameter itself is influenced with &psi; remaining constant (as &psi; and all &lambda; are orthogonal, this would not work if we could not hold &psi; constant!). If we view the matrix as an n dimensional vector space with each column, s, representing how the likelihood changes with the parameter &lambda;<sup>s</sup> and each row, r, representing how the parameter &lambda;<sup>s</sup> is influenced by &lambda;<sup>r</sup>. How the likelihood changes in total acccording to &lambda;<sup>s</sup> is described by taking the entire column s as a vector-function (each r representing a different axis). Note that the columns are not necessarily orthogonal. However, if we can find the total change along each axis, we can then simply multiply those changes across each axis to get the volume represented by the matrix. If you had read the acceleration page linked earlier then you know that the volume calculation is the <a href="https://en.wikipedia.org/wiki/Integral">total change</a> in the likelihood at the maximum. Lucky for us, the <a href="https://en.wikipedia.org/wiki/Determinant#Definition">determinant</a> is the signed area of a matrix. That is, given our n-dimensional vector space represented by our matrix, the determinant represents exactly as described prior -- the volume associated with the change alongisde each axis given the vectors in the matrix. Notice that the matrix is symmetric along its diagonal. This means that each value is actually repeated twice, and we have doubled the length of the change along each axis! This is a simple fix, we can simply cut the total volume of our matrix by half (as every side may be represnted as 2n) to calculate the true change of the likelihood at the maximum. 
 
 You may be wondering why we are taking the log of the determinant when the values in the matrix are calculated based on the log-likelihood, giving us a double log where you may not think one is needed. However, observe the behavior when we take the log of the volume of a cube:
 
-<img src="log_cube.png">
+<img src="images/log_cube.png">
 
 We get the individual changes associated with each side! Now suppose that we place our l, w, and h along the x, y, and z axes and place them in a matrix such that the first column of the matrix represents x, the second column in the matrix represents y, and the final column in the matrix represents z. Each row represents a vector. We can represent our cube as:
 
-<img src="matrix_cube.png">
+<img src="images/matrix_cube.png">
 
 Now let's calculate the volume of our cube and take its log:
 
-<img src="log_determinant.png">
+<img src="images/log_determinant.png">
 
 Where <b>tr</b> is the <a href="https://en.wikipedia.org/wiki/Trace_(linear_algebra)">trace</a>. This identity holds for any matrix symmetric along its diagonal (I'll let you ponder why this is so), which we have. You may be wondering why this is advantageous. There are two main reasons: First, imagine that you had 20 or 30 nuisance parameters in a very large model. While software like R can calculate the determinant of large matrices, they cannot calculate abstract derivatives! Therefore, you will have to determine each first and second derivative by hand. Accounting for the symmetry, that is 200 to 450 derivatives! Notice for us:
 
-<img src="j_matrix.png">
+<img src="images/j_matrix.png">
 
 Which, counting both first and second derivatives is only 40 or 60 for the example prior. Second, this is not an exact calculation! The adjusted-likelihood is a better approximation of the true likelihood, and it <i>itself</i> is meant to be maximized. Simply put, we guess a value of &psi; and calculate the adjusted likelihood. We then guess another value of &psi; and calculate the adjusted likelihood again. We do this in very small incremenetal changes to &psi; until we reach a point where if we decrease <i>or</i> increase &psi; the adjusted likelihood decreases.
 
@@ -1073,7 +1073,7 @@ Lastly, because we know we're at a maximum for the likelihood-function in our ca
 
 The Cox Reid works simply for the normal distribution as its two parameters, &mu; and &sigma;<sup>2</sup> are orthogonal. Therefore, we go about calculating our maximum-likely estimate for the variance using the mean as the only nuisance parameter. That gives us:
 
-<img src="cox_reid_normal.png">
+<img src="images/cox_reid_normal.png">
 
 Which is much simpler than what we had modeling the dispersion as a negative binomial distribution (also, interestingly enough, our likelihood is a little bit higher than expected)!
 
@@ -1196,7 +1196,7 @@ and now are:
 
 We've transformed our data in such a way that the information between its individual points has been maintained but it into a known model has increased. This is a very simple explanation of <a href="https://en.wikipedia.org/wiki/Tikhonov_regularization">Tikhonov regularization</a>, and is the method DESeq2 uses to transform the gene coefficients into a maximized fit of the prior distribution, making the posterior distribution. We are now ready for the Wald Test, which is in the form:
 
-<img src="wald_test.png">
+<img src="images/wald_test.png">
 
 For us, &lambda;<sub><i>guess</i></sub> is the percentage of genes with a certain log-fold change, <b>A</b> and &lambda;<sub><i>mle</i></sub> is the percentage of genes with the log-fold change <b>A</b> according to the idealized normal distribution. DESeq2 does not actually use this statistic, however! The Wald Test is more a description of the process through which we transformed our coefficients. With our final coefficients, DESeq2 conducts a <a href="https://en.wikipedia.org/wiki/Likelihood-ratio_test">likelihood-ratio test</a> between our &lambda;<sub><i>guess</i></sub> and &lambda;<sub><i>mle</i></sub> (&lambda;<sub><i>guess</i></sub>&frasl;&lambda;<sub><i>mle</i></sub>). The value returned is subtracted from one, and there is our p-value.
 	
@@ -1420,7 +1420,7 @@ scores <- data.frame(pc$x, condition)
     panel.grid.minor.y = element_blank(),
     panel.background = element_rect(color = 'black',fill = NA)
   ))
-<img src="Croaker_DESeq2-ggplot2.png" alt= "PCA Plot">
+<img src="images/Croaker_DESeq2-ggplot2.png" alt= "PCA Plot">
 &num;dev.copy(png,paste0(outputPrefix, "-PCA.png"))
 ggsave(pcaplot,file=paste0(outputPrefix, "-ggplot2.png"))
 
@@ -1438,7 +1438,7 @@ heatmap.2(assay(vsd)[select,], col=my_palette,
           density.info="none", trace="none",
           cexCol=0.6, labRow=F,
           main="Heatmap of 100 DE Genes \nin Liver Tissue Comparison")
-<img src="Croaker_DESeq2-HEATMAP.png" alt= "HEATMAP">
+<img src="images/Croaker_DESeq2-HEATMAP.png" alt= "HEATMAP">
 dev.copy(png, paste0(outputPrefix, "-HEATMAP.png"))
 dev.off()</pre>
 
