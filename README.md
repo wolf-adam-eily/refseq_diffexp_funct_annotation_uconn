@@ -963,7 +963,7 @@ From our previous file of this type we are well aware of the meaning of each col
 Let's now create our visuals:
 
 R
-<pre style="color: silver; background: black;">&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;
+<pre style="color: silver; background:black;">&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;
 &num; Exploratory data analysis of RNAseq data with DESeq2
 &num;
 &num; these next R scripts are for a variety of visualization, QC and other plots to
@@ -1008,20 +1008,11 @@ write.table(as.data.frame(assay(vsd),file = paste0(outputPrefix, "-vst-transform
 &num; clustering analysis
 &num; excerpts from http://dwheelerau.com/2014/02/17/how-to-use-deseq2-to-analyse-rnaseq-data/
 library("RColorBrewer")
-library("gplots")
+library("gplots")</pre>
 
-&num; for our heatmap we use the "dist" function to calculate the distance between datapoints (simply the difference of their values
+For our heatmap we use the "dist" function to calculate the distance between datapoints (simply the difference of their values. We use the "assay" argument to tell R to calculate the distancee between each indiviidual assay (sample) and not the genes. Lastly, always transpose your expression matrix when calculating distances! The reason for this is that R's arithmetic operates on rows, not columns. So if we want to view each sample completely, we need the genes in the columns and the samples as the rows. Have you ever noticed how there is a rowMeans() function but not a colMeans() function? This is what I mean. We are assuming that you are familiar with how to use the heatmap function in R
 
-&num; we use the "assay" argument to tell R to calculate the distancee between each indiviidual assay (sample) and not the genes. 
-
-&num; lastly, always transpose your expression matrix when calculating distances! The reason for this is that R's arithmetic operates
-
-&num; on rows, not columns. So if we want to view each sample completely, we need the genes in the columns and the samples as the rows
-
-&num; have you ever noticed how there is a rowMeans() function but not a colMeans() function? This is what I mean.
-
-&num; we are assuming that you are familiar with how to use the heatmap function in R
-
+<pre style="color: silver; background:black;">
 sampleDists <- dist(t(assay(rld)))
 suppressMessages(library("RColorBrewer"))
 sampleDistMatrix <- as.matrix(sampleDists)
