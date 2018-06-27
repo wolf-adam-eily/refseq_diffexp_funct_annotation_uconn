@@ -847,12 +847,27 @@ Our -results-with-normalized file contains all of the information of our -replac
 "8","GeneID:104925605",11058.8260524593,5.56728188277741,0.0676448603229138,82.3016243392489,0,0,463.917357493916,449.617169714806,21652.3345471029,21669.4351355257
 "9","GeneID:104927028",2535.71264215129,-3.30668469336064,0.0834467995056178,-39.6262614378401,0,0,4570.44507753265,4641.46283495983,460.468300973102,470.474355139559</pre>
 R
-<pre style="color: silver; background: black;">&num; send normalized counts to tab delimited file for GSEA, etc.
+<pre style="color: silver; background: black;">&num; Let's compile all of our normalized counts to tab delimited file for future analyses
 write.table(as.data.frame(counts(dds),normalized=T), 
             file = paste0(outputPrefix, "_normalized_counts.txt"), sep = '\t')
 
-&num; produce DataFrame of results of statistical tests
+&num; Let's produce a data frame with descriptions of our calculated values
+
+&num; 'mcols' retrieves the metadata associated with each column. 
+
+&num; you may think of metadata as simply a description of the value-type 
+
 mcols(res, use.names = T)
+<strong>DataFrame with 6 rows and 2 columns
+                       type                                          description
+                <character>                                          <character>
+baseMean       intermediate            mean of normalized counts for all samples
+log2FoldChange      results log2 fold change (MLE): condition treated vs control
+lfcSE               results         standard error: condition treated vs control
+stat                results         Wald statistic: condition treated vs control
+pvalue              results      Wald test p-value: condition treated vs control
+			padj                results                                 BH adjusted p-values</strong>
+
 write.csv(as.data.frame(mcols(res, use.name = T)),
           file = paste0(outputPrefix, "-test-conditions.csv"))</pre><br>
 Our test-conditions file gives us insight into what statistics were calculated and how those statistics were calculated. Let's look at it in the terminal:
@@ -865,32 +880,71 @@ Our test-conditions file gives us insight into what statistics were calculated a
 "pvalue","results","Wald test p-value: condition treated vs control"
 "padj","results","BH adjusted p-values</pre>
 R
-<pre style="color: silver; background: black;">&num; replacing outlier value with estimated value as predicted by distrubution using
-&num; "trimmed mean" approach. recommended if you have several replicates per treatment
+<pre style="color: silver; background: black;">&num; we can clean up our data by replacing outliers with the value predicted from the idealized distribution
+
+&num; this can only be done if you have multiple replicates per condition!
+
 &num; DESeq2 will automatically do this if you have 7 or more replicates
 
+&num; we use the "trimmed mean" approach
+
+&num; the "trimmed mean" approach reduces the smallest and largest values in a row by a small percentage, calculates the mean, and
+
+&num; then finds the "trimmed mean" on the idealized distribution and replaces the outlier with the idealized value of the trimmed mean
+
+&num; the replace outliers function can only be used on DESeqData objects
+
 ddsClean <- replaceOutliersWithTrimmedMean(dds)
+
+&num; now let's perform our differential expression analysis with the outliers replaced
+
 ddsClean <- DESeq(ddsClean)
+<strong>using pre-existing size factors
+estimating dispersions
+found already estimated dispersions, replacing these
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing</strong>
+
 temp_ddsClean <- ddsClean
-tab <- table(initial = results(dds)$padj < 0.05,
-             cleaned = results(ddsClean)$padj < 0.05)
-addmargins(tab)
-write.csv(as.data.frame(tab),file = paste0(outputPrefix, "-replaceoutliers.csv"))
-</pre><br>
-Let's have a look at this file in the terminal:
-<pre style="color: silver; background: black;">less Croaker_DESeq2-replaceoutliers.csv
-"","initial","cleaned","Freq"
-"1","FALSE","FALSE",12049
-"2","TRUE","FALSE",0
-"3","FALSE","TRUE",0
-"4","TRUE","TRUE",4710</pre>
-For this file, we have replaced all outliers with the trimmed-mean of that gene's counts from the other samples in within the same grouping (LB2A, LC2A). Now, we have only four samples, split into our two groups. Therefore, we will be replacing our outliers with the average of the gene count of the group. This approach is best used with a large number of samples belonging to each group, such as eight or above. By changing a value, we are also changing the distribution of data, and thus, the p-values. Our file has three columns, "initial", "cleaned", and "Frequency". The initial column represents if there are any adjusted p-values beneath 0.05 before replacing outliers, the cleaned column representing the same but for after replacing outliers, and the frequency is the amount of outliers in the sample changed. The rows represent our two LB2A samples followed by our two LC2A samples. You can see that changing the outliers in one sample changes the adjusted p-values in <i>both</i> samples. It cannot be stressed enough that this best works with large pools of samples, which we do not have!<br>
-R
-<pre style="color: silver; background: black;">resClean <- results(ddsClean)
+
+&num; let's compare our cleaned results to our normal results
+
+initial = results(dds)$padj <0.05
+head(initial)
+<strong>[1] FALSE FALSE    NA FALSE FALSE  TRUE</strong>
+
+length(initial)==length(cleaned)
+<strong<[1] TRUE</strong>
+
+&num; we need to remove the NAs
+
+keep_vector_initial = is.na(initial)==FALSE
+keep_vector_cleaned = is.na(cleaned)==FALSE
+identical(keep_vector_initial,keep_vector_cleaned)
+<strong>[1] TRUE</strong>
+
+initial = initial[keep_vector_initial]
+cleaned = cleaned[keep_vector_cleaned]
+length(initial)==length(cleaned)
+<strong>[1] TRUE</strong>
+
+&num; now let's determine how many of these have the same value
+
+sum(initial==cleaned)
+<strong>[1] 16762</strong>
+
+&num; we see that 16762 of our genes have p-values below 0.05 in both our cleaned and normal samples
+
+&num; let's write a file which contains our significant genes from our cleaned samples
+
+resClean <- results(ddsClean)
 resClean = subset(res, padj<0.05)
 resClean <- resClean[order(resClean$padj),]
 write.csv(as.data.frame(resClean),file = paste0(outputPrefix, "-replaceoutliers-results.csv"))</pre><br>
-For this file, there are no separate tabs for the different samples, but only for the aggregrate gene behavior of all samples. Our first column is of course the genes. The second column represents each gene's baseMean. The baseMean is the average of the normalized counts. In normalization, the length of each read does not contribute, only the raw number of total counts. The "log2FoldChange" is simply the scale by which the log2 mean changes after normalization. A "log2FoldChange" value of 2 means that after normalization, the log2 mean value has doubled. A "log2FoldChange" value of -2 means that after normalization, the log2 mean value has halved. Our next tab is the "lfcSE", or "log-fold-change-standard-error". This is simply the <a href="https://en.wikipedia.org/wiki/Standard_error">standard error</a> of the log2 mean. The "stat" tab is the <a href="https://en.wikipedia.org/wiki/Wald_test#Mathematical_details">Wald-test</a> statistic of the log 2 mean. You may think of this statistic as an estimation of the significance of the variable, with smaller values representing greater significance. Lastly, we have our <a href="https://en.wikipedia.org/wiki/P-value">p-values</a> and <a href="https://support.minitab.com/en-us/minitab/18/help-and-how-to/modeling-statistics/anova/supporting-topics/multiple-comparisons/what-is-the-adjusted-p-value/">adjusted-p-values</a>, which are additional measures of significance. We can tell that our Wald-stat, p-values, and adjusted-p-values are quite high, reflecting how the small sample size hurts our assumptions. Let's look at this file in the terminal:
+
+Let's have a look at this file in the terminal:
 
 <pre style="color: silver; background: black;"> head Croaker_DESeq2-replaceoutliers-results.csv
 "","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj"
@@ -903,6 +957,10 @@ For this file, there are no separate tabs for the different samples, but only fo
 "GeneID:104924701",2370.03445131097,-3.76035093454651,0.0920739957113332,-40.8405316343152,0,0
 "GeneID:104925605",11058.8260524593,5.56728188277741,0.0676448603229138,82.3016243392489,0,0
 "GeneID:104927028",2535.71264215129,-3.30668469336064,0.0834467995056178,-39.6262614378401,0,0</pre>
+
+From our previous file of this type we are well aware of the meaning of each column. It is always wise to keep files for analyses of each transformed dataset. The first reason for this is that bioinformatics is no different than a wet-lab environment: you must keep detailed notes of exactly what you did and when if you want to ensure reproducibility. The second reason is that you may find that a specific trasnformation which is meant to reduce statistical noise actually obfuscates your findings! If you did not have a record of the datasets before transformation you would have to re-do the analysis up to that point.
+
+Let's now create our visuals:
 
 R
 <pre style="color: silver; background: black;">&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;&num;
@@ -930,8 +988,17 @@ dev.off()
 &num; transform raw counts into normalized values
 &num; DESeq2 has two options:  1) rlog transformed and 2) variance stabilization
 &num; variance stabilization is very good for heatmaps, etc.
+&num; for an explanation as to what these are, please visit <a href="https://github.com/wolf-adam-eily/how_deseq2_works#how_deseq2_works_7">here (vsd)</a> and <a href="https://rdrr.io/bioc/DESeq2/man/rlog.html">here (rlog)</a>
 rld <- rlogTransformation(dds, blind=T)
 vsd <- varianceStabilizingTransformation(dds, blind=T)
+
+&num; the option 'blind=T' tells DESeq2 that you want the procedure to be done without regard to the sample condition
+
+&num; this option should be exercised with caution, as both of the functions rely on the variance of the idealized distribution
+
+&num; should you set 'blind=T' for samples containing different cell types, for sample, the idealized variances would become much larger
+
+&num; than they should because the data itself is not similar at all!
 
 &num; save normalized values
 write.table(as.data.frame(assay(rld),file = paste0(outputPrefix, "-rlog-transformed-counts.txt"), sep = '\t'))
@@ -942,6 +1009,19 @@ write.table(as.data.frame(assay(vsd),file = paste0(outputPrefix, "-vst-transform
 &num; excerpts from http://dwheelerau.com/2014/02/17/how-to-use-deseq2-to-analyse-rnaseq-data/
 library("RColorBrewer")
 library("gplots")
+
+&num; for our heatmap we use the "dist" function to calculate the distance between datapoints (simply the difference of their values
+
+&num; we use the "assay" argument to tell R to calculate the distancee between each indiviidual assay (sample) and not the genes. 
+
+&num; lastly, always transpose your expression matrix when calculating distances! The reason for this is that R's arithmetic operates
+
+&num; on rows, not columns. So if we want to view each sample completely, we need the genes in the columns and the samples as the rows
+
+&num; have you ever noticed how there is a rowMeans() function but not a colMeans() function? This is what I mean.
+
+&num; we are assuming that you are familiar with how to use the heatmap function in R
+
 sampleDists <- dist(t(assay(rld)))
 suppressMessages(library("RColorBrewer"))
 sampleDistMatrix <- as.matrix(sampleDists)
@@ -953,20 +1033,71 @@ heatmap(sampleDistMatrix,col=colors,margin = c(8,8))
 dev.copy(png,paste0(outputPrefix, "-clustering.png"))
 dev.off()
 
-&num;Principal components plot shows additional but rough clustering of samples
+&num; Principal components plot shows additional but rough clustering of samples
+
 library("genefilter")
 library("ggplot2")
 library("grDevices")
 
+&num; the rowVars() function calculates thee variance of each row
+
+&num; we want the variance for each gene, not sample, so we will not be transposing our data
+
 rv <- rowVars(assay(rld))
+
+&num; we order our genes by those with maximum variance to minimum variance and take the first 500 genes in this order
 select <- order(rv, decreasing=T)[seq_len(min(500,length(rv)))]
-pc <- prcomp(t(assay(vsd)[select,]))
 
-&num; set condition
-condition <- treatments
-scores <- data.frame(pc$x, condition)
+&num; we use the 'prcomp()' function to calculate the prinicpal components of our 500 genes. Notice that we want to group our samples,
 
-(pcaplot <- ggplot(scores, aes(x = PC1, y = PC2, col = (factor(condition))))
+&num; not genes. Therefore, we transpose our data
+
+pc <- prcomp(t(assay(rld)[select,]))
+
+&num; here is a look at the output of prcomp()
+
+<strnog>Value</strong>
+
+prcomp returns a list with class "prcomp" containing the following components:
+
+sdev		the standard deviations of the principal components (i.e., the square roots of the eigenvalues of the 
+		covariance/correlation matrix, though the calculation is actually done with the singular values of the data matrix).
+rotation	the matrix of variable loadings (i.e., a matrix whose columns contain the eigenvectors). The function princomp returns 
+		this in the element loadings.
+x		if retx is true the value of the rotated data (the centred (and scaled if requested) data multiplied by the rotation 
+		matrix) is returned. Hence, cov(x) is the diagonal matrix diag(sdev^2). For the formula method, napredict() is applied 
+		to handle the treatment of values omitted by the na.action.
+center, scale	the centering and scaling used, or FALSE.
+
+head(pc$x)
+<strong> PC1        PC2        PC3           PC4
+LB2A_1 -14.71439  0.4859991  2.2859939 -1.592476e-15
+LB2A_2 -14.71617 -0.4412225 -2.2908771  3.694961e-15
+LC2A_1  14.92945  3.0521331 -0.3425988  1.630987e-14
+LC2A_2  14.50110 -3.0969098  0.3474820  1.682682e-14</strong>
+
+&num; we see that x has our principal components!
+
+
+
+&num; we will be using ggplot
+
+&num; ggplot can only extract information from dataframes. Therefore, we will be making a dataframe of x and our conditions
+
+scores <- data.frame(pc$x, sampleCondition)
+head(scores)
+<strong>> head(scores)
+             PC1        PC2        PC3           PC4 sampleCondition
+LB2A_1 -14.71439  0.4859991  2.2859939 -1.592476e-15         control
+LB2A_2 -14.71617 -0.4412225 -2.2908771  3.694961e-15         control
+LC2A_1  14.92945  3.0521331 -0.3425988  1.630987e-14         treated
+LC2A_2  14.50110 -3.0969098  0.3474820  1.682682e-14         treated</strong>
+
+&num; let's create our PCA plot, do not worry too much about the options
+
+&num; you can design your own plot using the <a href="https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf">ggplot2 cheat sheet</a>
+
+pcaplot <- ggplot(scores, aes(x = PC1, y = PC2, col = (factor(condition))))
   + geom_point(size = 5)
   + ggtitle("Principal Components")
   + scale_colour_brewer(name = " ", palette = "Set1")
@@ -991,7 +1122,8 @@ ggsave(pcaplot,file=paste0(outputPrefix, "-ggplot2.png"))
 
 
 
-&num; heatmap of data
+&num; let's create one more heatmap, but this time of our cleaned data
+
 library("RColorBrewer")
 library("gplots")
 par(mar=c(7,4,4,2)+0.1) 
