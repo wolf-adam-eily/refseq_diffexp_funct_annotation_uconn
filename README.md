@@ -555,21 +555,201 @@ Principal-Component-Analysis is far too complex and nuanced to go into detail he
 
 <h3 id="using_deseq2">Using DESeq2</h2>
 
-Because of the detailed explanation of DESeq2 before this, we will only be showing the code with some insights here. Always remember that the DESeq2 vignette comes with complete instructions on how to use DESeq2 for analysis. If you are ever confused, visit the vignette,find the appropriate step and read up. This is true for most Bioconductor packages, so do not be afraid to try new software! The vignette is your best friend:
+The DESeq2 vignette comes with complete instructions on how to use DESeq2 for analysis. If you are ever confused, visit the vignette, find the appropriate step and read up. This is true for most Bioconductor packages, so do not be afraid to try new software! The vignette is your best friend. This tutorial includes instruction only on using DESeq2, but if you are curious there is a <a href="https://github.com/wolf-adam-eily/how_deseq2_works">separate tutorial</a> which details the exact mathematical and statistical procedure for every step of the DESeq2 software. When you have time, I encourage you to read through and understand the material in the supplemental lecture. While the math and statistics are of an advanced level, understanding them will provide you with immeasurable intution for solving non-traditional bioinformatical problems which may pop up in your research. Now, let's begin loading our data:
 <pre style="color: silver; background: black;">
 library("DESeq2")
 # Set the working directory
 directory <- "~/your_directory_with_htseq_counts"
 setwd(directory)
 list.files(directory)
+</pre>
+We will be generating a variety of files. We want the names of the files to inform us of exactly what information is contained in each file. The data is from the Croaker dataset, and we are analyzing the data with DESeq2. We choose an "outputPrefix" which, as the name suggests, will prefix all of our files. Secondly, we want easy loading of our files. We can do this by creating a string vector with each element being a counts filename. The easiest way to ensure you've typed the name right is to type the first few letters of the filename and press TAB. You should be presented with an option of names to auto-fill. Press up or down to toggle your choice and lastly press ENTER to auto-fill. If your files do not come up, then you are in the wrong directory!
+
+<pre style="color: silver; background: black;">
 outputPrefix <- "Croaker_DESeq2"
 sampleFiles<- c("sort_trim_LB2A_SRR1964642.counts","sort_trim_LB2A_SRR1964643.counts",
                 "sort_trim_LC2A_SRR1964644.counts", "sort_trim_LC2A_SRR1964645.counts")
 &num; Liver mRNA profiles of control group: (LB2A) 
 &num; Liver mRNA profiles of thermal stress group: (LC2A)
 &num; ""CONTROL"" LB2A_1: sort_trim_LB2A_SRR1964642.counts, LB2A_2: sort_trim_LB2A_SRR1964643.counts
-&num; ""TREATED"" LC2A_1: sort_trim_LB2A_SRR1964644.counts, LC2A_2: sort_trim_LC2A_SRR1964645.counts
+&num; ""TREATED"" LC2A_1: sort_trim_LB2A_SRR1964644.counts, LC2A_2: sort_trim_LC2A_SRR1964645.counts</pre>
 
+Always be as specific as possible in your comments. Most often your code is published as supplemental information for your research. If a scientist is reading your code and is unsure of exactly what you are doing it harms your reproducibility. Moreover, it harms your credibility! The best coding leaves nothing to the imagination. Before we move any further, let's find some instructions on how to use DESeq2. This can be done typing in ??'DESeq2-pavkage' and pressing enter. You should see the following vignette:
+<pre style="color: silver; background: black;">
+DESeq {DESeq2}	R Documentation
+Differential expression analysis based on the Negative Binomial (a.k.a. Gamma-Poisson) distribution
+
+<strong>Description</strong>
+
+<em>This function performs a default analysis through the steps:
+
+estimation of size factors: <u>estimateSizeFactors</u>
+
+estimation of dispersion: <u>estimateDispersions</u>
+
+Negative Binomial GLM fitting and Wald statistics: <u>nbinomWaldTest</u>
+
+For complete details on each step, see the manual pages of the respective functions. After the DESeq function returns a DESeqDataSet 
+object, results tables (log2 fold changes and p-values) can be generated using the results function. Shrunken LFC can then be 
+generated using the lfcShrink function. All support questions should be posted to the Bioconductor support site: 
+http://support.bioconductor.org.</em>
+
+<strong>Usage</strong>
+
+DESeq(object, test = c("Wald", "LRT"), fitType = c("parametric", "local",
+  "mean"), sfType = c("ratio", "poscounts", "iterate"), betaPrior,
+  full = design(object), reduced, quiet = FALSE,
+  minReplicatesForReplace = 7, modelMatrixType, useT = FALSE, minmu = 0.5,
+  parallel = FALSE, BPPARAM = bpparam())
+<strong>Arguments</strong>
+
+object		a DESeqDataSet object, see the constructor functions DESeqDataSet, DESeqDataSetFromMatrix, 
+		<u>DESeqDataSetFromHTSeqCount</u>.
+test		either "Wald" or "LRT", which will then use either Wald significance tests (defined by nbinomWaldTest), or the 
+		likelihood ratio test on the difference in deviance between a full and reduced model formula (defined by nbinomLRT)
+fitType		either "parametric", "local", or "mean" for the type of fitting of dispersions to the mean intensity. See 
+		estimateDispersions for description.
+sfType		either "ratio", "poscounts", or "iterate" for teh type of size factor estimation. See estimateSizeFactors for 
+		description.
+betaPrior	whether or not to put a zero-mean normal prior on the non-intercept coefficients See nbinomWaldTest for description of 
+		the calculation of the beta prior. In versions >=1.16, the default is set to FALSE, and shrunken LFCs are obtained 
+		afterwards using lfcShrink.
+full		for test="LRT", the full model formula, which is restricted to the formula in design(object). alternatively, it can be 
+		a model matrix constructed by the user. advanced use: specifying a model matrix for full and test="Wald" is possible 
+		if betaPrior=FALSE
+reduced		for test="LRT", a reduced formula to compare against, i.e., the full formula with the term(s) of interest removed. 
+		alternatively, it can be a model matrix constructed by the user
+quiet		whether to print messages at each step
+minReplicatesForReplace	the minimum number of replicates required in order to use replaceOutliers on a sample. If there are samples 
+			with so many replicates, the model will be refit after these replacing outliers, flagged by Cook's distance. 
+			Set to Inf in order to never replace outliers.
+modelMatrixType		either "standard" or "expanded", which describe how the model matrix, X of the GLM formula is formed. 
+			"standard" is as created by model.matrix using the design formula. "expanded" includes an indicator variable 
+			for each level of factors in addition to an intercept. for more information see the Description of 
+			nbinomWaldTest. betaPrior must be set to TRUE in order for expanded model matrices to be fit.
+useT		logical, passed to nbinomWaldTest, default is FALSE, where Wald statistics are assumed to follow a standard Normal
+minmu		lower bound on the estimated count for fitting gene-wise dispersion and for use with nbinomWaldTest and nbinomLRT
+parallel	if FALSE, no parallelization. if TRUE, parallel execution using BiocParallel, see next argument BPPARAM. A note on 
+		running in parallel using BiocParallel: it may be advantageous to remove large, unneeded objects from your current R 
+		environment before calling DESeq, as it is possible that R's internal garbage collection will copy these files while 
+		running on worker nodes.
+BPPARAM		an optional parameter object passed internally to bplapply when parallel=TRUE. If not specified, the parameters last 
+		registered with register will be used.</pre>
+		
+
+The vignette informs us that DESeq2 performs three main steps in its differential expression analysis: estimating size factors, estimating dispersion, and conducting the Wald Test. These steps are completed so as to fit a <a href="https://en.wikipedia.org/wiki/Negative_binomial_distribution">negative binomial distribution</a>. Let's review these terms, first:<br>
+<br>
+Estimating size factors: This step operates under the simple assumption that if a sample is up-regulated then its transcriptome is larger than those which are not up-regulated. Suppose we have two samples, A and B. Every gene in A has been up-regulated by a factor of 2 and B is unchanged. If we took the proportion of gene expression in both samples they would return the same value! While A is twice as expressed, its transcriptome is twice as large. Our analysis would then conclude that no genes were differentially expressed, even though they all were. Estimating size factors is a more succinct way of stating that DESeq2 finds an idealized transcriptome size for all of the samples. Now all of the individual gene count proportions are calculating using the idealized transcriptome size and not the individual sample size. Because the gene counts themselves are not changed, our analysis will now return that each gene is differentially expressed with a <a href="https://en.wikipedia.org/wiki/Fold_change">fold change of two.<br>
+	
+Estimating Dispersion: Dispersion is another term for variance, or the distance we expect a random gene count to be away from the average gene count. While the negative binomial distribution is modeled with the parameters being probability of success, number of successes, and number of failures, we cannot create our distribution with these values. . . because we do not know them! Furthermore, we cannot calculate the number of failures because if a read failed to map then it isn't present in the counts file. We can get around this hurdle by reparameterizing the negative binomial distribution in terms of the mean and variance. Our size factor from before is technically our mean, which leaves us with having to determine the variance. Through a series of mathematical and statistical manipulations, DESeq2 calculates the idealized variance of our samples.
+
+Wald Test: The Wald Test is a statistical test which can be used to assess the confidence in the results. After we finish creating our experimental distributions, the value of each gene in our experimental distribution is compared to its hypothetical value in the model distribution. By taking the ratio we get the percent similarity. Lastly, subtracting our percent similarity from 1 will give us our percent dissimilarity. This is the value DESeq2 returns as our <a href="https://en.wikipedia.org/wiki/P-value">p-value</a>. You can think of this value as the percentage of chance that we're wrong about the fold change of a differentially expressed gene. Typically, we take all genes with p-values below 0.05. This is not the true <a href="https://en.wikipedia.org/wiki/Wald_test">Wald Test</a>, but is the purpose behind the true statistic. 
+
+Furthermore, DESeq2 informs us that clicking on any individual step will present us with instructions. Our first step is estimating our size factors. Let's click on the link and see this vignette:
+
+<pre style="color: silver; background: black;">
+estimateSizeFactors {DESeq2}	R Documentation
+Estimate the size factors for a DESeqDataSet
+
+<strong>Description</strong>
+
+<em>This function estimates the size factors using the "median ratio method" described by Equation 5 in Anders and Huber (2010). The 
+estimated size factors can be accessed using the accessor function sizeFactors. Alternative library size estimators can also be 
+supplied using the assignment function sizeFactors<-.</em>
+
+<strong>Usage</strong>
+
+## S4 method for signature 'DESeqDataSet'
+estimateSizeFactors(object, type = c("ratio",
+  "poscounts", "iterate"), locfunc = stats::median, geoMeans, controlGenes,
+  normMatrix)
+<strong>Arguments</strong>
+
+object		a DESeqDataSet
+type		Method for estimation: either "ratio", "poscounts", or "iterate". "ratio" uses the standard median ratio method 
+		introduced in DESeq. The size factor is the median ratio of the sample over a "pseudosample": for each gene, the 
+		geometric mean of all samples. "poscounts" and "iterate" offer alternative estimators, which can be used even when all 
+		genes contain a sample with a zero (a problem for the default method, as the geometric mean becomes zero, and the 
+		ratio undefined). The "poscounts" estimator deals with a gene with some zeros, by calculating a modified geometric 
+		mean by taking the n-th root of the product of the non-zero counts. This evolved out of use cases with Paul McMurdie's 
+		phyloseq package for metagenomic samples. The "iterate" estimator iterates between estimating the dispersion with a 
+		design of ~1, and finding a size factor vector by numerically optimizing the likelihood of the ~1 model.
+locfunc		a function to compute a location for a sample. By default, the median is used. However, especially for low counts, the 
+		shorth function from the genefilter package may give better results.
+geoMeans	by default this is not provided and the geometric means of the counts are calculated within the function. A vector of 
+		geometric means from another count matrix can be provided for a "frozen" size factor calculation
+controlGenes	optional, numeric or logical index vector specifying those genes to use for size factor estimation (e.g. housekeeping 
+		or spike-in genes)
+normMatrix	optional, a matrix of normalization factors which do not yet control for library size. Note that this argument should 
+		not be used (and will be ignored) if the dds object was created using tximport. In this case, the information in 
+		assays(dds)[["avgTxLength"]] is automatically used to create appropriate normalization factors. Providing normMatrix 
+		will estimate size factors on the count matrix divided by normMatrix and store the product of the size factors and 
+		normMatrix as normalizationFactors. It is recommended to divide out the row-wise geometric mean of normMatrix so the 
+		rows roughly are centered on 1.
+<strong>Details</strong>
+
+Typically, the function is called with the idiom:
+
+dds <- estimateSizeFactors(dds)</pre>
+
+We see that the only argument we need is a DESeq dataset. Let's create ours. From looking at the homepage of the DESeq2 vignete, we see that the "object" argument comes with links for a variety of data sources. Our data is from htseq-count, so we click on "DESeqDataSetFromHTSeqCount" in object row of the arguments. We see this vignette:
+
+
+DESeqDataSet-class {DESeq2}	R Documentation
+DESeqDataSet object and constructors
+
+<strong>Description</strong>
+
+<em>DESeqDataSet is a subclass of RangedSummarizedExperiment, used to store the input values, intermediate calculations and results of an analysis of differential expression. The DESeqDataSet class enforces non-negative integer values in the "counts" matrix stored as the first element in the assay list. In addition, a formula which specifies the design of the experiment must be provided. The constructor functions create a DESeqDataSet object from various types of input: a RangedSummarizedExperiment, a matrix, count files generated by the python package HTSeq, or a list from the tximport function in the tximport package. See the vignette for examples of construction from different types.</em>
+
+<strong>Usage</strong>
+
+DESeqDataSet(se, design, ignoreRank = FALSE)
+
+DESeqDataSetFromMatrix(countData, colData, design, tidy = FALSE,
+  ignoreRank = FALSE, ...)
+
+DESeqDataSetFromHTSeqCount(sampleTable, directory = ".", design,
+  ignoreRank = FALSE, ...)
+
+DESeqDataSetFromTximport(txi, colData, design, ...)
+<strong>Arguments</strong>
+
+se		a RangedSummarizedExperiment with columns of variables indicating sample information in colData, and the counts as the 
+		first element in the assays list, which will be renamed "counts". A RangedSummarizedExperiment object can be generated 
+		by the function summarizeOverlaps in the GenomicAlignments package.
+design		a formula or matrix. the formula expresses how the counts for each gene depend on the variables in colData. Many R 
+		formula are valid, including designs with multiple variables, e.g., ~ group + condition, and designs with 
+		interactions, e.g., ~ genotype + treatment + genotype:treatment. See results for a variety of designs and how to 
+		extract results tables. By default, the functions in this package will use the last variable in the formula for 
+		building results tables and plotting. ~ 1 can be used for no design, although users need to remember to switch to 
+		another design for differential testing.
+ignoreRank	use of this argument is reserved for DEXSeq developers only. Users will immediately encounter an error upon trying to 
+		estimate dispersion using a design with a model matrix which is not full rank.
+countData	for matrix input: a matrix of non-negative integers
+colData		for matrix input: a DataFrame or data.frame with at least a single column. Rows of colData correspond to columns of 
+		countData
+tidy		for matrix input: whether the first column of countData is the rownames for the count matrix
+...	
+arguments provided to SummarizedExperiment including rowRanges and metadata. Note that for Bioconductor 3.1, rowRanges must be a 
+GRanges or GRangesList, with potential metadata columns as a DataFrame accessed and stored with mcols. If a user wants to store 
+metadata columns about the rows of the countData, but does not have GRanges or GRangesList information, first construct the 
+DESeqDataSet without rowRanges and then add the DataFrame with mcols(dds).
+sampleTable	for htseq-count: a data.frame with three or more columns. Each row describes one sample. The first column is the s
+		sample name, the second column the file name of the count file generated by htseq-count, and the remaining columns are 
+		sample metadata which will be stored in colData
+directory	for htseq-count: the directory relative to which the filenames are specified. defaults to current directory
+txi		for tximport: the simple list output of the tximport function
+<strong>Details</strong>
+
+Note on the error message "assay colnames() must be NULL or equal colData rownames()": this means that the colnames of countData are different than the rownames of colData. Fix this with: colnames(countData) <- NULL
+
+<strong>Value</strong>
+A DESeqDataSet object.</pre>
+
+We follow these instructions exactly to create our DESeq object:
+
+<pre style="color: silver; background: black;">
 sampleNames <- c("LB2A_1","LB2A_2","LC2A_1","LC2A_2")
 sampleCondition <- c("control","control","treated","treated")
 </pre>
@@ -580,43 +760,77 @@ Let's create a dataframe. The options we are using for the data.frame function a
 sampleTable <- data.frame(sampleName = sampleNames,
                           fileName = sampleFiles,
                           condition = sampleCondition)
-
+			  
 ddsHTSeq <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable,
                                        directory = directory,
-                                       design = ~ condition)
+                                       design = ~ condition)</pre>
+				       
+				       
+After creating our DESeq object, we go back to the DESeq function vignette. Very pleasantly, we see that it is as easy as typing "DESeq(object)". Afterwards, the vignette informs us that "results(dds)" will calculate the complete results, including p-values, fold changes, and more. Let's do this:
 
-&num;By default, R will choose a reference level for factors based on alphabetical order. 
-&num; To chose the reference we can use: factor()
-treatments <- c("control","treated")
-ddsHTSeq$condition
-&num;Setting the factor levels
-colData(ddsHTSeq)$condition <- factor(colData(ddsHTSeq)$condition,
-                                      levels = treatments)
-ddsHTSeq$condition
-
+<pre style="color: silver; background: black;">
 &num; Differential expression analysis
 &num;differential expression analysis steps are wrapped into a single function, DESeq()
 dds <- DESeq(ddsHTSeq)
-
+<strong>estimating size factors
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing</strong>
  
- 
-&num; results table will be generated using results() which will include:
-&num;  log2 fold changes, p values and adjusted p values
 res <- results(dds)
-res
+head(res)
+<strong>
+DataFrame with 6 rows and 6 columns
+log2 fold change (MLE): condition treated vs control 
+Wald test p-value: condition treated vs control 
+DataFrame with 6 rows and 6 columns
+                         baseMean     log2FoldChange             lfcSE               stat              pvalue                padj
+                        <numeric>          <numeric>         <numeric>          <numeric>           <numeric>           <numeric>
+GeneID:104917625 25.1788677883808 -0.351267493371916  0.74406185433732 -0.472094478872007   0.636859353157054   0.791446951187614
+GeneID:104917626 10.5869934203484   1.24302237624161 0.945050102805392   1.31529785833754   0.188409817629488   0.366925219368594
+GeneID:104917627                0                 NA                NA                 NA                  NA                  NA
+GeneID:104917628 220.020215686258  0.431984191910497 0.207205565359478   2.08480979341001  0.0370865693995318   0.110551743788831
+GeneID:104917629 64.9709160307111  -0.12477576210606 0.375096700983498  -0.33264958550395    0.73939880906362   0.856594480025376
+GeneID:104917630 11.9088308244003  -3.85266236717162  1.17626616301573   -3.2753321385137 0.00105537813187126 0.00551098076212648</pre>
+
+DESeq takes our counts and applies the log-base-2 to them. Therefore, the true expression mean of the first gene is 2<sup>25.18</sup>, the second 2<sup>10.59</sup>, and so on. We see in column two, log2FoldChange, that the first gene was down-regulated going from the control group to the treated group, the second was up-regulated from the control group to the treated group. This information is directional. Whatever order your samples are inserted into your dataframe will determine the direction of the fold change. Should we have placed the treated group first our fold change calculation in the results table will have the opposite sign for each gene. The third column, lfcSE (log-fold change standard error), is a value of how the experimental log fold change value deviated from the idealized model. For genes with very large log-fold changes there is more leniancy in a larger standard error. This is because the standard error is the difference betweeen the experimental and idealized log-fold changes <i>squared</i>. Next, we have the "stat" column, which is the log-fold-2-change column divided by the log-fold-change-standard error column. The sign of the "stat" value does not matter, but its value does. The larger the "stat" value, the more confident we can be in the differential expression of the gene. You can think about the reason for this on your own. Lastly, we have our p-values, which we have discussed earlier, and our adjusted p-value. You needn't worry too much about how the adjusted p-value is calculated, as there are multiple ways. Just know that the adjusted p value is the better predictor of accuracy than the normal p-value. Now, let's look at a summary of our results and write them to a table. Remember, we want to be 95% certain (p-value < 0.05) that our genes are differentially expressed:
+
+<pre style="color: silver; background: black;">
 summary(res)
-&num; filter results by p value
-res= subset(res, padj<0.05)
+<strong>out of 20227 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 2862, 14%
+LFC < 0 (down)     : 2624, 13%
+outliers [1]       : 0, 0%
+low counts [2]     : 3465, 17%
+(mean count < 2)
+[1] see 'cooksCutoff' argument of ?results
+	[2] see 'independentFiltering' argument of ?results</strong>
 
-&num; order results by padj value (most significant to least)
+
+&num; retrieve our genes in which we're more than 95% certain
+dim(res)
+<strong>[1] 27239     6</strong>
+res = subset(res, padj<0.05)
+dim(res)
+<strong>[1] 4628    6</strong>
+&num; we have removed many genes!
+&num; Let's order our results by padj value (most confident to least confident)
 res <- res[order(res$padj),]
-&num; should see DataFrame of baseMean, log2Foldchange, stat, pval, padj
 
-&num; save data results and normalized reads to csv
+&num; we use the "merge" function to combine data frames
+
+&num; we can access the raw counts information using the DESeq function "counts(DESeq object)"
+
+#num; let's create a data frame which has all of our statistics and the raw counts
 resdata <- merge(as.data.frame(res), 
                  as.data.frame(counts(dds,normalized =TRUE)), 
                  by = 'row.names', sort = FALSE)
 names(resdata)[1] <- 'gene'
+
+&num; now let's write this data frame to a csv
 
 write.csv(resdata, file = paste0(outputPrefix, "-results-with-normalized.csv"))</pre><br>
 Our -results-with-normalized file contains all of the information of our -replaceoutliers-results and additionally the normalized counts of each sample. Let's have a look at it in the terminal:
