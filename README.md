@@ -1010,7 +1010,7 @@ rownames(sampleDistMatrix) <- paste(colnames(rld), rld$type, sep="")
 colnames(sampleDistMatrix) <- paste(colnames(rld), rld$type, sep="")
 colors <- colorRampPalette( rev(brewer.pal(8, "Blues")) )(255)
 heatmap(sampleDistMatrix,col=colors,margin = c(8,8))
-<img src= "Croaker_DESeq2-clustering.png" alt = "Cluster Heatmap">
+<img src= "images/Croaker_DESeq2-clustering.png" alt = "Cluster Heatmap">
 dev.copy(png,paste0(outputPrefix, "-clustering.png"))
 dev.off()
 
