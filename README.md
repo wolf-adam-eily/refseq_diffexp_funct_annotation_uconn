@@ -879,21 +879,11 @@ Our test-conditions file gives us insight into what statistics were calculated a
 "stat","results","Wald statistic: condition treated vs control"
 "pvalue","results","Wald test p-value: condition treated vs control"
 "padj","results","BH adjusted p-values</pre>
-R
-<pre style="color: silver; background: black;">&num; we can clean up our data by replacing outliers with the value predicted from the idealized distribution
 
-&num; this can only be done if you have multiple replicates per condition!
+We can clean up our data by replacing outliers with the value predicted from the idealized distribution. This can only be done if you have multiple replicates per condition! DESeq2 will automatically do this if you have 7 or more replicates. We use the "trimmed mean" approach. the "trimmed mean" approach reduces the smallest and largest values in a row by a small percentage, calculates the mean, and
+then finds the "trimmed mean" on the idealized distribution and replaces the outlier with the idealized value of the trimmed mean. The replace outliers function can only be used on DESeqData objects
 
-&num; DESeq2 will automatically do this if you have 7 or more replicates
-
-&num; we use the "trimmed mean" approach
-
-&num; the "trimmed mean" approach reduces the smallest and largest values in a row by a small percentage, calculates the mean, and
-
-&num; then finds the "trimmed mean" on the idealized distribution and replaces the outlier with the idealized value of the trimmed mean
-
-&num; the replace outliers function can only be used on DESeqData objects
-
+<pre style="color: silver; background:black;">
 ddsClean <- replaceOutliersWithTrimmedMean(dds)
 
 &num; now let's perform our differential expression analysis with the outliers replaced
