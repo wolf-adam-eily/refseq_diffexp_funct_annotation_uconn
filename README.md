@@ -694,7 +694,7 @@ dds <- estimateSizeFactors(dds)</pre>
 
 We see that the only argument we need is a DESeq dataset. Let's create ours. From looking at the homepage of the DESeq2 vignete, we see that the "object" argument comes with links for a variety of data sources. Our data is from htseq-count, so we click on "DESeqDataSetFromHTSeqCount" in object row of the arguments. We see this vignette:
 
-
+<pre style="color: silver; background: black;">
 DESeqDataSet-class {DESeq2}	R Documentation
 DESeqDataSet object and constructors
 
